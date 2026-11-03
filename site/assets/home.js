@@ -1,9 +1,8 @@
 // Home page: the "where do you want to start" chips, the two session lists, and "suggest one".
 // Session data comes from /assets/sessions.js (window.AJ_DATA), generated from data/sessions.json by `npm run build`.
 (() => {
-  const { $, esc, me, say, needSignIn } = window.AJ;
+  const { $, esc, me, say, act, countFor, NEEDED } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
-  const NEEDED = 5; // "I want this" count that gets an idea scheduled
 
   // One row of chips. The same choices appear in the hero; tapping there filters and scrolls here.
   const CHOICES = [
@@ -54,7 +53,7 @@
   function card(s) {
     const sched = s.status === 'scheduled';
     const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
-    const n = s.count + (mine ? 1 : 0);
+    const n = countFor(s);
     let lead, when, btn;
     if (sched) {
       const d = fmt(s.startsAt);
@@ -78,7 +77,7 @@
   function render() {
     document.querySelectorAll('#show .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.k === pick));
     const scheduled = S.filter((s) => s.status === 'scheduled' && fits(s)).sort((a, b) => (a.startsAt > b.startsAt ? 1 : -1));
-    const ideas = S.filter((s) => s.status === 'proposed' && fits(s)).sort((a, b) => b.count - a.count);
+    const ideas = S.filter((s) => s.status === 'proposed' && fits(s)).sort((a, b) => countFor(b) - countFor(a));
     $('#list-s').innerHTML = scheduled.length ? scheduled.map(card).join('') : '<li class="empty">Nothing on the calendar for this yet.</li>';
     $('#list-p').innerHTML = ideas.length ? ideas.map(card).join('') : '<li class="empty">No ideas here yet. Suggest one below.</li>';
     $('#n-s').textContent = scheduled.length;
@@ -90,15 +89,8 @@
       const b = e.target.closest('[data-act]');
       if (!b) return;
       const slug = b.closest('.s').dataset.slug;
-      const s = S.find((x) => x.slug === slug);
       const set = b.dataset.act === 'rsvp' ? me.going : me.want;
-      if (set.has(slug)) { set.delete(slug); render(); say('Removed. You can change your mind anytime.'); return; }
-      needSignIn(() => {
-        set.add(slug);
-        render();
-        if (b.dataset.act === 'rsvp') say('You’re going. We’ll email a reminder the day before.');
-        else say(s.count + 1 >= NEEDED ? 'That makes five. We’ll email you a date.' : 'Got it. We’ll email you when it’s scheduled.');
-      });
+      act({ type: b.dataset.act, slug, on: !set.has(slug) });
     })
   );
 
@@ -106,10 +98,16 @@
   $('#post').addEventListener('click', () => {
     const text = $('#idea').value.trim();
     if (!text) { say('Type your idea first.'); $('#idea').focus(); return; }
-    needSignIn(() => {
+    act({ type: 'suggest', text });
+  });
+
+  document.addEventListener('aj:change', (e) => {
+    render();
+    if (e.detail.tap?.type === 'suggest') {
       $('#propose-box').innerHTML =
         '<div class="thanks"><b>Thanks, got it.</b> We review every idea. If it’s a fit, we’ll post it with you as the first one in and email you.</div>';
-    });
+      if (e.detail.afterSignIn) $('#propose-box').scrollIntoView({ block: 'center' });
+    }
   });
 
   render();

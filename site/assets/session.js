@@ -1,45 +1,36 @@
 // One session's page (/sessions/<slug>). The build writes the page's facts into the HTML for search engines
 // and link previews; this script only handles the buttons. The session's data sits in data-* attributes on <article>.
 (() => {
-  const { $, say, needSignIn, siteUrl } = window.AJ;
+  const { $, me, say, act, countFor, NEEDED } = window.AJ;
   const el = $('article.sp');
-  const s = { ...el.dataset, count: Number(el.dataset.count), scheduled: el.dataset.status === 'scheduled' };
-  const NEEDED = 5;
-  const url = `${siteUrl}/sessions/${s.slug}`;
-  let on = false;
+  const s = { ...el.dataset, count: Number(el.dataset.count) };
+  const scheduled = s.status === 'scheduled';
+  const kind = scheduled ? 'rsvp' : 'want';
+  const url = `${location.origin}/sessions/${s.slug}`;
   const main = $('#main');
+  const mine = () => (scheduled ? me.going : me.want).has(s.slug);
 
   function paint() {
-    const n = s.count + (on ? 1 : 0);
+    const on = mine();
+    const n = countFor(s);
     main.setAttribute('aria-pressed', on);
-    if (s.scheduled) {
-      main.textContent = on ? 'You’re going ✓' : 'RSVP';
-      $('#cnt').textContent = n;
-    } else {
+    $('#cnt').textContent = n;
+    if (scheduled) main.textContent = on ? 'You’re going ✓' : 'RSVP';
+    else {
       main.textContent = on ? 'You want this ✓' : 'I want this';
-      $('#cnt').textContent = n;
       $('#more').textContent = n >= NEEDED ? 'enough people, scheduling soon' : `${NEEDED - n} more and we schedule it`;
     }
+    const g = $('#guide');
+    if (g && me.guide.has(s.slug)) g.outerHTML = '<b>Thanks. An organizer will reach out about guiding.</b>';
   }
 
-  main.addEventListener('click', () => {
-    if (on) { on = false; paint(); say('Removed. You can change your mind anytime.'); return; }
-    needSignIn(() => {
-      on = true;
-      paint();
-      if (s.scheduled) say('You’re going. We’ll email a reminder the day before.');
-      else say(s.count + 1 >= NEEDED ? 'That makes five. We’ll email you a date.' : 'Got it. We’ll email you when it’s scheduled.');
-    });
-  });
+  main.addEventListener('click', () => act({ type: kind, slug: s.slug, on: !mine() }));
+  $('#guide').addEventListener('click', (e) => { e.preventDefault(); act({ type: 'guide', slug: s.slug, on: true }); });
+  document.addEventListener('aj:change', paint);
 
   $('#share').addEventListener('click', () => {
     if (navigator.share) navigator.share({ title: s.title, url }).catch(() => {});
     else navigator.clipboard?.writeText(url).then(() => say('Link copied'), () => say(url));
-  });
-
-  $('#guide').addEventListener('click', (e) => {
-    e.preventDefault();
-    needSignIn(() => { $('#guide').outerHTML = '<b>Thanks. An organizer will reach out about guiding.</b>'; });
   });
 
   // Add to calendar: a one-event .ics file, 90 minutes long.

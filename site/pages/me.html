@@ -1,0 +1,30 @@
+<!-- My sessions: what a signed-in person has RSVPed to, wants, and offered to guide. Built into dist/me.html, served at /me. -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="col mine">
+  <span class="kicker">My sessions</span>
+  <h2 id="mh">Your sessions</h2>
+  <div id="mine-out" hidden>
+    <p class="lede">Sign in to see the sessions you picked. Taps you make on any session show up here.</p>
+    <button class="go" type="button" id="mine-signin">Sign in</button>
+  </div>
+  <div id="mine-in" hidden>
+    <p class="lede" id="mine-hi"></p>
+    <div class="group"><div class="ghead"><h3>You’re going</h3><span id="n-go"></span></div>
+      <ul class="list" id="list-go"></ul></div>
+    <div class="group"><div class="ghead"><h3>You want these</h3><span id="n-want"></span></div>
+      <p class="gnote">When five people want one, we put it on the calendar and email you.</p>
+      <ul class="list" id="list-want"></ul></div>
+    <div class="group" id="g-guide" hidden><div class="ghead"><h3>You offered to guide</h3><span id="n-guide"></span></div>
+      <p class="gnote">An organizer will email you about each one.</p>
+      <ul class="list" id="list-guide"></ul></div>
+    <p class="mine-foot"><a href="/#find">Find more sessions</a> · <button class="small" type="button" data-signout>Sign out</button></p>
+  </div>
+  <p class="lede" id="mine-wait">Loading…</p>
+</div></main>
+{{footer}}
+{{sheet}}
+<script src="/assets/sessions.js"></script>
+<script src="/assets/me.js"></script>
+</body>
+</html>
