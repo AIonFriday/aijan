@@ -12,7 +12,7 @@ Rough order. Open an issue before starting anything large.
 
 ## Soon
 
-- [ ] Share images per session (title and date over the map), served at `/og/sessions/<slug>.png`.
+- [x] Share images per session (title and date over the map), served at `/og/sessions/<slug>.png`. Drawn at build time by `scripts/og.mjs`.
 - [ ] Session pages rendered from D1 so new sessions get pages right away.
 - [ ] "My sessions" for signed-in people.
 - [ ] Practical info about The Nieux: parking, access, Wi-Fi.

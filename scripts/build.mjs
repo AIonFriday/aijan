@@ -9,12 +9,14 @@
 //   2. Copies site/assets/ to dist/assets/ and writes dist/assets/sessions.js (window.AJ_DATA).
 //   3. Renders site/pages/*.html with the shared partials into dist/.
 //   4. Renders one page per session from site/templates/session.html into dist/sessions/<slug>.html.
+//   5. Draws share images (scripts/og.mjs): dist/og/home.png and dist/og/sessions/<slug>.png.
 //
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html".
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderHome, renderSession } from './og.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = process.env.SITE_URL || 'https://aijan.example'; // domain not chosen yet
@@ -66,6 +68,7 @@ if (process.argv.includes('--check')) {
 const dist = join(root, 'dist');
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(join(dist, 'sessions'), { recursive: true });
+mkdirSync(join(dist, 'og/sessions'), { recursive: true });
 cpSync(join(root, 'site/assets'), join(dist, 'assets'), { recursive: true });
 const visible = data.sessions.filter((s) => s.status !== 'cancelled' && s.visible !== false);
 const clientData = { levels: data.levels, topics: data.topics, timeZone: data.timeZone, defaultLocation: data.defaultLocation, sessions: visible };
@@ -84,8 +87,9 @@ const head = (o) =>
     url: SITE_URL + o.path,
     ogType: o.ogType || 'website',
     ogTitle: o.ogTitle || o.title,
-    // One shared share image for now. Per-session images (title + date on the map) are a planned Worker route.
-    ogImage: `${SITE_URL}/assets/og/home.png`,
+    // Each session has its own share image (title and date over the map); other pages share the home one.
+    ogImage: `${SITE_URL}${o.ogImage || '/og/home.png'}`,
+    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–28, 2027.',
   });
 const header = (current) => fill(partials.header, { navGuide: current === 'guide' ? ' aria-current="page"' : '', navKrewe: current === 'krewe' ? ' aria-current="page"' : '' });
 
@@ -110,7 +114,7 @@ const tpl = read('site/templates/session.html');
 for (const s of visible) {
   const scheduled = s.status === 'scheduled';
   const location = s.location || data.defaultLocation;
-  let tileHtml, statusLineHtml, when, buttonsHtml, summary;
+  let tileHtml, statusLineHtml, when, buttonsHtml, summary, share = {};
   if (scheduled) {
     const start = new Date(s.startsAt);
     const end = new Date(start.getTime() + 90 * 60000);
@@ -120,6 +124,7 @@ for (const s of visible) {
     statusLineHtml = `${esc(when)} · <span id="cnt">${s.count}</span> going`;
     buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
     summary = `${when} at ${location}. Free. ${s.description}`;
+    share = { month: part(start, { month: 'short' }).toUpperCase(), day: part(start, { day: 'numeric' }) };
   } else {
     when = 'Not set yet. We pick a date once five people want it.';
     tileHtml = `<div class="tile w" aria-hidden="true"><div class="d" id="cnt">${s.count}</div><div class="m">want it</div></div>`;
@@ -130,7 +135,10 @@ for (const s of visible) {
   }
   const html = fill(tpl, {
     ...partials,
-    head: head({ path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: scheduled ? 'event' : 'website' }),
+    head: head({
+      path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: scheduled ? 'event' : 'website',
+      ogImage: `/og/sessions/${s.slug}.png`, ogImageAlt: `${s.title}. ${scheduled ? when : 'Not scheduled yet'}. A free AI session in New Orleans.`,
+    }),
     header: header(),
     slug: s.slug,
     title: s.title,
@@ -148,6 +156,10 @@ for (const s of visible) {
     buttonsHtml,
   });
   writeFileSync(join(dist, 'sessions', `${s.slug}.html`), html);
+  writeFileSync(join(dist, 'og/sessions', `${s.slug}.png`), renderSession({ title: s.title, scheduled, when, where: location, ...share }));
 }
 
-console.log(`Built dist/: ${Object.keys(PAGES).length} pages and ${visible.length} session pages.`);
+// ---------- 5. share images for the other pages ----------
+writeFileSync(join(dist, 'og/home.png'), renderHome());
+
+console.log(`Built dist/: ${Object.keys(PAGES).length} pages, ${visible.length} session pages, and ${visible.length + 1} share images.`);
