@@ -35,6 +35,10 @@ Light theme only. Muted Mardi Gras colors on lavender paper. Never a dark backgr
 
 Real street intersections of greater New Orleans from OpenStreetMap, lit outward from The Nieux. No place names. It sits behind the headline. Keep the OpenStreetMap credit visible.
 
+## Share images
+
+1200x630 PNGs drawn by `scripts/og.mjs` with the same tokens and fonts. The map sits on the right with a paper wash on the left so the words read clearly. Sessions show the title (it shrinks, then trims with "…" past three lines), a date tile like the session page, and the time and place. Ideas show a green tile with "?" and "Not scheduled yet". Keep each image under about 300 KB so WhatsApp and iMessage show it.
+
 ## Words
 
 Plain, warm, short. "Guide," not "host." "Free," said plainly. Don't oversell AI.

@@ -10,6 +10,7 @@ site/assets/       ─┘
 ```
 
 - The build is one Node script with no dependencies. It validates the data, copies assets, fills page templates, and writes one page per session.
+- It also draws the share images (`scripts/og.mjs`): `dist/og/home.png` and `dist/og/sessions/<slug>.png`, with the title and date over the street map. That file has its own small font reader, path filler and PNG writer, so it needs nothing beyond Node. Fonts are in `scripts/fonts/`.
 - The Worker (`src/worker.js`) serves `dist/` through the `ASSETS` binding. Cloudflare's `auto-trailing-slash` HTML handling serves `/sessions/foo` from `dist/sessions/foo.html`. Unknown paths get `dist/404.html`.
 - Only `/api/*` runs Worker code (`run_worker_first`). Today that's just `/api/health`.
 - Buttons work in the browser only (`site/assets/app.js` keeps a fake signed-in state). Nothing is saved.
@@ -37,9 +38,8 @@ Planned API routes:
 | `POST /api/suggestions` | Suggest an idea (goes to review) |
 | `POST /api/krewes` | Bring-your-krewe request |
 | `/api/auth/*` | Better Auth (Google, Apple, email link) |
-| `GET /og/sessions/:slug.png` | Share image with the title and date over the map |
 
-When sessions move to D1, the session pages should be rendered by the Worker (or rebuilt on change) so new sessions get pages and share tags right away. Keep `data/sessions.json` as seed data for local development.
+When sessions move to D1, the session pages should be rendered by the Worker (or rebuilt on change) so new sessions get pages and share tags right away. `scripts/og.mjs` only uses `Buffer` and `zlib`, so it can move into the Worker (with `nodejs_compat`) to draw `/og/sessions/:slug.png` on request and cache it in R2. Keep `data/sessions.json` as seed data for local development.
 
 ## Deploys
 
