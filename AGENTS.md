@@ -57,7 +57,7 @@ Always run `npm run build && npm run check` before you finish. There are no othe
 
 - One change per PR, with a short description of what changed and why, plus before/after screenshots for anything visual (phone and desktop).
 - Don't commit secrets. Local secrets go in `.dev.vars` (gitignored); production secrets are set with `wrangler secret put`.
-- Don't deploy from a PR. Maintainers deploy.
+- Never deploy by hand (`wrangler deploy` or `wrangler versions upload`). Merging to `main` deploys through Cloudflare Workers Builds, and PR branches get preview URLs automatically.
 
 ## Where to look next
 

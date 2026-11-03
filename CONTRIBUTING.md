@@ -30,6 +30,7 @@ You need Node 20 or newer. No Cloudflare account is needed to run it locally.
 3. Run `npm run build && npm run check`.
 4. Look at your change at phone width (390px) and desktop width.
 5. Open a pull request using the template. Add screenshots for anything visual.
+6. Cloudflare builds a preview of your branch and links it on the PR. Once a maintainer merges, the site deploys on its own. There's no manual deploy step.
 
 ## Adding or editing example sessions
 

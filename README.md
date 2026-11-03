@@ -28,6 +28,8 @@ npm run dev       # serves it with the Worker at http://localhost:8787
 
 `npm run check` validates the session data and checks every link in the build. Run it before you open a pull request.
 
+Deploys happen only through GitHub: merging to `main` publishes the site through Cloudflare Workers Builds, and every branch gets a preview link. See [docs/architecture.md](docs/architecture.md#deploys).
+
 ## What's where
 
 ```

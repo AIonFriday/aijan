@@ -8,9 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs --check && node scripts/check-html.mjs",
-    "dev": "wrangler dev",
-    "preview": "wrangler versions upload",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev"
   },
   "devDependencies": {
     "wrangler": "^4.151.0"

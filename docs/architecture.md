@@ -43,6 +43,10 @@ When sessions move to D1, the session pages should be rendered by the Worker (or
 
 ## Deploys
 
-- `npm run deploy` runs the build and `wrangler deploy` to the account in your wrangler login. Maintainers only.
-- `npx wrangler versions upload` uploads a preview version without sending traffic to it.
-- Secrets go in with `wrangler secret put NAME`, never in the repo.
+Deploys run only through GitHub. Nobody runs `wrangler deploy` by hand.
+
+- The Worker is connected to this repo with [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/).
+- A merge to `main` builds the site and deploys it to production.
+- Every other branch (including PR branches) gets a preview version with its own URL. Cloudflare posts the link on the PR.
+- GitHub Actions (`.github/workflows/ci.yml`) runs the build, the checks and a `wrangler deploy --dry-run` on every PR. It never deploys.
+- Secrets are set in the Cloudflare dashboard (or `wrangler secret put` by a maintainer), never in the repo.
