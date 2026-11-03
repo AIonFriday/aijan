@@ -15,6 +15,7 @@
     if (s.scheduled) {
       main.textContent = on ? 'You’re going ✓' : 'RSVP';
       $('#cnt').textContent = n;
+      $('#going').hidden = n === 0;
     } else {
       main.textContent = on ? 'You want this ✓' : 'I want this';
       $('#cnt').textContent = n;

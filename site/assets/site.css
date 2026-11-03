@@ -114,6 +114,7 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
   .act .go{padding:7px 12px;min-width:0}
   .more{grid-column:2 / 4}
 }
+.all-ideas{list-style:none;padding:12px 0}
 .empty{padding:18px 0;color:var(--ink-soft);border-bottom:1px solid var(--line)}
 /* propose */
 .propose{margin:36px 0 0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:grid;gap:10px}

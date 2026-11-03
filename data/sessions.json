@@ -1,5 +1,5 @@
 {
-  "_note": "Example sessions for the mockup. Real sessions will come from D1. See docs/schema.md.",
+  "_note": "The January 2027 lineup: 8 scheduled anchor sessions plus ideas waiting for five people. Real sessions will move to D1. See docs/schema.md.",
   "levels": {
     "all": "All levels",
     "new": "New to AI",
@@ -18,7 +18,7 @@
     {
       "slug": "ai-friday-kickoff",
       "title": "AI Friday: the kickoff",
-      "description": "The month starts here. Demos from people around town, coffee, and a look at what’s on the calendar.",
+      "description": "The month starts here. Coffee, a few short demos from people around town, and a look at everything on the calendar.",
       "status": "scheduled",
       "startsAt": "2027-01-08T09:00:00-06:00",
       "level": "all",
@@ -31,13 +31,13 @@
       "guides": [
         "AI Friday crew"
       ],
-      "count": 112,
+      "count": 0,
       "officeHours": false
     },
     {
       "slug": "coffee-office-hours-jan-12",
-      "title": "Coffee and AI office hours",
-      "description": "Bring your laptop and whatever you’re stuck on. Someone will sit down next to you and help.",
+      "title": "Coffee and AI",
+      "description": "No agenda. Bring your laptop and whatever you’re working on or stuck on. Someone who uses AI every day will sit down next to you and help.",
       "status": "scheduled",
       "startsAt": "2027-01-12T08:00:00-06:00",
       "level": "all",
@@ -49,97 +49,72 @@
       ],
       "tags": [],
       "guides": [
-        "Maya",
-        "Jordan"
+        "AI Friday crew"
       ],
-      "count": 14,
+      "count": 0,
       "officeHours": true
     },
     {
-      "slug": "ai-for-your-restaurant",
-      "title": "AI for your restaurant: menus, schedules, reviews",
-      "description": "Write menu descriptions, answer reviews, and draft a staff schedule in about an hour.",
-      "status": "scheduled",
-      "startsAt": "2027-01-13T11:30:00-06:00",
-      "level": "new",
-      "topics": [
-        "work"
-      ],
-      "tags": [
-        "restaurants",
-        "small business"
-      ],
-      "guides": [
-        "Dee"
-      ],
-      "count": 9,
-      "officeHours": false
-    },
-    {
-      "slug": "real-estate-listings-follow-ups",
-      "title": "Real estate: listings and follow-ups",
-      "description": "Turn photos and notes into a listing, then set up follow-up emails that sound like you.",
+      "slug": "cooking-with-ai",
+      "title": "Cooking with AI",
+      "description": "Plan a week of dinners from what’s in your fridge, scale a recipe for a crowd, and see a few fun kitchen projects. A good first session if you’ve never used AI.",
       "status": "scheduled",
       "startsAt": "2027-01-14T11:30:00-06:00",
-      "level": "sometimes",
+      "level": "new",
       "topics": [
-        "work"
-      ],
-      "tags": [
-        "real estate"
-      ],
-      "guides": [
-        "Chris"
-      ],
-      "count": 7,
-      "officeHours": false
-    },
-    {
-      "slug": "beer-and-build-night",
-      "title": "Beer and build night",
-      "description": "Open table for people making things with AI. Show what you’re building, get unstuck, trade notes.",
-      "status": "scheduled",
-      "startsAt": "2027-01-14T17:30:00-06:00",
-      "level": "build",
-      "topics": [
+        "life",
         "make"
       ],
       "tags": [
-        "coding"
+        "cooking",
+        "food"
       ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "coffee-and-ai-jan-19",
+      "title": "Coffee and AI",
+      "description": "No agenda. Bring your laptop and whatever you’re working on or stuck on. Someone who uses AI every day will sit down next to you and help.",
+      "status": "scheduled",
+      "startsAt": "2027-01-19T08:00:00-06:00",
+      "level": "all",
+      "topics": [
+        "work",
+        "life",
+        "make",
+        "curious"
+      ],
+      "tags": [],
       "guides": [
-        "Sam",
-        "Priya",
-        "Leo"
+        "AI Friday crew"
       ],
-      "count": 21,
+      "count": 0,
       "officeHours": true
     },
     {
-      "slug": "grant-writing-nonprofits",
-      "title": "Grant writing for nonprofits",
-      "description": "Draft a grant narrative from your old applications and a few notes, then check it for gaps.",
+      "slug": "real-estate-listings-follow-ups",
+      "title": "AI for real estate agents",
+      "description": "Turn photos and notes into a listing, write follow-ups that sound like you, and keep track of every lead. Bring a real listing to work on.",
       "status": "scheduled",
-      "startsAt": "2027-01-19T11:30:00-06:00",
+      "startsAt": "2027-01-20T11:30:00-06:00",
       "level": "sometimes",
       "topics": [
         "work"
       ],
       "tags": [
-        "nonprofits",
-        "writing"
+        "real estate",
+        "small business"
       ],
-      "guides": [
-        "Renee"
-      ],
-      "count": 11,
-      "officeHours": false,
-      "location": "A guide’s office in the CBD"
+      "guides": [],
+      "count": 0,
+      "officeHours": false
     },
     {
       "slug": "ai-friday-closer",
-      "title": "AI Friday: the closer",
-      "description": "What New Orleans made this month. Short demos from people who came to their first session three weeks ago.",
+      "title": "AI Friday: show and tell",
+      "description": "What New Orleans made this month. Short demos from people who came to their first session two weeks ago.",
       "status": "scheduled",
       "startsAt": "2027-01-22T09:00:00-06:00",
       "level": "all",
@@ -151,34 +126,50 @@
       "guides": [
         "AI Friday crew"
       ],
-      "count": 64,
+      "count": 0,
       "officeHours": false
     },
     {
-      "slug": "teachers-lesson-plans",
-      "title": "Teachers: lesson plans without the busywork",
-      "description": "Build a week of lesson plans, quizzes, and parent emails from one standard.",
-      "status": "proposed",
-      "startsAt": null,
-      "level": "sometimes",
+      "slug": "ai-for-church-admin",
+      "title": "AI for churches and ministries",
+      "description": "For clergy and church staff: bulletins, newsletters, volunteer schedules, and sermon research. What AI is good for, what it isn’t, and where to be careful.",
+      "status": "scheduled",
+      "startsAt": "2027-01-26T11:30:00-06:00",
+      "level": "new",
       "topics": [
         "work"
       ],
       "tags": [
-        "education"
+        "churches",
+        "nonprofits"
       ],
-      "guides": [
-        "Ms. Alvarez"
-      ],
-      "count": 5,
+      "guides": [],
+      "count": 0,
       "officeHours": false
     },
     {
+      "slug": "beer-and-build-night",
+      "title": "Last call: beer and AI",
+      "description": "One more evening before the parades. Work on your project, show what you made this month, and trade notes over a beer.",
+      "status": "scheduled",
+      "startsAt": "2027-01-28T17:30:00-06:00",
+      "level": "all",
+      "topics": [
+        "make",
+        "curious"
+      ],
+      "tags": [],
+      "guides": [
+        "AI Friday crew"
+      ],
+      "count": 0,
+      "officeHours": true
+    },
+    {
       "slug": "first-hour-with-chatgpt",
-      "title": "Your first hour with ChatGPT",
-      "description": "Never really tried it? We’ll set up an account together and do three useful things with it.",
+      "title": "Your first hour with AI",
+      "description": "Never really tried it? We’ll set up a free account together and do three useful things with it. No question is too basic.",
       "status": "proposed",
-      "startsAt": null,
       "level": "new",
       "topics": [
         "curious",
@@ -186,78 +177,239 @@
       ],
       "tags": [],
       "guides": [],
-      "count": 4,
+      "count": 0,
       "officeHours": false
     },
     {
-      "slug": "ai-for-church-admin",
-      "title": "Sermons, newsletters, and church admin",
-      "description": "For clergy and church staff: what AI is good for, what it isn’t, and where to be careful.",
+      "slug": "ai-for-parents",
+      "title": "AI for parents: school, sports, and carpools",
+      "description": "Get every school email, practice schedule, and permission slip into one plan for the week. Then let AI help with the reminders.",
       "status": "proposed",
-      "startsAt": null,
+      "level": "new",
+      "topics": [
+        "life"
+      ],
+      "tags": [
+        "parents",
+        "family"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "ai-for-small-business",
+      "title": "AI for small business owners",
+      "description": "Quotes, invoices, emails, and the reviews you haven’t answered yet. Bring the task you keep putting off and leave with it done.",
+      "status": "proposed",
       "level": "new",
       "topics": [
         "work"
       ],
       "tags": [
-        "faith"
+        "small business"
       ],
-      "guides": [
-        "Rev. Thomas"
-      ],
-      "count": 3,
+      "guides": [],
+      "count": 0,
       "officeHours": false
     },
     {
-      "slug": "meals-budget-and-trips",
-      "title": "Meal plans, a budget, and the summer trip",
-      "description": "Use AI for the everyday stuff at home: a week of dinners, a household budget, and a trip itinerary.",
+      "slug": "spot-ai-fakes-and-scams",
+      "title": "Is it real? Spotting AI fakes and scams",
+      "description": "Fake voices, fake photos, and fake emails are getting better. Learn what to look for, and how to help your parents spot them too.",
       "status": "proposed",
-      "startsAt": null,
       "level": "new",
       "topics": [
-        "life"
-      ],
-      "tags": [],
-      "guides": [
-        "Tasha"
-      ],
-      "count": 3,
-      "officeHours": false
-    },
-    {
-      "slug": "kids-homework-the-right-way",
-      "title": "Helping your kids use AI for homework, the right way",
-      "description": "For parents: how to use it as a tutor instead of a shortcut, and what the schools allow.",
-      "status": "proposed",
-      "startsAt": null,
-      "level": "sometimes",
-      "topics": [
+        "curious",
         "life"
       ],
       "tags": [
-        "parents"
+        "safety"
       ],
       "guides": [],
-      "count": 1,
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "teachers-lesson-plans",
+      "title": "AI for teachers",
+      "description": "Build a week of lesson plans, quizzes, and parent emails from one standard, and talk through what to allow in your classroom.",
+      "status": "proposed",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "teachers",
+        "schools"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "ai-for-your-restaurant",
+      "title": "AI for restaurants and bars",
+      "description": "Write menu descriptions, answer reviews, and draft a staff schedule in about an hour.",
+      "status": "proposed",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "restaurants",
+        "small business"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "grant-writing-nonprofits",
+      "title": "AI for nonprofits: grants and reports",
+      "description": "Draft a grant narrative from your old applications and a few notes, then check it for gaps. Bring a real deadline.",
+      "status": "proposed",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "nonprofits",
+        "writing"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "ai-for-lawyers",
+      "title": "AI for lawyers",
+      "description": "Summarize a long file, draft a first pass, and learn where AI makes things up so you know what to check.",
+      "status": "proposed",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "law"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "make-your-first-app",
+      "title": "Make your first app without coding",
+      "description": "Describe a small tool you wish you had, and build it with AI in one sitting. You leave with a link you can share.",
+      "status": "proposed",
+      "level": "sometimes",
+      "topics": [
+        "make"
+      ],
+      "tags": [
+        "apps"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "let-ai-do-the-task",
+      "title": "Past the chat box: let AI do the work",
+      "description": "Most people ask AI a question and then do the work themselves. See how to hand it the whole task: files, research, and follow-through.",
+      "status": "proposed",
+      "level": "daily",
+      "topics": [
+        "work",
+        "curious"
+      ],
+      "tags": [],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "write-like-you",
+      "title": "Get AI to write like you",
+      "description": "Teach it your voice with a few of your own emails and posts, so the drafts sound like you and not like a robot.",
+      "status": "proposed",
+      "level": "daily",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "writing"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "messy-spreadsheet-to-answers",
+      "title": "Turn a messy spreadsheet into answers",
+      "description": "Bring the spreadsheet nobody wants to open. Clean it up, ask it questions, and make a chart you can share.",
+      "status": "proposed",
+      "level": "daily",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "data"
+      ],
+      "guides": [],
+      "count": 0,
       "officeHours": false
     },
     {
       "slug": "agent-that-answers-email",
       "title": "Build an agent that answers your email",
-      "description": "Wire up an assistant that drafts replies to your inbox and asks before it sends.",
+      "description": "Set up an assistant that drafts replies to your inbox and asks before it sends.",
       "status": "proposed",
-      "startsAt": null,
       "level": "build",
       "topics": [
         "make",
         "work"
       ],
       "tags": [
+        "agents"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "whats-for-dinner-build-along",
+      "title": "Build-along: a what’s-for-dinner app",
+      "description": "We build one small app together in 90 minutes, start to finish, out loud. Bring a laptop and follow along or just watch.",
+      "status": "proposed",
+      "level": "build",
+      "topics": [
+        "make"
+      ],
+      "tags": [
+        "coding",
+        "food"
+      ],
+      "guides": [],
+      "count": 0,
+      "officeHours": false
+    },
+    {
+      "slug": "fix-the-city-build-day",
+      "title": "Fix the city: a civic build day",
+      "description": "Pick a real New Orleans problem, like a city form, a data set, or a service that’s hard to use, and build something small that helps.",
+      "status": "proposed",
+      "level": "build",
+      "topics": [
+        "make",
+        "work"
+      ],
+      "tags": [
+        "civic",
         "coding"
       ],
       "guides": [],
-      "count": 2,
+      "count": 0,
       "officeHours": false
     }
   ],

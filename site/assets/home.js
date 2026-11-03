@@ -4,6 +4,8 @@
   const { $, esc, me, say, needSignIn } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
   const NEEDED = 5; // "I want this" count that gets an idea scheduled
+  const FIRST = 6; // ideas shown before "Show all", so the list doesn't overwhelm a first-time visitor
+  let showAll = false;
 
   // One row of chips. The same choices appear in the hero; tapping there filters and scrolls here.
   const CHOICES = [
@@ -25,7 +27,7 @@
   $('#show').innerHTML = CHOICES.map(([k, v]) => `<button class="chip" type="button" data-k="${k}">${v}</button>`).join('');
   $('#show').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
-    if (b) { pick = b.dataset.k; render(); }
+    if (b) { pick = b.dataset.k; showAll = false; render(); }
   });
   $('#ask').innerHTML =
     CHOICES.filter(([k]) => k !== 'all').map(([k, v]) => `<button type="button" data-k="${k}">${v}</button>`).join('') +
@@ -34,6 +36,7 @@
     const b = e.target.closest('button');
     if (!b) return;
     pick = b.dataset.k;
+    showAll = false;
     render();
     $('#find').scrollIntoView({ behavior: 'smooth' });
   });
@@ -59,7 +62,7 @@
     if (sched) {
       const d = fmt(s.startsAt);
       lead = `<div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div>`;
-      when = `${d.w} · ${d.t} · ${n} going`;
+      when = `${d.w} · ${d.t}${n ? ` · ${n} going` : ''}`;
       btn = `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`;
     } else {
       lead = `<div class="want" aria-hidden="true"><div class="d">${n}</div><div class="m">want it</div></div>`;
@@ -80,7 +83,11 @@
     const scheduled = S.filter((s) => s.status === 'scheduled' && fits(s)).sort((a, b) => (a.startsAt > b.startsAt ? 1 : -1));
     const ideas = S.filter((s) => s.status === 'proposed' && fits(s)).sort((a, b) => b.count - a.count);
     $('#list-s').innerHTML = scheduled.length ? scheduled.map(card).join('') : '<li class="empty">Nothing on the calendar for this yet.</li>';
-    $('#list-p').innerHTML = ideas.length ? ideas.map(card).join('') : '<li class="empty">No ideas here yet. Suggest one below.</li>';
+    const shown = showAll ? ideas : ideas.slice(0, FIRST);
+    const rest = ideas.length - shown.length;
+    $('#list-p').innerHTML = ideas.length
+      ? shown.map(card).join('') + (rest ? `<li class="all-ideas"><button class="small" type="button" data-act="all">Show ${rest} more ideas</button></li>` : '')
+      : '<li class="empty">No ideas here yet. Suggest one below.</li>';
     $('#n-s').textContent = scheduled.length;
     $('#n-p').textContent = ideas.length;
   }
@@ -89,6 +96,7 @@
     list.addEventListener('click', (e) => {
       const b = e.target.closest('[data-act]');
       if (!b) return;
+      if (b.dataset.act === 'all') { showAll = true; render(); return; }
       const slug = b.closest('.s').dataset.slug;
       const s = S.find((x) => x.slug === slug);
       const set = b.dataset.act === 'rsvp' ? me.going : me.want;

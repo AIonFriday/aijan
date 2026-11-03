@@ -117,7 +117,7 @@ for (const s of visible) {
     const day = part(start, { weekday: 'short', month: 'short', day: 'numeric' });
     when = `${day}, ${clock(start)} – ${clock(end)}`;
     tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${part(start, { month: 'short' }).toUpperCase()}</div><div class="d">${part(start, { day: 'numeric' })}</div></div>`;
-    statusLineHtml = `${esc(when)} · <span id="cnt">${s.count}</span> going`;
+    statusLineHtml = `${esc(when)}<span id="going"${s.count ? '' : ' hidden'}> · <span id="cnt">${s.count}</span> going</span>`;
     buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
     summary = `${when} at ${location}. Free. ${s.description}`;
   } else {
