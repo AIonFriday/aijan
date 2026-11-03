@@ -1,0 +1,29 @@
+<!-- One session's page. scripts/build.mjs writes one of these per session in data/sessions.json, to dist/sessions/<slug>.html,
+     served at /sessions/<slug>. Values in {{...}} are HTML-escaped by the build unless the name ends in Html. -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="col">
+  <p class="crumb"><a href="/#find">← All sessions</a></p>
+  <article class="sp" data-slug="{{slug}}" data-title="{{title}}" data-status="{{status}}" data-count="{{count}}" data-starts-at="{{startsAt}}" data-location="{{location}}">
+    <div class="top">{{tileHtml}}<div class="st">{{statusLineHtml}}</div></div>
+    <h1>{{title}}</h1>
+    <p class="desc">{{description}}</p>
+    <dl class="facts">
+      <dt>When</dt><dd>{{when}}</dd>
+      <dt>Where</dt><dd>{{location}}</dd>
+      <dt>Level</dt><dd>{{level}}</dd>
+      <dt>Guide</dt><dd>{{guides}}</dd>
+      <dt>Cost</dt><dd>Free</dd>
+    </dl>
+    <div class="cta">{{buttonsHtml}}<button class="small" type="button" id="share">Share</button></div>
+  </article>
+  <div class="side">
+    <p>Bring a laptop if you have one, and something real you want to get done.</p>
+    <p>Know this stuff? <a href="#" id="guide">{{guideAsk}}</a></p>
+  </div>
+</div></main>
+{{footer}}
+{{sheet}}
+<script src="/assets/session.js"></script>
+</body>
+</html>

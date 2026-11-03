@@ -1,0 +1,74 @@
+<!-- Home page. Built into dist/index.html by scripts/build.mjs. {{...}} values are filled in by the build. -->
+{{head}}
+<div class="hero">
+  <header class="bar wrap">
+    <a class="mark" href="/" aria-label="AI January home">AI <span>January</span></a>
+    <nav class="nav" aria-label="Pages"><a href="#find">Sessions</a><a href="/guide">Guide</a><a href="/krewe">Krewes</a></nav>
+  </header>
+  <div class="map" aria-label="Map of New Orleans streets lighting up block by block, outward from The Nieux on St. Charles Avenue" role="img">
+    <canvas id="city"></canvas>
+    <span class="credit">Streets © OpenStreetMap contributors</span>
+  </div>
+  <div class="scrim" aria-hidden="true"></div>
+  <section class="words wrap" id="top" aria-labelledby="hl">
+    <p class="dateline">Jan 8–28, 2027 · New Orleans</p>
+    <h1 id="hl">You’re invited to learn AI.</h1>
+    <p class="sub">Three weeks of free workshops, office hours, and conversations. Beginners welcome.</p>
+    <div class="ask" role="group" aria-labelledby="askq">
+      <p id="askq">Where do you want to start?</p>
+      <div class="ask-opts" id="ask"></div>
+    </div>
+  </section>
+</div>
+
+<main class="wrap"><div class="col">
+ <section class="sessions" aria-labelledby="find">
+  <span class="kicker">Sessions</span>
+  <h2 id="find">Find a session</h2>
+  <p class="lede">Free, 90 minutes, most at The Nieux on St. Charles.</p>
+  <div class="show" id="show" role="group" aria-label="Show sessions for"></div>
+
+  <div class="group"><div class="ghead"><h3>On the calendar</h3><span id="n-s"></span></div>
+    <ul class="list" id="list-s"></ul></div>
+  <div class="group"><div class="ghead"><h3>Not scheduled yet</h3><span id="n-p"></span></div>
+    <p class="gnote">Ideas from people around town. When five people want one, we find a guide and put it on the calendar.</p>
+    <ul class="list" id="list-p"></ul></div>
+
+  <section class="propose" aria-labelledby="ph">
+    <h3 id="ph">Don’t see it? Suggest one.</h3>
+    <p>What do you want to learn, or who do you want to learn with? We read every idea and post the good ones.</p>
+    <div id="propose-box">
+    <label for="idea" class="sr">Your idea</label>
+    <textarea id="idea" placeholder="AI for bookkeeping at my small business"></textarea>
+    <div class="row" style="margin-top:10px"><button class="go" type="button" id="post">Send idea</button></div>
+    </div>
+  </section>
+ </section>
+
+ <div class="doors">
+  <a class="door" href="/guide"><span class="kicker">Guide a session</span><h3>Know a little? Guide a little.</h3><p>No slides. Open your laptop and help the people at your table.</p><span class="arrow">Offer to guide →</span></a>
+  <a class="door k" href="/krewe"><span class="kicker" style="color:var(--green)">Bring your krewe</span><h3>Learn it with your people.</h3><p>Your office, congregation, class, or block. We’ll match you with a guide.</p><span class="arrow">Bring your group →</span></a>
+ </div>
+ <section class="faq" aria-labelledby="fh">
+  <span class="kicker">Questions</span>
+  <h2 id="fh">Good to know</h2>
+  <details><summary>Is it really free?</summary><p>Yes. Every session is free, all month.</p></details><details><summary>Do I need to know anything about AI?</summary><p>No. Lots of sessions are for people who have never tried it. Pick “Brand new to AI” at the top to see those.</p></details><details><summary>What should I bring?</summary><p>A laptop if you have one (a phone works too), and something real you want to get done. A guide sits next to you and helps.</p></details><details><summary>Is it a class with slides?</summary><p>No. Sessions are 90 minutes of working on your own stuff with people around you. Guides show how they use AI, then help.</p></details><details><summary>Where and when?</summary><p>Weekdays from Jan 8 to 28, 2027, in the morning (8–9:30), at lunch (11:30–1), or in the evening (5:30–7). Most are at The Nieux, 2040 St. Charles Ave. Each session says where.</p></details><details><summary>How does a session get on the calendar?</summary><p>Anyone can suggest one. We read every idea, post the good ones, and once five people say “I’m in” and a guide signs up, we schedule it and email everyone.</p></details><details><summary>Can my team or group have its own session?</summary><p>Yes. <a href="/krewe">Bring your krewe</a> and we’ll match you with a guide and a time.</p></details><details><summary>I use AI a lot. Can I help?</summary><p>Please do. <a href="/guide">Offer to guide</a> a session. No presenting, just help the people at your table.</p></details><details><summary>Who’s putting this on?</summary><p>AI January is presented by The Nieux Society and AI Friday, and run by volunteers from around New Orleans.</p></details>
+ </section>
+
+ <section class="by" aria-label="Presented by">
+  <p>Presented by</p>
+  <div class="logos">
+   <a class="logo" href="https://www.nieuxsociety.com/" target="_blank" rel="noopener"><img src="/assets/nieux-crown.png" alt="" width="90" height="47"><span>Nieux Society</span></a>
+   <a class="logo" href="https://aifri.day/" target="_blank" rel="noopener"><img src="/assets/ai-friday-crawd.png" alt="" width="64" height="47"><span>AI Friday</span></a>
+  </div>
+ </section>
+</div></main>
+
+{{footer}}
+{{sheet}}
+<script src="/assets/sessions.js"></script>
+<script src="/assets/nola-points.js"></script>
+<script src="/assets/map.js"></script>
+<script src="/assets/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+{
+  "_note": "Example sessions for the mockup. Real sessions will come from D1. See docs/schema.md.",
+  "levels": {
+    "all": "All levels",
+    "new": "New to AI",
+    "sometimes": "Use it sometimes",
+    "daily": "Use it daily",
+    "build": "Build with it"
+  },
+  "topics": {
+    "work": "My job",
+    "life": "Home and family",
+    "make": "Making things",
+    "curious": "Just curious"
+  },
+  "defaultLocation": "The Nieux, 2040 St. Charles",
+  "sessions": [
+    {
+      "slug": "ai-friday-kickoff",
+      "title": "AI Friday: the kickoff",
+      "description": "The month starts here. Demos from people around town, coffee, and a look at what’s on the calendar.",
+      "status": "scheduled",
+      "startsAt": "2027-01-08T09:00:00-06:00",
+      "level": "all",
+      "topics": [
+        "curious",
+        "work",
+        "make"
+      ],
+      "tags": [],
+      "guides": [
+        "AI Friday crew"
+      ],
+      "count": 112,
+      "officeHours": false
+    },
+    {
+      "slug": "coffee-office-hours-jan-12",
+      "title": "Coffee and AI office hours",
+      "description": "Bring your laptop and whatever you’re stuck on. Someone will sit down next to you and help.",
+      "status": "scheduled",
+      "startsAt": "2027-01-12T08:00:00-06:00",
+      "level": "all",
+      "topics": [
+        "work",
+        "life",
+        "make",
+        "curious"
+      ],
+      "tags": [],
+      "guides": [
+        "Maya",
+        "Jordan"
+      ],
+      "count": 14,
+      "officeHours": true
+    },
+    {
+      "slug": "ai-for-your-restaurant",
+      "title": "AI for your restaurant: menus, schedules, reviews",
+      "description": "Write menu descriptions, answer reviews, and draft a staff schedule in about an hour.",
+      "status": "scheduled",
+      "startsAt": "2027-01-13T11:30:00-06:00",
+      "level": "new",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "restaurants",
+        "small business"
+      ],
+      "guides": [
+        "Dee"
+      ],
+      "count": 9,
+      "officeHours": false
+    },
+    {
+      "slug": "real-estate-listings-follow-ups",
+      "title": "Real estate: listings and follow-ups",
+      "description": "Turn photos and notes into a listing, then set up follow-up emails that sound like you.",
+      "status": "scheduled",
+      "startsAt": "2027-01-14T11:30:00-06:00",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "real estate"
+      ],
+      "guides": [
+        "Chris"
+      ],
+      "count": 7,
+      "officeHours": false
+    },
+    {
+      "slug": "beer-and-build-night",
+      "title": "Beer and build night",
+      "description": "Open table for people making things with AI. Show what you’re building, get unstuck, trade notes.",
+      "status": "scheduled",
+      "startsAt": "2027-01-14T17:30:00-06:00",
+      "level": "build",
+      "topics": [
+        "make"
+      ],
+      "tags": [
+        "coding"
+      ],
+      "guides": [
+        "Sam",
+        "Priya",
+        "Leo"
+      ],
+      "count": 21,
+      "officeHours": true
+    },
+    {
+      "slug": "grant-writing-nonprofits",
+      "title": "Grant writing for nonprofits",
+      "description": "Draft a grant narrative from your old applications and a few notes, then check it for gaps.",
+      "status": "scheduled",
+      "startsAt": "2027-01-19T11:30:00-06:00",
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "nonprofits",
+        "writing"
+      ],
+      "guides": [
+        "Renee"
+      ],
+      "count": 11,
+      "officeHours": false,
+      "location": "A guide’s office in the CBD"
+    },
+    {
+      "slug": "ai-friday-closer",
+      "title": "AI Friday: the closer",
+      "description": "What New Orleans made this month. Short demos from people who came to their first session three weeks ago.",
+      "status": "scheduled",
+      "startsAt": "2027-01-22T09:00:00-06:00",
+      "level": "all",
+      "topics": [
+        "curious",
+        "make"
+      ],
+      "tags": [],
+      "guides": [
+        "AI Friday crew"
+      ],
+      "count": 64,
+      "officeHours": false
+    },
+    {
+      "slug": "teachers-lesson-plans",
+      "title": "Teachers: lesson plans without the busywork",
+      "description": "Build a week of lesson plans, quizzes, and parent emails from one standard.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "sometimes",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "education"
+      ],
+      "guides": [
+        "Ms. Alvarez"
+      ],
+      "count": 5,
+      "officeHours": false
+    },
+    {
+      "slug": "first-hour-with-chatgpt",
+      "title": "Your first hour with ChatGPT",
+      "description": "Never really tried it? We’ll set up an account together and do three useful things with it.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "new",
+      "topics": [
+        "curious",
+        "life"
+      ],
+      "tags": [],
+      "guides": [],
+      "count": 4,
+      "officeHours": false
+    },
+    {
+      "slug": "ai-for-church-admin",
+      "title": "Sermons, newsletters, and church admin",
+      "description": "For clergy and church staff: what AI is good for, what it isn’t, and where to be careful.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "new",
+      "topics": [
+        "work"
+      ],
+      "tags": [
+        "faith"
+      ],
+      "guides": [
+        "Rev. Thomas"
+      ],
+      "count": 3,
+      "officeHours": false
+    },
+    {
+      "slug": "meals-budget-and-trips",
+      "title": "Meal plans, a budget, and the summer trip",
+      "description": "Use AI for the everyday stuff at home: a week of dinners, a household budget, and a trip itinerary.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "new",
+      "topics": [
+        "life"
+      ],
+      "tags": [],
+      "guides": [
+        "Tasha"
+      ],
+      "count": 3,
+      "officeHours": false
+    },
+    {
+      "slug": "kids-homework-the-right-way",
+      "title": "Helping your kids use AI for homework, the right way",
+      "description": "For parents: how to use it as a tutor instead of a shortcut, and what the schools allow.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "sometimes",
+      "topics": [
+        "life"
+      ],
+      "tags": [
+        "parents"
+      ],
+      "guides": [],
+      "count": 1,
+      "officeHours": false
+    },
+    {
+      "slug": "agent-that-answers-email",
+      "title": "Build an agent that answers your email",
+      "description": "Wire up an assistant that drafts replies to your inbox and asks before it sends.",
+      "status": "proposed",
+      "startsAt": null,
+      "level": "build",
+      "topics": [
+        "make",
+        "work"
+      ],
+      "tags": [
+        "coding"
+      ],
+      "guides": [],
+      "count": 2,
+      "officeHours": false
+    }
+  ],
+  "timeZone": "America/Chicago"
+}
