@@ -137,6 +137,18 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 .logo{display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--f-display);font-size:18px;font-weight:700;color:var(--ink);text-decoration:none;padding:8px 12px;border-radius:12px}
 .logo img{height:47px;width:auto;display:block}
 .logo:hover span{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:4px}
+/* real photos from AI Friday */
+.faces{margin:44px 0 0}
+.pics{display:grid;gap:12px;margin-top:4px}
+.pics figure{margin:0}
+.pics img{display:block;width:100%;height:auto;border-radius:18px;background:var(--purple-soft)}
+.pics figcaption{font:500 12px var(--f-mono);color:var(--ink-soft);margin-top:8px}
+.pics .pic-2{display:none}
+@media(min-width:700px){
+  .pics{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .pics .pic-2{display:block}
+  .pics img{aspect-ratio:16/10;object-fit:cover;height:auto}
+}
 /* two doors at the bottom */
 .doors{display:grid;gap:12px;margin:44px 0 48px}
 @media(min-width:700px){.doors{grid-template-columns:1fr 1fr}}
