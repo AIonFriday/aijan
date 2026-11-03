@@ -1,0 +1,18 @@
+// Cloudflare Worker config for aijan-web. Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aijan-web",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "build": { "command": "node scripts/build.mjs" },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // /sessions/foo serves dist/sessions/foo.html, and /guide serves dist/guide.html
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    // Only /api/* reaches the Worker code; everything else is served straight from dist/.
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true }
+}
