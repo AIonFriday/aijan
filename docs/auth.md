@@ -41,7 +41,7 @@ The base URL follows the request host, so sign-in works on production, preview l
 
 ## Keys to create
 
-Production URL today: `https://aijan-web.andrewdunn.workers.dev`. When the domain is chosen, add its callback URLs in Google and Apple too.
+The site lives at `https://joinaijanuary.com`. The old `https://aijan-web.andrewdunn.workers.dev` address keeps working, so its callback URLs are listed too.
 
 Set every value below in the Cloudflare dashboard: **Workers & Pages → aijan-web → Settings → Variables and Secrets → Add**, type **Secret**. Locally, put them in `.dev.vars` (copy `.dev.vars.example`). Never commit them.
 
@@ -55,8 +55,9 @@ A long random string that signs sign-in cookies. Make one with `openssl rand -ba
 2. Go to **Google Auth Platform**. Under **Branding**, set the app name "AI January", a support email, and the logo if you like.
 3. Under **Audience**, pick **External** and then **Publish app**. Basic sign-in (name, email, photo) doesn't need Google's review.
 4. Under **Clients**, create a client of type **Web application**:
-   - Authorized JavaScript origins: `https://aijan-web.andrewdunn.workers.dev` and `http://localhost:8787`
-   - Authorized redirect URIs: `https://aijan-web.andrewdunn.workers.dev/api/auth/callback/google` and `http://localhost:8787/api/auth/callback/google`
+   - Authorized JavaScript origins: `https://joinaijanuary.com`, `https://aijan-web.andrewdunn.workers.dev`, and `http://localhost:8787`
+   - Authorized redirect URIs: `https://joinaijanuary.com/api/auth/callback/google`, `https://aijan-web.andrewdunn.workers.dev/api/auth/callback/google`, and `http://localhost:8787/api/auth/callback/google`
+   - Under **Branding**, add `joinaijanuary.com` as an authorized domain.
 5. Copy the Client ID and Client secret.
 
 ### 3. Apple: `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`
@@ -66,8 +67,8 @@ In the [Apple Developer account](https://developer.apple.com/account/resources/i
 1. **Identifiers → + → App IDs → App.** Description "AI January", bundle ID like `day.aifri.aijan`. Turn on **Sign in with Apple**. Register.
 2. **Identifiers → + → Services IDs.** Description "AI January", identifier like `day.aifri.aijan.web`. This identifier is `APPLE_CLIENT_ID`. Register, open it, turn on **Sign in with Apple**, and click **Configure**:
    - Primary App ID: the one from step 1
-   - Domains: `aijan-web.andrewdunn.workers.dev`
-   - Return URLs: `https://aijan-web.andrewdunn.workers.dev/api/auth/callback/apple`
+   - Domains: `joinaijanuary.com` and `aijan-web.andrewdunn.workers.dev`
+   - Return URLs: `https://joinaijanuary.com/api/auth/callback/apple` and `https://aijan-web.andrewdunn.workers.dev/api/auth/callback/apple`
    - Apple doesn't allow `localhost`, so Apple sign-in can't be tested locally.
 3. **Keys → +.** Name it "AI January sign-in", turn on **Sign in with Apple**, configure it with the App ID from step 1, and register. Download the `.p8` file (Apple only lets you download it once). The **Key ID** on that page is `APPLE_KEY_ID`.
 4. Your **Team ID** is in the top right of the developer site (and under Membership). That's `APPLE_TEAM_ID`.
@@ -77,9 +78,13 @@ The Worker turns the key into Apple's short-lived client secret on its own (`src
 
 ### 4. Resend: `RESEND_API_KEY` and `EMAIL_FROM`
 
-1. In [Resend](https://resend.com/domains), add and verify the domain sign-in emails come from (DNS records go in Porkbun).
+1. In [Resend](https://resend.com/domains), add and verify `joinaijanuary.com` (DNS records go wherever the domain's DNS lives).
 2. Under **API Keys**, create a key with **Sending access** limited to that domain. That's `RESEND_API_KEY`.
-3. `EMAIL_FROM` is a plain variable in `wrangler.jsonc` (today `AI January <hello@aifri.day>`). Change it there if the sending address is different.
+3. `EMAIL_FROM` is a plain variable in `wrangler.jsonc` (today `AI January <hello@joinaijanuary.com>`). Change it there if the sending address is different.
+
+## The domain
+
+`joinaijanuary.com` points at the Worker as a Cloudflare custom domain (**Workers & Pages → aijan-web → Settings → Domains & Routes → Add → Custom domain**). Share links and canonical URLs come from `SITE_URL` at build time; it defaults to `https://joinaijanuary.com` in `scripts/build.mjs`.
 
 ## Database migrations
 

@@ -18,7 +18,7 @@ Rough order. Open an issue before starting anything large.
 - [x] "My sessions" for signed-in people (`/me`).
 - [ ] Practical info about The Nieux: parking, access, Wi-Fi.
 - [ ] Umami analytics.
-- [ ] Choose the domain.
+- [x] Choose the domain: joinaijanuary.com.
 
 ## Later
 

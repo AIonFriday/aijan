@@ -23,7 +23,7 @@
   // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
   "vars": {
     // Sign-in emails come from this address. Its domain must be verified in Resend.
-    "EMAIL_FROM": "AI January <hello@aifri.day>"
+    "EMAIL_FROM": "AI January <hello@joinaijanuary.com>"
   },
   "observability": { "enabled": true }
 }

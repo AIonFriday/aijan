@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { renderHome, renderSession } from './og.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SITE_URL = process.env.SITE_URL || 'https://aijan.example'; // domain not chosen yet
+const SITE_URL = process.env.SITE_URL || 'https://joinaijanuary.com';
 const NEEDED = 5;
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
