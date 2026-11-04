@@ -27,7 +27,7 @@ The plan follows the AI Friday stack: Cloudflare Workers, D1, R2, Resend, Umami.
 | D1 | `aijan-db` | Users, sessions, attendance, suggestions, krewe requests |
 | R2 | `aijan-assets` | Generated share images, uploads later |
 | Resend | | Sign-in links and every email about a specific session |
-| Umami | `aijan` | Privacy-friendly analytics |
+| Umami | `AI January` on umami.dunn.us | Privacy-friendly analytics, loaded from `site/partials/head.html` |
 
 API routes (built ones first):
 
