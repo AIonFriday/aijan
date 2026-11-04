@@ -220,6 +220,34 @@ textarea{min-height:76px;resize:vertical}
 .done h3{font-size:24px}
 .done p{margin:0;color:var(--ink-soft)}
 
+/* where it is (/where) */
+.where{padding:28px 0 56px}
+.where h3{margin:34px 0 12px}
+.where a:not(.go){color:var(--purple);font-weight:700}
+.where-hero{margin:4px 0 16px}
+.where-hero img,.rooms img{display:block;width:100%;height:auto;border-radius:18px;background:var(--purple-soft)}
+.addr{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+.addr p{margin:0;line-height:1.4}
+.addr-links{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.where .addr-links a.go{text-decoration:none;display:inline-block}
+.where .addr-links a.small{color:var(--ink-soft);font-weight:400}
+.story{margin:18px 0 0;max-width:38rem}
+.getting{list-style:none;padding:0;margin:0;display:grid;gap:0}
+.getting li{display:grid;grid-template-columns:7.5rem 1fr;gap:4px 12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.getting li:first-child{border-top:1px solid var(--line)}
+.getting span{color:var(--ink-soft)}
+@media(max-width:420px){.getting li{grid-template-columns:1fr}}
+.rooms-note{margin:-4px 0 14px}
+.rooms{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:14px}
+@media(min-width:620px){.rooms{grid-template-columns:1fr 1fr}}
+.rooms li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:8px 8px 14px;display:grid;gap:10px;align-content:start}
+.rooms img{border-radius:12px;aspect-ratio:3/2;object-fit:cover}
+.rooms li div{display:grid;gap:2px;padding:0 8px}
+.rooms b{font:700 19px/1.2 var(--f-display)}
+.rooms .cap{font:12px var(--f-mono);color:var(--green)}
+.rooms li div span:last-child{font-size:15px;color:var(--ink-soft)}
+.photo-credit{margin-top:4px}
+
 /* krewe panel */
 .krewe{padding:28px 0 56px}
 .krewe .kicker{color:var(--green)}
@@ -243,6 +271,7 @@ textarea{min-height:76px;resize:vertical}
 .facts{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;margin:0 0 20px;font-size:16px}
 .facts dt{font:12px var(--f-mono);color:var(--ink-soft);padding-top:3px;text-transform:uppercase;letter-spacing:.06em}
 .facts dd{margin:0}
+.facts dd a{color:var(--purple);font-weight:700}
 .cta{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
 .cta .go{font-size:17px;padding:12px 20px}
 .cta .go.in{background:var(--green)}
