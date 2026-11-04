@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Checks the built site in dist/: every internal link and asset points at a real file,
+// Checks the built site in dist/: every internal link, asset and share image points at a real file,
 // and no {{template}} values were left unfilled. Run `npm run build` first. No dependencies.
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
@@ -34,10 +34,14 @@ for (const f of html) {
     if (!url.startsWith('/')) { problems.push(`${where}: use a root-relative link, not "${url}"`); continue; }
     if (!resolves(url)) problems.push(`${where}: broken link ${url}`);
   }
+  // Share images are absolute URLs (crawlers need that), so check their path against dist/ too.
+  for (const [, path] of src.matchAll(/property="og:image" content="https?:\/\/[^/"]+(\/[^"]*)"/g)) {
+    if (!resolves(path)) problems.push(`${where}: share image ${path} was not built`);
+  }
 }
 
 if (problems.length) {
   console.error('Problems in dist/:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`dist/ OK: ${html.length} pages, all internal links resolve.`);
+console.log(`dist/ OK: ${html.length} pages, all internal links and share images resolve.`);
