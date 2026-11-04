@@ -1,6 +1,6 @@
 /* AI January site styles. Tokens first; light theme only (no dark mode, by design). See docs/design.md. */
 /* Home page order: map hero (with the "where do you want to start" chips), sessions, suggest one, two doors (guide, krewe), FAQ, presented by.
-   One sign-in sheet and one toast serve every button; a signed-out tap signs in, then the tap still counts. */
+   One email sheet and one toast serve every button; a tap from someone new asks for an email, then counts. */
 
 :root{
   color-scheme:light;
@@ -156,7 +156,7 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 .door.k .arrow{color:var(--green)}
 .door:hover h3{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:4px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-/* sign-in sheet */
+/* email sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(42,32,53,.35);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--card);width:100%;max-width:30rem;border-radius:18px 18px 0 0;padding:22px max(18px,env(safe-area-inset-left,0px)) calc(22px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;box-sizing:border-box}
 .sheet h3{font-family:var(--f-display);font-size:22px;margin:0}
@@ -164,6 +164,15 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 .sheet-step{display:grid;gap:12px}
 .sheet-step label{font-weight:700;margin-bottom:-4px}
 .sso{border:1.5px solid var(--ink);background:var(--card);border-radius:10px;padding:12px;font-weight:700;font-size:16px}
+.sheet .go,.mine-form .go{padding:12px 16px;font-size:17px}
+.sheet-or{display:flex;align-items:center;gap:10px;margin:0;color:var(--ink-soft);font-size:14px}
+.sheet-or::before,.sheet-or::after{content:"";flex:1;border-top:1px solid var(--line)}
+.sheet .sheet-fine{font-size:14px}
+.mine-form{display:grid;gap:12px;max-width:26rem}
+.mine-form label{font-weight:700;margin-bottom:-4px}
+.mine-form .lede{margin:0 0 4px}
+.mine-sso{display:grid;gap:10px;max-width:26rem;margin-top:12px}
+#mine-out .sheet-or{max-width:26rem;margin-top:12px}
 @media(min-width:700px){.sheet-bg{align-items:center}.sheet{border-radius:18px}}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--paper);border-radius:10px;padding:9px 14px;font-size:15px;max-width:calc(100vw - 32px);box-sizing:border-box}
 

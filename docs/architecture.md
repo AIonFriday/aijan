@@ -35,6 +35,7 @@ API routes (built ones first):
 | --- | --- |
 | `/api/auth/*` | Better Auth (Google, Apple, email link). Built |
 | `GET /api/me` | Who's signed in, their taps, live counts, which sign-in buttons work. Built |
+| `POST /api/start` | A tap from someone new on this device, with just an email. See `docs/auth.md`. Built |
 | `POST /api/sessions/:slug/rsvp` | RSVP, or undo it (`{ on: false }`). Built |
 | `POST /api/sessions/:slug/want` | "I want this", or undo it. Built |
 | `POST /api/sessions/:slug/guide` | Offer to guide one session (needs approval). Built |

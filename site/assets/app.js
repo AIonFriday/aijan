@@ -1,16 +1,17 @@
-// Shared helpers for every page: sign-in, the sign-in sheet, saving taps, the toast.
+// Shared helpers for every page: the email sheet, saving taps, the toast.
 //
-// Tap first, sign in second: a signed-out tap is saved in localStorage, the sheet opens, and after sign-in
-// (which may leave the page for Google or Apple, or come back through an emailed link) the tap is sent
-// for real. Pages listen for the "aj:change" event to repaint.
+// Email first: a tap from someone we don't know yet opens a small sheet that asks only for their email
+// (Google and Apple are one-tap shortcuts). The tap counts as soon as they hit the button, with no link to
+// click first. We never say "sign in". Pages listen for the "aj:change" event to repaint.
 //
-// The server side is src/worker.js. Sign-in uses Better Auth's own routes under /api/auth.
+// The server side is src/worker.js (POST /api/start) and Better Auth's own routes under /api/auth.
 (() => {
   const $ = (q, root = document) => root.querySelector(q);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const NEEDED = 5;
 
-  // Who's signed in and what they've tapped. Filled from /api/me.
+  // Who's in on this device and what they've tapped. Filled from /api/me, plus taps this device made for an
+  // email we already knew (those count on the server, but this device isn't let into that account).
   const me = { signedIn: false, user: null, going: new Set(), want: new Set(), guide: new Set(), counts: {}, providers: [] };
   const changed = (detail = {}) => document.dispatchEvent(new CustomEvent('aj:change', { detail }));
 
@@ -40,7 +41,7 @@
   const countFor = (s) => s.count + ((me.counts[s.slug] || {})[s.status === 'scheduled' ? 'rsvp' : 'want'] || 0);
 
   // ---------- taps ----------
-  // A tap is a plain object so it can wait in localStorage while the person signs in.
+  // A tap is a plain object so it can wait in localStorage during a trip to Google or Apple.
   //   { type: 'rsvp' | 'want' | 'guide', slug, on }  { type: 'suggest', text }
   //   { type: 'guideOffer', topics, what, level, times, guideAs }  { type: 'krewe', groupName, what, size }
   const PENDING = 'aj-pending';
@@ -50,59 +51,119 @@
       const raw = localStorage.getItem(PENDING);
       localStorage.removeItem(PENDING);
       const p = raw && JSON.parse(raw);
-      return p && Date.now() - p.at < 60 * 60 * 1000 ? p.tap : null; // an hour is long enough to sign in
+      return p && Date.now() - p.at < 60 * 60 * 1000 ? p.tap : null; // an hour is plenty for Google or Apple
     } catch { return null; }
   }
 
-  async function send(tap) {
-    const sets = { rsvp: me.going, want: me.want, guide: me.guide };
-    if (sets[tap.type]) {
-      const r = await call(`/api/sessions/${encodeURIComponent(tap.slug)}/${tap.type}`, { on: tap.on !== false, guideAs: tap.guideAs });
-      if (r.on) sets[tap.type].add(tap.slug); else sets[tap.type].delete(tap.slug);
+  // The email typed last time, so the sheet comes pre-filled.
+  const EMAIL_KEY = 'aj-email';
+  const lastEmail = () => { try { return localStorage.getItem(EMAIL_KEY) || ''; } catch { return ''; } };
+  // Taps this device made for an email we already knew, so the buttons stay pressed here.
+  const LOCAL = 'aj-local';
+  const readLocal = () => { try { return JSON.parse(localStorage.getItem(LOCAL)) || {}; } catch { return {}; } };
+  function keepLocal(tap) {
+    if (!['rsvp', 'want', 'guide'].includes(tap.type)) return;
+    const l = readLocal();
+    l[tap.type] = [...new Set([...(l[tap.type] || []), tap.slug])];
+    try { localStorage.setItem(LOCAL, JSON.stringify(l)); } catch {}
+  }
+
+  const sets = () => ({ rsvp: me.going, want: me.want, guide: me.guide });
+
+  // Update what this page knows after the server saved a tap, and say so.
+  function saved(tap, r, viaEmail) {
+    const set = sets()[tap.type];
+    if (set) {
+      if (r.on) set.add(tap.slug); else set.delete(tap.slug);
       if (tap.type !== 'guide') (me.counts[tap.slug] ||= {})[tap.type] = r.saved;
-      if (!r.on) say('Removed. You can change your mind anytime.');
-      else if (tap.type === 'rsvp') say('You’re going. We’ll email a reminder the day before.');
-      else if (tap.type === 'want') say(r.count >= NEEDED ? `That makes ${r.count}. We’ll email you a date.` : 'Got it. We’ll email you when it’s scheduled.');
-      else say('Thanks. An organizer will reach out about guiding.');
+    }
+    const check = viaEmail ? ' Check your email for the details.' : '';
+    if (set && !r.on) say('Removed. You can change your mind anytime.');
+    else if (tap.type === 'rsvp') say(viaEmail ? 'You’re going. The calendar invite is in your email.' : 'You’re going. The calendar invite is in your email, and we’ll send a reminder the day before.');
+    else if (tap.type === 'want') say((r.count >= NEEDED ? `That makes ${r.count}. We’ll email you a date.` : 'Got it. We’ll email you when it’s scheduled.') );
+    else if (tap.type === 'guide') say('Thanks. An organizer will reach out about guiding.' + check);
+  }
+
+  async function send(tap) {
+    if (sets()[tap.type]) {
+      const r = await call(`/api/sessions/${encodeURIComponent(tap.slug)}/${tap.type}`, { on: tap.on !== false, guideAs: tap.guideAs });
+      saved(tap, r, false);
       return r;
     }
     const routes = { suggest: '/api/suggestions', guideOffer: '/api/guide-offers', krewe: '/api/krewes' };
     return call(routes[tap.type], tap);
   }
 
-  // Run a tap now if signed in, or after sign-in if not. Resolves once it's saved; pages repaint on "aj:change".
+  // Run a tap now if we know who this is, or ask for an email first. Pages repaint on "aj:change".
+  let waiting = null; // the tap the sheet is asking an email for
   async function act(tap) {
     await ready;
     if (!me.signedIn) {
+      if (tap.on === false) { say('To change this, open the link we emailed you.'); return; }
+      waiting = tap;
       savePending(tap);
-      openSheet();
+      openSheet(tap);
       return;
     }
     try {
       const result = await send(tap);
       changed({ tap, result });
     } catch (e) {
-      if (e.status === 401) { me.signedIn = false; savePending(tap); openSheet(); return; }
+      if (e.status === 401) { me.signedIn = false; return act(tap); }
       say(e.message);
     }
   }
 
-  // ---------- sign-in sheet ----------
+  // ---------- the email sheet ----------
   const here = () => location.pathname + location.search;
-  function openSheet() {
+  const SHEET_WORDS = {
+    rsvp: ['Save your spot', 'We’ll email the calendar invite and a reminder.', 'Save my spot'],
+    want: ['Count me in', 'We’ll email you when it’s on the calendar.', 'Count me in'],
+  };
+  function openSheet(tap = waiting) {
     const sheet = $('#sheet');
     if (!sheet) return;
-    showStep('pick');
+    const [title, why, button] = SHEET_WORDS[tap?.type] || ['What’s your email?', 'So an organizer can write back.', 'Send'];
+    $('#sh').textContent = title;
+    $('#sheet-why').textContent = why;
+    $('#sheet-go').textContent = button;
+    $('#sheet-email-err').hidden = true;
+    const input = $('#sheet-email');
+    if (!input.value) input.value = lastEmail();
     sheet.hidden = false;
-    ($('.sso:not([hidden])', sheet) || $('#cancel', sheet)).focus();
+    ($('#sheet-email-form:not([hidden]) input') || $('.sso:not([hidden])', sheet) || $('#cancel', sheet)).focus();
   }
   function closeSheet() {
     $('#sheet').hidden = true;
+    waiting = null;
     try { localStorage.removeItem(PENDING); } catch {}
   }
-  function showStep(step) {
-    const sheet = $('#sheet');
-    sheet.querySelectorAll('[data-step]').forEach((el) => (el.hidden = el.dataset.step !== step));
+
+  const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+  // The sheet's button: save the waiting tap with just this email.
+  async function start(form) {
+    const input = $('#sheet-email');
+    const email = input.value.trim();
+    if (!isEmail(email)) { $('#sheet-email-err').hidden = false; input.focus(); return; }
+    $('#sheet-email-err').hidden = true;
+    const tap = waiting;
+    const btn = $('button[type=submit]', form);
+    btn.disabled = true;
+    try {
+      const r = await call('/api/start', { email, tap });
+      try { localStorage.setItem(EMAIL_KEY, email); } catch {}
+      closeSheet();
+      if (r.signedIn) { me.signedIn = true; me.user = { name: '', email }; }
+      else keepLocal(tap);
+      if (sets()[tap.type]) saved(tap, r, !r.signedIn);
+      showAcct();
+      changed({ tap, result: r });
+    } catch (e) {
+      say(e.message);
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   async function social(provider, button) {
@@ -112,25 +173,19 @@
       location.href = r.url;
     } catch (e) {
       button.disabled = false;
-      say('That didn’t work. Try again, or use another way.');
+      say('That didn’t work. Try again, or type your email instead.');
     }
   }
 
-  async function emailLink(form) {
-    const email = $('#sheet-email').value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('#sheet-email-err').hidden = false; $('#sheet-email').focus(); return; }
-    $('#sheet-email-err').hidden = true;
-    const btn = $('button[type=submit]', form);
-    btn.disabled = true;
+  // Email a one-time link back to My sessions (used on /me). Resolves true once it's sent.
+  async function emailLink(email) {
     try {
-      await call('/api/auth/sign-in/magic-link', { email, callbackURL: here(), errorCallbackURL: withFlag('signin', 'expired') });
-      $('#sheet-sent-to').textContent = email;
-      showStep('sent');
-      $('#sheet-done').focus();
+      await call('/api/auth/sign-in/magic-link', { email, callbackURL: '/me', errorCallbackURL: withFlag('signin', 'expired') });
+      try { localStorage.setItem(EMAIL_KEY, email); } catch {}
+      return true;
     } catch (e) {
       say('We couldn’t send that. Check the address and try again.');
-    } finally {
-      btn.disabled = false;
+      return false;
     }
   }
 
@@ -138,7 +193,15 @@
 
   async function signOut() {
     try { await call('/api/auth/sign-out', {}); } catch {}
+    try { localStorage.removeItem(LOCAL); localStorage.removeItem(EMAIL_KEY); } catch {}
     location.reload();
+  }
+
+  // "My sessions" in the menu, once there's something to show.
+  function showAcct() {
+    const acct = $('#acct');
+    const local = readLocal();
+    if (acct) acct.hidden = !(me.signedIn || Object.values(local).some((l) => l.length));
   }
 
   // ---------- start ----------
@@ -151,31 +214,32 @@
       me.guide = new Set(r.guide);
       me.counts = r.counts || {};
       me.providers = r.providers || [];
+      if (!me.signedIn) {
+        const l = readLocal();
+        (l.rsvp || []).forEach((x) => me.going.add(x));
+        (l.want || []).forEach((x) => me.want.add(x));
+        (l.guide || []).forEach((x) => me.guide.add(x));
+      } else try { localStorage.removeItem(LOCAL); } catch {}
     })
     .catch(() => {}); // offline or sign-in not set up yet: the site still reads fine
 
   document.addEventListener('DOMContentLoaded', async () => {
     const sheet = $('#sheet');
+    document.querySelectorAll('[data-sso]').forEach((b) => b.addEventListener('click', () => social(b.dataset.sso, b)));
     if (sheet) {
-      sheet.querySelectorAll('[data-sso]').forEach((b) =>
-        b.addEventListener('click', () => (b.dataset.sso === 'email' ? (showStep('email'), $('#sheet-email').focus()) : social(b.dataset.sso, b)))
-      );
-      $('#sheet-email-form').addEventListener('submit', (e) => { e.preventDefault(); emailLink(e.target); });
-      sheet.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { showStep('pick'); $('.sso:not([hidden])', sheet)?.focus(); }));
+      $('#sheet-email-form').addEventListener('submit', (e) => { e.preventDefault(); start(e.target); });
       $('#cancel').addEventListener('click', closeSheet);
-      $('#sheet-done').addEventListener('click', () => (sheet.hidden = true)); // keep the tap waiting for the emailed link
       sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
     }
     document.querySelectorAll('[data-signout]').forEach((b) => b.addEventListener('click', signOut));
 
     await ready;
-    if (sheet) {
-      sheet.querySelectorAll('[data-sso]').forEach((b) => (b.hidden = !me.providers.includes(b.dataset.sso)));
-      $('#sheet-off').hidden = me.providers.length > 0;
-    }
-    const acct = $('#acct');
-    if (acct && me.signedIn) acct.innerHTML = '<span class="long">My sessions</span><span class="short">Mine</span>';
+    document.querySelectorAll('[data-sso]').forEach((b) => (b.hidden = !me.providers.includes(b.dataset.sso)));
+    document.querySelectorAll('[data-email-only]').forEach((el) => (el.hidden = !me.providers.includes('email')));
+    document.querySelectorAll('[data-or]').forEach((el) => (el.hidden = !(me.providers.includes('email') && me.providers.some((p) => p !== 'email'))));
+    if (sheet) $('#sheet-off').hidden = me.providers.length > 0;
+    showAcct();
 
     // Back from Google, Apple, or an emailed link.
     const params = new URLSearchParams(location.search);
@@ -184,13 +248,14 @@
       params.delete('signin');
       params.delete('error');
       history.replaceState(null, '', location.pathname + (params.size ? `?${params}` : '') + location.hash);
-      say(flag === 'expired' || /expired|invalid/i.test(flag) ? 'That link expired. Tap again and we’ll send a new one.' : 'Sign-in didn’t finish. Try again.');
+      say(flag === 'expired' || /expired|invalid/i.test(flag) ? 'That link was used or expired. Type your email on My sessions for a new one.' : 'That didn’t finish. Try again.');
     }
     const tap = takePending();
     if (tap && me.signedIn) {
       try {
         const result = await send(tap);
         changed({ tap, result, afterSignIn: true });
+        showAcct();
         return;
       } catch (e) { say(e.message); }
     }
@@ -213,5 +278,5 @@
   const picked = (key) => pickedButtons(key).map((b) => b.textContent);
   const pickedValues = (key) => pickedButtons(key).map((b) => b.dataset.v);
 
-  window.AJ = { $, esc, me, say, act, ready, countFor, openSheet, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
+  window.AJ = { $, esc, me, say, act, ready, countFor, openSheet, emailLink, isEmail, lastEmail, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
 })();

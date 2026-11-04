@@ -1,11 +1,15 @@
-// Sign-in with Better Auth (https://www.better-auth.com/), stored in D1 (env.DB).
-// Three ways in: Continue with Google, Continue with Apple, and an emailed sign-in link (sent with Resend).
+// Accounts with Better Auth (https://www.better-auth.com/), stored in D1 (env.DB).
+// Email first: a signed-out tap asks only for an email (see emailFirst below and /api/start in worker.js).
+// Continue with Google and Continue with Apple are one-tap shortcuts. The emailed link (magic link, sent with
+// Resend) is how people get back to My sessions on another device. We never call any of this "signing in".
 // A provider only switches on when its secrets are set, so the site works before every key exists.
 // See docs/auth.md for the keys and where they go.
 
 import { betterAuth } from 'better-auth';
 import { magicLink } from 'better-auth/plugins';
-import { sendSignInLink } from './email.js';
+import { createAuthEndpoint } from 'better-auth/api';
+import { setSessionCookie } from 'better-auth/cookies';
+import { sendSignInLink, sendTapNote } from './email.js';
 
 export const BASE_PATH = '/api/auth';
 
@@ -18,7 +22,9 @@ export function providers(env) {
   return on;
 }
 
-export async function makeAuth(env, request) {
+// `mail` lets the caller swap the magic-link email for a note about a tap: set mail.tapNote before calling
+// auth.api.signInMagicLink, and the link goes out inside that note instead.
+export async function makeAuth(env, request, mail = {}) {
   const origin = new URL(request.url).origin;
   const on = providers(env);
   const socialProviders = {};
@@ -51,15 +57,42 @@ export async function makeAuth(env, request) {
     },
     plugins: [
       magicLink({
-        expiresIn: 60 * 20, // 20 minutes
-        sendMagicLink: ({ email, url }) => sendSignInLink(env, { to: email, url, local: isLocal(origin) }),
+        // The link rides along in "here's what you picked" emails that people open later, so it lasts a day.
+        expiresIn: 60 * 60 * 24,
+        sendMagicLink: ({ email, url }) =>
+          mail.tapNote
+            ? sendTapNote(env, { ...mail.tapNote, to: email, url, oneTime: true, origin, local: isLocal(origin) })
+            : sendSignInLink(env, { to: email, url, local: isLocal(origin) }),
       }),
+      emailFirst(),
     ],
     advanced: {
       ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
     },
     telemetry: { enabled: false },
   });
+}
+
+// Email first. Server-only (no URL): worker.js calls auth.api.emailFirst for a signed-out tap.
+// A new email gets an account and is kept in on this device right away, so the tap counts without a link.
+// An email we already know is not let in here (anyone could type it). The tap still counts for that person,
+// and the emailed link lets the real owner in. When an unproven account's owner opens a link, Better Auth
+// drops every session made before that, so typing someone else's email never keeps you in their account.
+function emailFirst() {
+  return {
+    id: 'email-first',
+    endpoints: {
+      emailFirst: createAuthEndpoint.serverOnly({ method: 'POST' }, async (ctx) => {
+        const email = String(ctx.body?.email || '').trim().toLowerCase();
+        const found = await ctx.context.internalAdapter.findUserByEmail(email);
+        if (found?.user) return ctx.json({ userId: found.user.id, isNew: false });
+        const user = await ctx.context.internalAdapter.createUser({ email, emailVerified: false, name: '' });
+        const session = await ctx.context.internalAdapter.createSession(user.id);
+        await setSessionCookie(ctx, { session, user });
+        return ctx.json({ userId: user.id, isNew: true });
+      }),
+    },
+  };
 }
 
 const isLocal = (origin) => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);

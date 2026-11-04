@@ -1,28 +1,19 @@
 <div class="sheet-bg" id="sheet" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh">
-    <div class="sheet-step" data-step="pick">
-      <h3 id="sh">Sign in to save your spot</h3>
-      <p>We’ll only email you about what you pick.</p>
-      <button class="sso" type="button" data-sso="google">Continue with Google</button>
-      <button class="sso" type="button" data-sso="apple">Continue with Apple</button>
-      <button class="sso" type="button" data-sso="email">Email me a sign-in link</button>
-      <p id="sheet-off" hidden>Sign-in isn’t switched on yet. Check back soon.</p>
-      <button class="small" type="button" id="cancel">Not now</button>
-    </div>
-    <form class="sheet-step" data-step="email" id="sheet-email-form" novalidate hidden>
-      <h3>Email me a sign-in link</h3>
+    <form class="sheet-step" id="sheet-email-form" novalidate data-email-only>
+      <h3 id="sh">Save your spot</h3>
+      <p id="sheet-why">We’ll email the calendar invite and a reminder.</p>
       <label for="sheet-email">Your email</label>
       <input type="email" id="sheet-email" autocomplete="email" inputmode="email" placeholder="you@example.com">
       <span class="err" id="sheet-email-err" hidden>That doesn’t look like an email address.</span>
-      <button class="go" type="submit">Send the link</button>
-      <button class="small" type="button" data-back>Back</button>
+      <button class="go" type="submit" id="sheet-go">Save my spot</button>
     </form>
-    <div class="sheet-step" data-step="sent" hidden>
-      <h3>Check your email</h3>
-      <p>We sent a sign-in link to <b id="sheet-sent-to"></b>. Open it on this phone or computer and you’ll come right back here. It expires in 20 minutes.</p>
-      <button class="go" type="button" id="sheet-done">OK</button>
-      <button class="small" type="button" data-back>Use another way</button>
-    </div>
+    <p class="sheet-or" data-or hidden><span>or</span></p>
+    <button class="sso" type="button" data-sso="google" hidden>Continue with Google</button>
+    <button class="sso" type="button" data-sso="apple" hidden>Continue with Apple</button>
+    <p id="sheet-off" hidden>Saving isn’t switched on yet. Check back soon.</p>
+    <p class="sheet-fine">Free. We only email you about what you pick.</p>
+    <button class="small" type="button" id="cancel">Not now</button>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
