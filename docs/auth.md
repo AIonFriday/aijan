@@ -1,4 +1,4 @@
-# Sign-in
+# Sign-in (email first)
 
 [Better Auth](https://www.better-auth.com/) runs inside the Worker, with users stored in D1 (`aijan-db`).
 
@@ -10,12 +10,19 @@ Sign-in options, in this order on the sheet:
 
 Each button only shows once its keys are set, so the site works while keys are still being made.
 
-## Behavior
+## Behavior: email first
 
-- **Tap first, sign in second.** A signed-out person taps RSVP, "I want this", "I could guide this", or a form's submit. The tap is saved in the browser (`localStorage`, for an hour) and the sheet opens. After sign-in, even after a trip to Google or Apple or an emailed link, the tap goes through without asking again.
-- The emailed link brings people back to the page they were on. If they open it in a different browser, they're signed in there but the saved tap stays behind in the first browser. The sheet says "Open it on this phone or computer."
-- Sign-in asks for nothing extra. We may ask for AI level once, later, with a skip.
-- People stay signed in for 60 days.
+Decided Nov 4, 2026: people never "sign in." We ask for an email when they tap, and that's it.
+
+- **Tap, type your email, done.** A tap from someone this device doesn't know yet (RSVP, "I want this", "I could guide this", or a form's submit) opens a small sheet that asks only "Your email". The tap counts as soon as they press the button. There's no link to click first. Continue with Google and Continue with Apple sit under it as one-tap shortcuts.
+- **A new email** gets an account and stays in on this device right away (`emailFirst` in `src/auth.js`, called from `POST /api/start`).
+- **An email we already know** isn't let in on this device, because anyone could type it. The tap still counts for that person, the button stays pressed on this device (`localStorage`), and the email carries a link back in. To undo a tap there, they open that link.
+- **Every email is a note about the tap**: "You're going: …" with a calendar invite (`.ics`) for RSVPs, "Got it: …" for ideas, thanks for guide offers, suggestions, and group requests. Each note has a "See your sessions" button. That button is a one-time link (Better Auth's magic link) that lasts 24 hours. RSVPs from someone already in on the device get the same note and invite, with a plain link to `/me`.
+- **On another device**, `/me` asks for the email and sends the link. It never says "sign in."
+- **If someone types another person's email**, they can add taps for that person, but they never see or change that person's list. When the real owner opens a link, Better Auth drops every session the account had before its email was proven.
+- At most 6 notes go to one address in a day (`canEmail` in `src/api.js`). Taps past that still count, but they don't send email.
+- The menu shows **My sessions** only once this device has something to show.
+- People stay in for 60 days. "Sign out on this device" is at the bottom of `/me`.
 - We only email people about what they picked. The newsletter is a separate opt-in.
 
 ## How it's built
@@ -23,17 +30,19 @@ Each button only shows once its keys are set, so the site works while keys are s
 | Piece | Where |
 | --- | --- |
 | Better Auth config | `src/auth.js` |
-| Sending the sign-in email (Resend) | `src/email.js` |
-| Taps (RSVP, want, guide, forms) | `src/api.js` |
+| Tap notes, calendar invites, and the link email (Resend) | `src/email.js` |
+| Taps (RSVP, want, guide, forms), daily email cap | `src/api.js` |
+| Email first (`POST /api/start`) | `src/worker.js`, `emailFirst` in `src/auth.js` |
 | Routes | `src/worker.js` |
 | Tables | `migrations/0001_sign_in_and_taps.sql` |
-| Sheet, saved taps, `/api/me` | `site/assets/app.js`, `site/partials/sheet.html` |
+| Email sheet, saved taps, `/api/me` | `site/assets/app.js`, `site/partials/sheet.html` |
 | My sessions page | `site/pages/me.html`, `site/assets/me.js` (served at `/me`) |
 
 The browser talks to Better Auth's own routes with `fetch`, so there's no client library:
 
 - `POST /api/auth/sign-in/social` with `{ provider: "google" | "apple", callbackURL }` returns a URL to send the person to.
-- `POST /api/auth/sign-in/magic-link` with `{ email, callbackURL }` sends the email.
+- `POST /api/start` with `{ email, tap }` (ours) saves a tap from someone new on this device and sends the note.
+- `POST /api/auth/sign-in/magic-link` with `{ email, callbackURL }` sends the link to My sessions (used on `/me`).
 - `POST /api/auth/sign-out` signs out.
 - `GET /api/me` (ours) returns the person, their taps, live counts, and which sign-in buttons work.
 

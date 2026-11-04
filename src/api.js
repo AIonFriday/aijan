@@ -1,5 +1,6 @@
 // The taps people make, saved in D1: RSVP, "I want this", "I could guide this", suggestions,
-// guide offers, and krewe requests. Every write needs a signed-in person.
+// guide offers, and krewe requests. Every write belongs to a person: signed in on this device, or found by the
+// email they typed (POST /api/start in worker.js).
 // Sessions still come from data/sessions.json, so attendance.session_id holds the session's slug.
 
 import data from '../data/sessions.json';
@@ -79,6 +80,30 @@ export async function kreweRequest(env, user, body) {
   await env.DB.prepare('INSERT INTO krewe_requests (id, group_name, what, size, user_id) VALUES (?, ?, ?, ?, ?)')
     .bind(id(), groupName, what, size, user.id).run();
   return json({ ok: true });
+}
+
+// One tap from the browser, as app.js describes it: { type: 'rsvp' | 'want' | 'guide', slug, guideAs }
+// or { type: 'suggest' | 'guideOffer' | 'krewe', ...form fields }. Only ever adds; undoing needs the person in.
+export const TAP_TYPES = ['rsvp', 'want', 'guide', 'suggest', 'guideOffer', 'krewe'];
+export function run(env, user, tap) {
+  if (tap.type in KINDS) return toggle(env, user, String(tap.slug || ''), tap.type, { on: true, guideAs: tap.guideAs });
+  if (tap.type === 'suggest') return suggest(env, user, tap);
+  if (tap.type === 'guideOffer') return offerToGuide(env, user, tap);
+  if (tap.type === 'krewe') return kreweRequest(env, user, tap);
+  return err(400, 'Unknown tap.');
+}
+
+export const session = (slug) => SESSIONS.get(slug) || null;
+
+// No more than this many "here's what you picked" emails per address per day, so the email box
+// can't be used to flood someone. Taps past it still count; they just don't send email.
+const DAILY_EMAILS = 6;
+export async function canEmail(env, email) {
+  const { results } = await env.DB.prepare("SELECT expiresAt FROM verification WHERE identifier LIKE 'magic-link:%' AND value LIKE ?")
+    .bind(`%"email":${JSON.stringify(email)}%`).all();
+  const now = Date.now();
+  const live = results.filter((r) => new Date(typeof r.expiresAt === 'string' && /^\d+$/.test(r.expiresAt) ? Number(r.expiresAt) : r.expiresAt).getTime() > now);
+  return live.length < DAILY_EMAILS;
 }
 
 export { json, err };

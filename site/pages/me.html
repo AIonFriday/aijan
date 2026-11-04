@@ -1,12 +1,23 @@
-<!-- My sessions: what a signed-in person has RSVPed to, wants, and offered to guide. Built into dist/me.html, served at /me. -->
+<!-- My sessions: what someone has RSVPed to, wants, and offered to guide. Built into dist/me.html, served at /me. -->
 {{head}}
 {{header}}
 <main class="wrap"><div class="col mine">
   <span class="kicker">My sessions</span>
   <h2 id="mh">Your sessions</h2>
   <div id="mine-out" hidden>
-    <p class="lede">Sign in to see the sessions you picked. Taps you make on any session show up here.</p>
-    <button class="go" type="button" id="mine-signin">Sign in</button>
+    <form class="mine-form" id="mine-form" novalidate data-email-only>
+      <p class="lede">Type the email you used, and we’ll send you a link to everything you picked.</p>
+      <label for="mine-email">Your email</label>
+      <input type="email" id="mine-email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+      <span class="err" id="mine-email-err" hidden>That doesn’t look like an email address.</span>
+      <button class="go" type="submit">Email me the link</button>
+    </form>
+    <p class="sheet-or" data-or hidden><span>or</span></p>
+    <div class="mine-sso">
+      <button class="sso" type="button" data-sso="google" hidden>Continue with Google</button>
+      <button class="sso" type="button" data-sso="apple" hidden>Continue with Apple</button>
+    </div>
+    <p class="lede" id="mine-sent" hidden tabindex="-1">Check your email. We sent a link to <b id="mine-sent-to"></b>. It works once, for 24 hours.</p>
   </div>
   <div id="mine-in" hidden>
     <p class="lede" id="mine-hi"></p>
@@ -18,7 +29,7 @@
     <div class="group" id="g-guide" hidden><div class="ghead"><h3>You offered to guide</h3><span id="n-guide"></span></div>
       <p class="gnote">An organizer will email you about each one.</p>
       <ul class="list" id="list-guide"></ul></div>
-    <p class="mine-foot"><a href="/#find">Find more sessions</a> · <button class="small" type="button" data-signout>Sign out</button></p>
+    <p class="mine-foot"><a href="/#find">Find more sessions</a> · <button class="small" type="button" data-signout>Sign out on this device</button></p>
   </div>
   <p class="lede" id="mine-wait">Loading…</p>
 </div></main>

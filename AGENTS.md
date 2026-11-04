@@ -25,7 +25,7 @@ Always run `npm run build && npm run check` before you finish. There are no othe
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, rendered once per session to `dist/sessions/<slug>.html` and served at `/sessions/<slug>`.
 - `scripts/og.mjs`: draws the 1200x630 share images at build time (`/og/home.png`, `/og/sessions/<slug>.png`) with fonts from `scripts/fonts/`. Plain Node, no packages.
-- `site/assets/`: `site.css` (all styles), `app.js` (sign-in, the sheet, saving taps, toast, shared helpers on `window.AJ`), `cards.js` (session rows and buttons shared by the home page and /sessions), `home.js` (hero tiles, "Coming up", "Almost there"), `sessions-page.js` (/sessions: calendar, by topic, vote for what's next), `guide.js`, `krewe.js`, `session.js`, `me.js` (My sessions), `map.js` + `nola-points.js` (hero map).
+- `site/assets/`: `site.css` (all styles), `app.js` (the email sheet, saving taps, toast, shared helpers on `window.AJ`), `cards.js` (session rows and buttons shared by the home page and /sessions), `home.js` (hero tiles, "Coming up", "Almost there"), `sessions-page.js` (/sessions: calendar, by topic, vote for what's next), `guide.js`, `krewe.js`, `session.js`, `me.js` (My sessions), `map.js` + `nola-points.js` (hero map).
 - `src/worker.js`: serves `dist/` through the `ASSETS` binding. Only `/api/*` runs Worker code: `src/auth.js` (Better Auth), `src/api.js` (taps), `src/email.js` (Resend).
 - `migrations/`: D1 tables. Add a new numbered file; never edit one that has shipped.
 - `dist/`: build output. Never edit it or commit it.
@@ -37,8 +37,7 @@ Always run `npm run build && npm run check` before you finish. There are no othe
 - The word is **Guide**, never "host" or "presenter". Guides can be people or groups.
 - An idea needs **5** "I want this" to get scheduled. Show it as a count ("3 want it", "2 more and we schedule it"), not dots or progress bars.
 - Suggesting an idea never creates a session. Organizers review first.
-- Signed-out taps open sign-in, and the tap still counts afterward ("tap first, sign in second").
-- Sign-in will be Better Auth with Google, Apple, and an emailed link. See `docs/auth.md`.
+- Email first, never "sign in": a tap from someone new asks only for their email and counts right away. Google and Apple are one-tap shortcuts, and the emailed link brings people back to My sessions. Built on Better Auth. See `docs/auth.md`.
 - Sessions are grouped by topic (My job, Home and family, Making things, Just curious) and level, not by format. `officeHours` is back-end only.
 - Session URLs are `/sessions/<slug>`. Slugs never change once shared.
 - All times are New Orleans time (`America/Chicago`). Store `startsAt` with an offset.

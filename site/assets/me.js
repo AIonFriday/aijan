@@ -1,7 +1,8 @@
-// My sessions (/me): what the signed-in person has RSVPed to, wants, and offered to guide.
+// My sessions (/me): what someone has RSVPed to, wants, and offered to guide. Someone we don't know on this
+// device types their email and gets a one-time link here.
 // Session details come from /assets/sessions.js (window.AJ_DATA); what they picked comes from /api/me.
 (() => {
-  const { $, esc, me, act, openSheet, countFor, NEEDED } = window.AJ;
+  const { $, esc, me, act, emailLink, isEmail, lastEmail, countFor, NEEDED } = window.AJ;
   const { sessions: S, timeZone: tz } = window.AJ_DATA;
   const bySlug = new Map(S.map((s) => [s.slug, s]));
 
@@ -37,7 +38,7 @@
     $('#mine-in').hidden = !me.signedIn;
     if (!me.signedIn) return;
     const first = (me.user.name || '').split(' ')[0];
-    $('#mine-hi').textContent = `${first ? `Hi, ${first}. ` : ''}You’re signed in as ${me.user.email}. Tap a button to change your mind.`;
+    $('#mine-hi').textContent = `${first ? `Hi, ${first}. ` : ''}These are the sessions for ${me.user.email}. Tap a button to change your mind.`;
 
     const going = list([...me.going]).sort((a, b) => (a.startsAt > b.startsAt ? 1 : -1));
     const want = list([...me.want]).sort((a, b) => countFor(b) - countFor(a));
@@ -55,6 +56,21 @@
     const b = e.target.closest('[data-act]');
     if (b) act({ type: b.dataset.act, slug: b.closest('.s').dataset.slug, on: false });
   });
-  $('#mine-signin').addEventListener('click', openSheet);
+  const input = $('#mine-email');
+  input.value = lastEmail();
+  $('#mine-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = input.value.trim();
+    $('#mine-email-err').hidden = isEmail(email);
+    if (!isEmail(email)) { input.focus(); return; }
+    const btn = $('button[type=submit]', e.target);
+    btn.disabled = true;
+    if (await emailLink(email)) {
+      $('#mine-sent-to').textContent = email;
+      $('#mine-sent').hidden = false;
+      $('#mine-sent').focus();
+    }
+    btn.disabled = false;
+  });
   document.addEventListener('aj:change', render);
 })();
