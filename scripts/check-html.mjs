@@ -40,6 +40,17 @@ for (const f of html) {
   }
 }
 
+// Every sitemap URL is a real page on the production host, and robots.txt points at the sitemap.
+const sitemapPath = join(dist, 'sitemap.xml');
+const robotsPath = join(dist, 'robots.txt');
+if (!existsSync(sitemapPath)) problems.push('sitemap.xml is missing');
+else {
+  const urls = [...readFileSync(sitemapPath, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]));
+  if (!urls.length) problems.push('sitemap.xml lists no pages');
+  for (const u of urls) if (!resolves(u.pathname)) problems.push(`sitemap.xml: broken link ${u.pathname}`);
+}
+if (!existsSync(robotsPath) || !/^Sitemap: https?:\/\/\S+\/sitemap\.xml$/m.test(readFileSync(robotsPath, 'utf8'))) problems.push('robots.txt must name the sitemap');
+
 if (problems.length) {
   console.error('Problems in dist/:\n  ' + problems.join('\n  '));
   process.exit(1);
