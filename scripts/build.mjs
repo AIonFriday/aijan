@@ -10,7 +10,7 @@
 //   3. Renders site/pages/*.html with the shared partials into dist/ (sessions.html is the /sessions page).
 //   4. Renders one page per session from site/templates/session.html into dist/sessions/<slug>.html.
 //   5. Draws share images (scripts/og.mjs): dist/og/home.png and dist/og/sessions/<slug>.png.
-//   6. Writes dist/sitemap.xml and dist/robots.txt.
+//   6. Writes dist/sitemap.xml, dist/robots.txt and the IndexNow key file.
 //   7. Zips site/assets/brand/ into dist/assets/brand/ai-january-brand-kit.zip for the /brand page.
 //
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html".
@@ -176,7 +176,7 @@ for (const s of visible) {
 // ---------- 5. share images for the other pages ----------
 writeFileSync(join(dist, 'og/home.png'), renderHome());
 
-// ---------- 6. sitemap and robots.txt ----------
+// ---------- 6. sitemap, robots.txt and IndexNow key ----------
 // /me is personal and /404 isn't a real page, so neither goes to search engines.
 const sitemapPaths = [
   ...Object.values(PAGES).map((p) => p.path).filter((p) => p !== '/me' && p !== '/404'),
@@ -184,6 +184,9 @@ const sitemapPaths = [
 ];
 writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((p) => `  <url><loc>${esc(SITE_URL + p)}</loc></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+// IndexNow reads this file at the site root to confirm we own the domain. The key is public by design.
+const INDEXNOW_KEY = '5549035db5f241c1b11c0c47c3a7f890';
+writeFileSync(join(dist, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY);
 
 // ---------- 7. the brand kit zip ----------
 // One download with every logo file, the usage guide and the README. A plain zip written by hand (deflate from
