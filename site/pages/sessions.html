@@ -1,0 +1,54 @@
+<!-- Sessions: every session as a calendar or by topic, plus ideas to vote on. Built into dist/sessions.html, served at /sessions. -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="wide-col" id="sessions-main">
+  <span class="kicker">Sessions</span>
+  <h1 class="page-h">Find a session</h1>
+  <p class="lede">Free, 90 minutes, Jan 8–28. Most are at The Nieux on St. Charles.</p>
+  <div class="views" id="views" role="group" aria-label="Show sessions as">
+    <button type="button" data-view="cal" aria-pressed="true">Calendar</button>
+    <button type="button" data-view="topic" aria-pressed="false">By topic</button>
+  </div>
+
+  <div class="sessions-grid">
+   <div class="sessions-main">
+    <section id="view-cal" aria-label="Calendar">
+      <div class="month month-full" id="month-full"></div>
+      <div class="month month-dots" id="month-dots"></div>
+      <div class="day-pick">
+        <h2 class="day-head" id="day-head"></h2>
+        <ul class="list" id="day-list"></ul>
+      </div>
+    </section>
+
+    <section id="view-topic" aria-labelledby="tq" hidden>
+      <p class="tq" id="tq">What do you want to use AI for?</p>
+      <div class="ask-opts tiles" id="tiles" role="group" aria-labelledby="tq"></div>
+      <div class="show lvl" id="lvl" role="group" aria-labelledby="lvl-l"><span class="lab" id="lvl-l">Level</span></div>
+      <div id="topic-groups"></div>
+    </section>
+   </div>
+
+   <aside class="vote" id="vote" aria-labelledby="vh">
+    <div class="ghead"><h2 id="vh">Vote for what’s next</h2><span id="n-vote"></span></div>
+    <p class="gnote">These aren’t on the calendar yet. When five people want one, we find a guide and schedule it.</p>
+    <ul class="list" id="list-vote"></ul>
+    <section class="suggest" id="suggest" aria-labelledby="ph">
+      <h3 id="ph">Don’t see it? Suggest one.</h3>
+      <p>What do you want to learn, or who do you want to learn with? We read every idea.</p>
+      <div id="propose-box">
+      <label for="idea" class="sr">Your idea</label>
+      <textarea id="idea" placeholder="AI for bookkeeping at my small business"></textarea>
+      <div class="row"><button class="go" type="button" id="post">Send idea</button></div>
+      </div>
+    </section>
+   </aside>
+  </div>
+</div></main>
+{{footer}}
+{{sheet}}
+<script src="/assets/sessions.js"></script>
+<script src="/assets/cards.js"></script>
+<script src="/assets/sessions-page.js"></script>
+</body>
+</html>

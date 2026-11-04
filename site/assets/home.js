@@ -1,119 +1,41 @@
-// Home page: the topic and level chips, the two session lists, and "suggest one".
-// Session data comes from /assets/sessions.js (window.AJ_DATA), generated from data/sessions.json by `npm run build`.
+// Home page: the hero's topic tiles (they open /sessions by topic) and two short highlights:
+// "Coming up" (the next three sessions) and "Almost there" (the three ideas closest to five people).
+// Everything else lives on /sessions. Session data comes from /assets/sessions.js (window.AJ_DATA).
 (() => {
-  const { $, esc, me, say, act, countFor, NEEDED } = window.AJ;
+  const { $, esc, countFor, NEEDED, TOPICS, fmt, wantLine, byTime, byWant, me, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
-  // Two separate filters: what it's for (topic) and how much you've used AI (level).
-  // The hero asks only the topic question; level is a quieter second row on the list.
-  const TOPICS = [
-    ['work', 'My job', 'Your work, business or nonprofit'],
-    ['life', 'Home and family', 'Meals, money, kids, trips'],
-    ['make', 'Making things', 'Art, writing, a small website'],
-    ['curious', 'Just curious', 'See what it can do'],
-  ];
-  const LEVEL_CHOICES = [['any', 'Any level'], ...Object.entries(LEVELS).filter(([k]) => k !== 'all')];
-  let topic = 'all';
-  let level = 'any';
-  // A session marked "All levels" fits every level.
-  const fits = (s) => (topic === 'all' || s.topics.includes(topic)) && (level === 'any' || s.level === level || s.level === 'all');
-
-  const chip = (k, v, data) => `<button class="chip" type="button" data-${data}="${k}">${v}</button>`;
-  $('#show').innerHTML = [['all', 'Everything'], ...TOPICS].map(([k, v]) => chip(k, v, 't')).join('');
-  $('#lvl').insertAdjacentHTML('beforeend', LEVEL_CHOICES.map(([k, v]) => chip(k, v, 'l')).join(''));
-  $('#show').addEventListener('click', (e) => {
-    const b = e.target.closest('.chip');
-    if (b) { topic = b.dataset.t; render(); }
-  });
-  $('#lvl').addEventListener('click', (e) => {
-    const b = e.target.closest('.chip');
-    if (b) { level = b.dataset.l; render(); }
-  });
   $('#ask').innerHTML =
-    TOPICS.map(([k, v, hint]) => `<button type="button" data-t="${k}">${v}<span>${hint}</span></button>`).join('') +
-    '<button type="button" class="all" data-t="all">Just show me everything</button>';
-  $('#ask').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    topic = b.dataset.t;
-    if (topic === 'all') level = 'any';
-    render();
-    $('#find').scrollIntoView({ behavior: 'smooth' });
-  });
+    TOPICS.map(([k, v, hint]) => `<a href="/sessions?topic=${k}">${v}<span>${hint}</span></a>`).join('') +
+    '<a class="all" href="/sessions">Just show me everything</a>';
 
-  // Every time is shown in New Orleans time, whatever the visitor's clock says.
-  const tz = window.AJ_DATA.timeZone;
-  const fmt = (iso) => {
-    const d = new Date(iso);
-    const part = (o) => d.toLocaleString('en-US', { timeZone: tz, ...o });
-    return {
-      m: part({ month: 'short' }).toUpperCase(),
-      d: part({ day: 'numeric' }),
-      w: part({ weekday: 'short' }),
-      t: part({ hour: 'numeric', minute: '2-digit' }).replace(':00', ''),
-    };
-  };
-
-  function card(s) {
+  // A short card: when (or how close it is), the title, who guides it, and one button.
+  function hcard(s) {
     const sched = s.status === 'scheduled';
-    const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
     const n = countFor(s);
-    let lead, when, btn;
-    if (sched) {
-      const d = fmt(s.startsAt);
-      lead = `<div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div>`;
-      when = `${d.w} · ${d.t} · ${n} going`;
-      btn = `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`;
-    } else {
-      lead = `<div class="want" aria-hidden="true"><div class="d">${n}</div><div class="m">want it</div></div>`;
-      when = n >= NEEDED ? 'Enough people · scheduling soon' : `${NEEDED - n} more and we schedule it`;
-      btn = `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
-    }
+    const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
+    const d = sched && fmt(s.startsAt);
     const who = s.guides.length ? `Guided by ${esc(s.guides.join(', '))}` : 'Needs a guide';
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
-    return `<li class="s" data-slug="${s.slug}"><div class="lead">${lead}</div>
-      <div class="body"><div class="when2">${when}</div>
-        <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
-        <p class="meta">${who}${lvl}</p></div>
-      <div class="act">${btn}</div></li>`;
+    const btn = sched
+      ? `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`
+      : `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
+    return `<li class="hc${sched ? '' : ' idea'}" data-slug="${s.slug}">
+      <div class="when2">${sched ? `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d} · ${d.t}` : wantLine(n)}</div>
+      <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
+      <p class="meta">${who}${lvl}</p>
+      <div class="hc-row"><span class="meta">${sched ? `${n} going` : `${Math.min(n, NEEDED)} of ${NEEDED} want it`}</span><span class="act">${btn}</span></div></li>`;
   }
 
   function render() {
-    document.querySelectorAll('#show .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.t === topic));
-    document.querySelectorAll('#lvl .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.l === level));
-    const scheduled = S.filter((s) => s.status === 'scheduled' && fits(s)).sort((a, b) => (a.startsAt > b.startsAt ? 1 : -1));
-    const ideas = S.filter((s) => s.status === 'proposed' && fits(s)).sort((a, b) => countFor(b) - countFor(a));
-    $('#list-s').innerHTML = scheduled.length ? scheduled.map(card).join('') : '<li class="empty">Nothing on the calendar for this yet.</li>';
-    $('#list-p').innerHTML = ideas.length ? ideas.map(card).join('') : '<li class="empty">No ideas here yet. Suggest one below.</li>';
-    $('#n-s').textContent = scheduled.length;
-    $('#n-p').textContent = ideas.length;
+    const now = new Date().toISOString();
+    const next = S.filter((s) => s.status === 'scheduled' && new Date(s.startsAt).toISOString() >= now).sort(byTime).slice(0, 3);
+    const close = S.filter((s) => s.status === 'proposed').sort(byWant).slice(0, 3);
+    $('#next').innerHTML = next.length ? next.map(hcard).join('') : '<li class="empty">That’s a wrap for this January. Thanks for coming.</li>';
+    $('#close').innerHTML = close.length ? close.map(hcard).join('') : '<li class="empty">No ideas waiting right now. <a href="/sessions#suggest">Suggest one</a>.</li>';
   }
 
-  document.querySelectorAll('.list').forEach((list) =>
-    list.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-act]');
-      if (!b) return;
-      const slug = b.closest('.s').dataset.slug;
-      const set = b.dataset.act === 'rsvp' ? me.going : me.want;
-      act({ type: b.dataset.act, slug, on: !set.has(slug) });
-    })
-  );
-
-  // Suggestions never create a session. Organizers review every idea first.
-  $('#post').addEventListener('click', () => {
-    const text = $('#idea').value.trim();
-    if (!text) { say('Type your idea first.'); $('#idea').focus(); return; }
-    act({ type: 'suggest', text });
-  });
-
-  document.addEventListener('aj:change', (e) => {
-    render();
-    if (e.detail.tap?.type === 'suggest') {
-      $('#propose-box').innerHTML =
-        '<div class="thanks"><b>Thanks, got it.</b> We review every idea. If it’s a fit, we’ll post it with you as the first one in and email you.</div>';
-      if (e.detail.afterSignIn) $('#propose-box').scrollIntoView({ block: 'center' });
-    }
-  });
-
+  wireButtons($('.highlights'));
+  document.addEventListener('aj:change', render);
   render();
 })();
