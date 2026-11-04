@@ -7,10 +7,10 @@
   const { $, esc, say, act, countFor, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
-  // The month. Days outside it show faded on the grid. Parades start the day after the last day.
+  // The days sessions can land on (Jan 8–29). Days before FIRST show faded. Parades start Jan 29.
   const FIRST = '2027-01-08';
-  const LAST = '2027-01-28';
-  const NOTES = { '2027-01-18': 'MLK Day', '2027-01-29': 'Parades start' };
+  const LAST = '2027-01-29';
+  const NOTES = { '2027-01-06': 'Twelfth Night', '2027-01-18': 'MLK Day', '2027-01-29': 'Parades start' };
 
   const scheduled = () => S.filter((s) => s.status === 'scheduled').sort(byTime);
   const ideas = () => S.filter((s) => s.status === 'proposed').sort(byWant);
