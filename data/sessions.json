@@ -3,9 +3,8 @@
   "levels": {
     "all": "All levels",
     "new": "New to AI",
-    "sometimes": "Use it sometimes",
-    "daily": "Use it daily",
-    "build": "Build with it"
+    "sometimes": "Now and then",
+    "daily": "Daily"
   },
   "topics": {
     "work": "My job",
@@ -100,7 +99,7 @@
       "description": "Open table for people making things with AI. Show what you’re building, get unstuck, trade notes.",
       "status": "scheduled",
       "startsAt": "2027-01-14T17:30:00-06:00",
-      "level": "build",
+      "level": "daily",
       "topics": [
         "make"
       ],
@@ -248,7 +247,7 @@
       "description": "Wire up an assistant that drafts replies to your inbox and asks before it sends.",
       "status": "proposed",
       "startsAt": null,
-      "level": "build",
+      "level": "daily",
       "topics": [
         "make",
         "work"

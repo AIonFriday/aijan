@@ -1,38 +1,42 @@
-// Home page: the "where do you want to start" chips, the two session lists, and "suggest one".
+// Home page: the topic and level chips, the two session lists, and "suggest one".
 // Session data comes from /assets/sessions.js (window.AJ_DATA), generated from data/sessions.json by `npm run build`.
 (() => {
   const { $, esc, me, say, act, countFor, NEEDED } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
-  // One row of chips. The same choices appear in the hero; tapping there filters and scrolls here.
-  const CHOICES = [
-    ['all', 'Everything'],
-    ['new', 'Brand new to AI'],
-    ['work', 'For my job'],
-    ['life', 'Home and family'],
-    ['make', 'Making things'],
-    ['build', 'I build with it'],
+  // Two separate filters: what it's for (topic) and how much you've used AI (level).
+  // The hero asks only the topic question; level is a quieter second row on the list.
+  const TOPICS = [
+    ['work', 'My job', 'Your work, business or nonprofit'],
+    ['life', 'Home and family', 'Meals, money, kids, trips'],
+    ['make', 'Making things', 'Art, writing, a small website'],
+    ['curious', 'Just curious', 'See what it can do'],
   ];
-  let pick = 'all';
-  const fits = (s) => {
-    if (pick === 'all') return true;
-    if (pick === 'new') return s.level === 'new' || s.level === 'all';
-    if (pick === 'build') return s.level === 'build' || (s.level === 'all' && s.topics.includes('make'));
-    return s.topics.includes(pick);
-  };
+  const LEVEL_CHOICES = [['any', 'Any level'], ...Object.entries(LEVELS).filter(([k]) => k !== 'all')];
+  let topic = 'all';
+  let level = 'any';
+  // A session marked "All levels" fits every level.
+  const fits = (s) => (topic === 'all' || s.topics.includes(topic)) && (level === 'any' || s.level === level || s.level === 'all');
 
-  $('#show').innerHTML = CHOICES.map(([k, v]) => `<button class="chip" type="button" data-k="${k}">${v}</button>`).join('');
+  const chip = (k, v, data) => `<button class="chip" type="button" data-${data}="${k}">${v}</button>`;
+  $('#show').innerHTML = [['all', 'Everything'], ...TOPICS].map(([k, v]) => chip(k, v, 't')).join('');
+  $('#lvl').insertAdjacentHTML('beforeend', LEVEL_CHOICES.map(([k, v]) => chip(k, v, 'l')).join(''));
   $('#show').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
-    if (b) { pick = b.dataset.k; render(); }
+    if (b) { topic = b.dataset.t; render(); }
+  });
+  $('#lvl').addEventListener('click', (e) => {
+    const b = e.target.closest('.chip');
+    if (b) { level = b.dataset.l; render(); }
   });
   $('#ask').innerHTML =
-    CHOICES.filter(([k]) => k !== 'all').map(([k, v]) => `<button type="button" data-k="${k}">${v}</button>`).join('') +
-    '<button type="button" class="all" data-k="all">Just show me everything</button>';
+    TOPICS.map(([k, v, hint]) => `<button type="button" data-t="${k}">${v}<span>${hint}</span></button>`).join('') +
+    '<button type="button" class="all" data-t="all">Just show me everything</button>';
   $('#ask').addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b) return;
-    pick = b.dataset.k;
+    topic = b.dataset.t;
+    if (topic === 'all') level = 'any';
     render();
     $('#find').scrollIntoView({ behavior: 'smooth' });
   });
@@ -75,7 +79,8 @@
   }
 
   function render() {
-    document.querySelectorAll('#show .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.k === pick));
+    document.querySelectorAll('#show .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.t === topic));
+    document.querySelectorAll('#lvl .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.l === level));
     const scheduled = S.filter((s) => s.status === 'scheduled' && fits(s)).sort((a, b) => (a.startsAt > b.startsAt ? 1 : -1));
     const ideas = S.filter((s) => s.status === 'proposed' && fits(s)).sort((a, b) => countFor(b) - countFor(a));
     $('#list-s').innerHTML = scheduled.length ? scheduled.map(card).join('') : '<li class="empty">Nothing on the calendar for this yet.</li>';
