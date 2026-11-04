@@ -28,10 +28,10 @@ h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-hei
 .ask{margin-top:24px}
 .ask p{margin:0 0 10px;font-weight:700;font-size:17px}
 .ask-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:32rem}
-.ask-opts button{display:grid;gap:2px;text-align:left;border:1.5px solid var(--purple);background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:16px;font-weight:700;line-height:1.25}
-.ask-opts button span{font-weight:400;font-size:14px;color:var(--ink-soft)}
-.ask-opts button:hover{background:var(--purple);color:var(--btn-ink)}
-.ask-opts button:hover span{color:var(--purple-soft)}
+.ask-opts button,.ask-opts a{display:grid;gap:2px;text-align:left;border:1.5px solid var(--purple);background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:16px;font-weight:700;line-height:1.25}
+.ask-opts button span,.ask-opts a span{font-weight:400;font-size:14px;color:var(--ink-soft)}
+.ask-opts button:hover,.ask-opts a:hover{background:var(--purple);color:var(--btn-ink)}
+.ask-opts button:hover span,.ask-opts a:hover span{color:var(--purple-soft)}
 .ask-opts .all{grid-column:1/-1;justify-self:start;padding:6px 0;border-color:transparent;background:none;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
 .ask-opts .all:hover{background:none;color:var(--purple)}
 
@@ -252,6 +252,7 @@ textarea{min-height:76px;resize:vertical}
 
 /* sub pages */
 .page-bar{max-width:46rem;margin:0 auto}
+.page-bar.wide{max-width:72rem}
 .nav a[aria-current]{background:var(--purple-soft)}
 .krewe .go{background:var(--green)}
 .need-list a.t{color:var(--ink);text-decoration:none;display:block}
@@ -262,3 +263,84 @@ textarea{min-height:76px;resize:vertical}
 .mine .group:first-of-type{margin-top:8px}
 .mine-foot{margin-top:24px;color:var(--ink-soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .mine-foot a{color:var(--ink);font-weight:700;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
+
+/* home highlights: "Coming up" and "Almost there", three short cards each, with links to /sessions */
+.ask-opts a{text-decoration:none}
+.highlights .lede{margin-bottom:14px}
+.hl-head{display:flex;align-items:baseline;justify-content:space-between;gap:4px 16px;flex-wrap:wrap}
+.hl-head.hl-ideas{margin-top:34px}
+.hl-head h3{font-size:24px}
+.hl-link{font-weight:700;color:var(--purple);text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px;white-space:nowrap}
+.hl-cards{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+@media(min-width:700px){.hl-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.hc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.hc.idea{border-color:var(--green)}
+.hc .when2{font-weight:600;color:var(--purple)}
+.hc.idea .when2{color:var(--green)}
+.hc .title{font-size:18px}
+.hc-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px}
+.hl-cards .empty{border:0;grid-column:1/-1}
+.hl-cards .empty a{color:var(--purple);font-weight:700}
+
+/* /sessions: a view switch, then the calendar (or topics) beside "Vote for what's next" on wide screens, stacked on phones */
+.wide-col{max-width:72rem;margin:0 auto;padding-block:20px 48px}
+.page-h{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,7vw,52px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
+.views{display:inline-flex;gap:2px;padding:3px;border:1.5px solid var(--purple);border-radius:999px;background:var(--card);margin:0 0 18px}
+.views button{border:0;background:none;border-radius:999px;padding:7px 18px;font-weight:700;font-size:16px}
+.views button[aria-pressed="true"]{background:var(--purple);color:var(--btn-ink)}
+.sessions-grid{display:grid;gap:28px;align-items:start}
+.sessions-main{min-width:0}
+@media(min-width:1000px){.sessions-grid{grid-template-columns:minmax(0,1fr) 22rem;gap:36px}}
+
+/* the month: full grid with titles on wide screens; on phones a grid of dates with dots, and the picked day listed below */
+.month{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px}
+.mdow{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:0 4px}
+.mwk{grid-column:1/-1;font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--purple);margin-top:8px}
+.mday{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 7px 8px;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}
+.mday .n{font:700 15px var(--f-display);color:var(--ink)}
+.mday .n small{font:11px var(--f-mono);font-weight:400;color:var(--gold);margin-left:5px}
+.mday.out{background:transparent;border-style:dashed;opacity:.55}
+.month-full .mday{min-height:96px}
+.ev{display:block;background:var(--purple-soft);border-radius:6px;padding:4px 6px;font-size:13px;line-height:1.25;color:var(--ink);text-decoration:none}
+.ev b{display:block;font:600 11px var(--f-mono);color:var(--purple)}
+.ev:hover{background:var(--purple);color:var(--btn-ink)}
+.ev:hover b{color:var(--btn-ink)}
+.month-dots .mdow{text-align:center;padding:0}
+.month-dots .mday{align-items:center;padding:7px 0 6px;gap:3px}
+.month-dots .mday .n{font-size:16px}
+.pip{display:flex;gap:3px;height:7px}
+.pip i{width:7px;height:7px;border-radius:50%;background:var(--purple)}
+.month-dots .mday[aria-pressed="true"]{background:var(--purple);border-color:var(--purple)}
+.month-dots .mday[aria-pressed="true"] .n{color:var(--btn-ink)}
+.month-dots .mday[aria-pressed="true"] .pip i{background:var(--btn-ink)}
+.day-head{font:700 20px var(--f-display);margin:20px 0 6px}
+.day-pick .empty a{color:var(--purple);font-weight:700}
+@media(min-width:760px){.month-dots,.day-pick{display:none}}
+@media(max-width:759px){.month-full{display:none}}
+
+/* by topic */
+.tq{margin:0 0 10px;font-weight:700;font-size:17px}
+.tiles{max-width:none;margin-bottom:12px}
+@media(min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tiles button[aria-pressed="true"]{background:var(--purple);color:var(--btn-ink)}
+.tiles button[aria-pressed="true"] span{color:var(--purple-soft)}
+.tiles .all[aria-pressed="true"]{background:none;color:var(--purple)}
+#topic-groups .group:first-child{margin-top:18px}
+#topic-groups .empty a{color:var(--purple);font-weight:700}
+
+/* vote for what's next */
+.vote{background:var(--card);border:1.5px solid var(--green);border-radius:18px;padding:18px 16px 16px}
+.vote .ghead h2{font:800 24px/1.15 var(--f-display);margin:0}
+.vote .list{border-top:1px solid var(--line)}
+.suggest{margin-top:18px;display:grid;gap:8px}
+.suggest h3{font-size:19px}
+.suggest p{margin:0;color:var(--ink-soft);font-size:15px}
+.suggest textarea{width:100%;box-sizing:border-box;min-height:70px;border-radius:10px;border:1.5px solid var(--line);padding:11px 12px;font:inherit;font-size:16px;background:var(--paper);resize:vertical}
+.suggest .row{display:flex;margin-top:4px}
+/* In the narrow side column the button sits under the title instead of squeezing it. */
+@media(min-width:1000px){
+  .vote .s{grid-template-columns:44px 1fr}
+  .vote .lead{grid-row:span 3}
+  .vote .act{grid-row:auto;grid-column:2;justify-self:start;padding-top:6px}
+  .vote .want{width:44px}.vote .want .d{font-size:19px}
+}

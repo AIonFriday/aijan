@@ -25,7 +25,7 @@ Always run `npm run build && npm run check` before you finish. There are no othe
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, rendered once per session to `dist/sessions/<slug>.html` and served at `/sessions/<slug>`.
 - `scripts/og.mjs`: draws the 1200x630 share images at build time (`/og/home.png`, `/og/sessions/<slug>.png`) with fonts from `scripts/fonts/`. Plain Node, no packages.
-- `site/assets/`: `site.css` (all styles), `app.js` (the email sheet, saving taps, toast, shared helpers on `window.AJ`), `home.js`, `guide.js`, `krewe.js`, `session.js`, `me.js` (My sessions), `map.js` + `nola-points.js` (hero map).
+- `site/assets/`: `site.css` (all styles), `app.js` (the email sheet, saving taps, toast, shared helpers on `window.AJ`), `cards.js` (session rows and buttons shared by the home page and /sessions), `home.js` (hero tiles, "Coming up", "Almost there"), `sessions-page.js` (/sessions: calendar, by topic, vote for what's next), `guide.js`, `krewe.js`, `session.js`, `me.js` (My sessions), `map.js` + `nola-points.js` (hero map).
 - `src/worker.js`: serves `dist/` through the `ASSETS` binding. Only `/api/*` runs Worker code: `src/auth.js` (Better Auth), `src/api.js` (taps), `src/email.js` (Resend).
 - `migrations/`: D1 tables. Add a new numbered file; never edit one that has shipped.
 - `dist/`: build output. Never edit it or commit it.
