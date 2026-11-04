@@ -20,10 +20,12 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "aijan-db", "database_id": "8dd790c4-6e28-422b-8ca0-d0f281df4858", "migrations_dir": "migrations" }
   ],
-  // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
+  // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY, SLACK_BOT_TOKEN) are set in the Cloudflare dashboard. See docs/auth.md.
   "vars": {
     // Sign-in emails come from this address. Its domain must be verified in Resend.
-    "EMAIL_FROM": "AI January <hello@joinaijanuary.com>"
+    "EMAIL_FROM": "AI January <hello@joinaijanuary.com>",
+    // The private #ai-january-inbox channel in the AI Friday Slack. See docs/slack.md.
+    "SLACK_CHANNEL": "C0CF1Q9AMBK"
   },
   "observability": { "enabled": true }
 }

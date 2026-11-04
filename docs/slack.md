@@ -1,6 +1,6 @@
 # Slack notifications
 
-When someone uses a form or taps a button on the site, the organizers get a message in one private channel in the AI Friday Slack. The database stays the record; Slack is how the team finds out. If Slack is down or refuses a message, the person's tap still saves and the error goes to the Worker logs.
+When someone uses a form or taps a button on the site, the organizers get a message in the private `#ai-january-inbox` channel in the AI Friday Slack. The database stays the record; Slack is how the team finds out. If Slack is down or refuses a message, the person's tap still saves and the error goes to the Worker logs.
 
 | What happened | What's posted |
 | --- | --- |
@@ -16,7 +16,7 @@ The channel is private because messages include people's email addresses. Anythi
 - `SLACK_BOT_TOKEN` is a Cloudflare secret. Never commit it. To change it without releasing other code, run `npx wrangler versions secret put SLACK_BOT_TOKEN`; the next deploy picks it up.
 - `SLACK_CHANNEL` is the channel's ID, under `vars` in `wrangler.jsonc`. It isn't secret.
 - The bot must be a member of the channel. In Slack, type `/invite @AI January Site` there.
-- Leave both blank locally and nothing is posted.
+- Local runs post nothing unless you add `SLACK_BOT_TOKEN` to `.dev.vars`.
 - Preview versions use the same secret and channel as production, so a form submitted on a preview link posts for real.
 
 The code is in `src/slack.js`, with tests in `tests/slack.test.mjs`.
