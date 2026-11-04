@@ -10,7 +10,9 @@ The AI January identity kit (IO2-v1, Nov 2026): a purple ironwork crown with "AI
 | `ai-january-master-mark-purple.svg` | The crown alone, big | 160px wide |
 | `ai-january-compact-lockup-color.svg` | Logo in small places (site header on desktop, share images) | 240px wide |
 | `ai-january-compact-mark-purple.svg` | The crown alone, small (site header on phones, next to the name) | 48px wide |
-| `favicon.svg`, `favicon.ico`, `favicon-*.png` | Browser tab and home-screen icons | |
+| `favicon.svg`, `favicon.ico`, `favicon-32.png` | Browser tab icon. Transparent background, with a thin paper edge so the crown shows on dark tabs too | |
+| `favicon-256.png` | The tab icon as a bigger transparent PNG, for anywhere else you need one | |
+| `favicon-192.png`, `favicon-512.png` | Home-screen icons. These keep the solid paper square, because phones fill a transparent background with black | |
 
 `-ink` and `-black` versions are for one-color printing.
 
