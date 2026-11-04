@@ -6,7 +6,8 @@ The feeling to aim for: a friendly invitation, not a tech product. A nervous beg
 
 The AI January identity kit (IO2-v1) lives in `site/assets/brand/`, with its own README and the full usage guide (`AI-January-IO2-Usage.pdf`). The crown is purple ironwork with "AI" in the negative space; the name is Bricolage Grotesque Bold in ink.
 
-- **Header:** the compact crown (transparent, so the map shows through) with "AI January" typed beside it in Bricolage Bold, the wordmark's font. No backing box. The crown alone on phones under 480px (60px) so the nav fits. The home hero's dateline starts with "AI January" so phones still see the name.
+- **Header:** the main (detailed) crown on screens 720px and wider, and the compact crown below that (transparent, so the map shows through) with "AI January" typed beside it in Bricolage Bold, the wordmark's font. No backing box. The crown alone on phones under 480px (60px) so the nav fits. The home hero's dateline starts with "AI January" so phones still see the name.
+- **Footer:** the main crown at 160px (its minimum size), with the name under it.
 - **Share images:** `scripts/og.mjs` draws the compact lockup from its SVG paths, 300px wide, top left.
 - **Icons:** `/favicon.ico` (16, 32, 48), `favicon.svg` and `favicon-32.png` for tabs, all on a transparent background with a thin paper edge around the crown. `favicon-192.png` for home screens keeps its solid paper square.
 - **Brand page:** `/brand` (`site/pages/brand.html`) offers the logos, colors, fonts, share image and a ready-to-paste description to press and partners. The build zips `site/assets/brand/` into `ai-january-brand-kit.zip` for its "Download everything" button.
