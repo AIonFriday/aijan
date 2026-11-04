@@ -50,7 +50,7 @@ export function tapMessage({ tap, person, result, session, origin }) {
     case 'rsvp':
       return `${from} is going to ${sessionLink(session, origin)}. ${result.count} going.`;
     case 'want':
-      return result.count === IDEA_GOAL ? `*Ready to schedule:* ${IDEA_GOAL} people want ${sessionLink(session, origin)}. Time to pick a date.` : null;
+      return `${from} wants ${sessionLink(session, origin)}. ${result.count} want it.${result.count === IDEA_GOAL ? ' *Ready to schedule.*' : ''}`;
     default:
       return null;
   }

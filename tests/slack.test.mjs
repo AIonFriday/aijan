@@ -53,18 +53,26 @@ test('tapping something already tapped posts nothing', () => {
   assert.equal(message({ type: 'guide', slug: session.slug }, { added: false }, session), null);
 });
 
-test('"I want this" stays quiet below 5', () => {
-  assert.equal(message({ type: 'want', slug: session.slug }, { added: true, count: 4 }, session), null);
-});
-
-test('"I want this" posts when an idea reaches 5', () => {
-  const text = message({ type: 'want', slug: session.slug }, { added: true, count: 5 }, session);
+test('"I want this" below 5 is one line with the running count', () => {
+  const text = message({ type: 'want', slug: session.slug }, { added: true, count: 4 }, session);
+  assert.ok(text.includes('dana@example.com'));
   assert.ok(text.includes('AI for your email'));
-  assert.match(text, /5/);
+  assert.match(text, /4 want it/);
+  assert.equal(text.split('\n').length, 1);
+  assert.doesNotMatch(text, /Ready to schedule/);
 });
 
-test('"I want this" stays quiet past 5', () => {
-  assert.equal(message({ type: 'want', slug: session.slug }, { added: true, count: 6 }, session), null);
+test('"I want this" flags the tap that reaches 5', () => {
+  const text = message({ type: 'want', slug: session.slug }, { added: true, count: 5 }, session);
+  assert.ok(text.includes('dana@example.com'));
+  assert.match(text, /5 want it/);
+  assert.match(text, /Ready to schedule/);
+});
+
+test('"I want this" past 5 is a plain line again', () => {
+  const text = message({ type: 'want', slug: session.slug }, { added: true, count: 6 }, session);
+  assert.match(text, /6 want it/);
+  assert.doesNotMatch(text, /Ready to schedule/);
 });
 
 test('text from the form cannot ping the channel or fake a link', () => {
@@ -129,7 +137,7 @@ test('nothing is sent when Slack is not set up', async () => {
 });
 
 test('nothing is sent for a tap that has no message', async () => {
-  const calls = await withFetch({ ok: true }, () => postTap(env, { ...event, tap: { type: 'want', slug: 'x' }, result: { added: true, count: 2 }, session }));
+  const calls = await withFetch({ ok: true }, () => postTap(env, { ...event, tap: { type: 'want', slug: 'x', on: false }, result: { count: 2 }, session }));
   assert.equal(calls.length, 0);
 });
 
