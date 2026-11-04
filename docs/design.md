@@ -2,6 +2,17 @@
 
 The feeling to aim for: a friendly invitation, not a tech product. A nervous beginner should think "this is for me, it's free, and I'm welcome."
 
+## Logo
+
+The AI January identity kit (IO2-v1) lives in `site/assets/brand/`, with its own README and the full usage guide (`AI-January-IO2-Usage.pdf`). The crown is purple ironwork with "AI" in the negative space; the name is Bricolage Grotesque Bold in ink.
+
+- **Header:** the compact lockup at 240px from 720px wide; the compact crown plus the name in between; the crown alone on phones (60px) so the nav fits. The home hero's dateline starts with "AI January" so phones still see the name.
+- **Share images:** `scripts/og.mjs` draws the compact lockup from its SVG paths, 300px wide, top left.
+- **Icons:** `/favicon.ico` (16, 32, 48), `favicon.svg`, and `favicon-192.png` for home screens.
+- **Kit rules:** light backgrounds only (white or `--paper`), keep space around it, never stretch, crop, rotate or recolor parts. Smallest sizes: master lockup 320px, master crown 160px, compact lockup 240px, compact crown 48px. Use the master versions for big places like posters and slides.
+
+The kit's colors are the site's: purple `#6A4C8C`, ink `#2A2035`, paper `#F1EDF3`.
+
 ## Color
 
 Light theme only. Muted Mardi Gras colors on lavender paper. Never a dark background.
