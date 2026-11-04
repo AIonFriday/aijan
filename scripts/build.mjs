@@ -10,10 +10,12 @@
 //   3. Renders site/pages/*.html with the shared partials into dist/ (sessions.html is the /sessions page).
 //   4. Renders one page per session from site/templates/session.html into dist/sessions/<slug>.html.
 //   5. Draws share images (scripts/og.mjs): dist/og/home.png and dist/og/sessions/<slug>.png.
+//   6. Zips site/assets/brand/ into dist/assets/brand/ai-january-brand-kit.zip for the /brand page.
 //
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html".
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync, existsSync } from 'node:fs';
+import { deflateRawSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderHome, renderSession } from './og.mjs';
@@ -103,6 +105,7 @@ const PAGES = {
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },
   'where.html': { path: '/where', title: 'Where it is · AI January', description: 'Most AI January sessions are at The Nieux, 2040 St. Charles Ave, in the Eiffel Tower building. Address, parking, streetcar, and the rooms.', current: 'where' },
+  'brand.html': { path: '/brand', title: 'Logos and brand · AI January', ogTitle: 'AI January logos and brand', description: 'Logos, colors, fonts, share images, and a short description of AI January, free to use when you write about us or put us on a flyer.' },
   'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
   'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me' },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.' },
@@ -171,5 +174,46 @@ for (const s of visible) {
 
 // ---------- 5. share images for the other pages ----------
 writeFileSync(join(dist, 'og/home.png'), renderHome());
+
+// ---------- 6. the brand kit zip ----------
+// One download with every logo file, the usage guide and the README. A plain zip written by hand (deflate from
+// node:zlib, CRC-32 below) so the build stays dependency-free. Fixed file dates keep the zip the same build to build.
+const crcTable = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+const crc32 = (buf) => {
+  let c = 0xffffffff;
+  for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+};
+function zip(entries) {
+  const DOS_TIME = 0, DOS_DATE = ((2026 - 1980) << 9) | (11 << 5) | 4; // Nov 4, 2026
+  const local = [], central = [];
+  let offset = 0;
+  for (const { name, data } of entries) {
+    const packed = deflateRawSync(data, { level: 9 });
+    const nameBuf = Buffer.from(name, 'utf8');
+    const h = Buffer.alloc(30);
+    h.writeUInt32LE(0x04034b50, 0); h.writeUInt16LE(20, 4); h.writeUInt16LE(0x0800, 6); h.writeUInt16LE(8, 8);
+    h.writeUInt16LE(DOS_TIME, 10); h.writeUInt16LE(DOS_DATE, 12); h.writeUInt32LE(crc32(data), 14);
+    h.writeUInt32LE(packed.length, 18); h.writeUInt32LE(data.length, 22); h.writeUInt16LE(nameBuf.length, 26);
+    const c = Buffer.alloc(46);
+    c.writeUInt32LE(0x02014b50, 0); c.writeUInt16LE(20, 4); c.writeUInt16LE(20, 6); h.copy(c, 8, 6, 28);
+    c.writeUInt32LE(offset, 42);
+    local.push(h, nameBuf, packed);
+    central.push(c, nameBuf);
+    offset += 30 + nameBuf.length + packed.length;
+  }
+  const dir = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(entries.length, 8); end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(dir.length, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...local, dir, end]);
+}
+const brandDir = join(root, 'site/assets/brand');
+const kit = readdirSync(brandDir).sort().map((f) => ({ name: `ai-january-brand-kit/${f}`, data: readFileSync(join(brandDir, f)) }));
+writeFileSync(join(dist, 'assets/brand/ai-january-brand-kit.zip'), zip(kit));
 
 console.log(`Built dist/: ${Object.keys(PAGES).length} pages, ${visible.length} session pages, and ${visible.length + 1} share images.`);

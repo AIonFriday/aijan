@@ -12,6 +12,7 @@ The AI January identity kit (IO2-v1, Nov 2026): a purple ironwork crown with "AI
 | `ai-january-compact-mark-purple.svg` | The crown alone, small (site header on phones, next to the name) | 48px wide |
 | `favicon.svg`, `favicon.ico`, `favicon-32.png` | Browser tab icon. Transparent background, with a thin paper edge so the crown shows on dark tabs too | |
 | `favicon-256.png` | The tab icon as a bigger transparent PNG, for anywhere else you need one | |
+| `ai-january-master-mark-purple-1024.png`, `ai-january-compact-mark-purple-512.png` | The crowns as transparent PNGs, for places that don't take SVG | |
 | `favicon-192.png`, `favicon-512.png` | Home-screen icons. These keep the solid paper square, because phones fill a transparent background with black | |
 
 `-ink` and `-black` versions are for one-color printing.
@@ -24,3 +25,5 @@ The AI January identity kit (IO2-v1, Nov 2026): a purple ironwork crown with "AI
 - Below 48px the "AI" stops being readable, so always put the name next to the crown.
 
 Wordmark font: Bricolage Grotesque, SIL Open Font License (`OFL-BricolageGrotesque.txt`). No trademark clearance has been done.
+
+These files are offered to the public on `/brand` (`site/pages/brand.html`), and the build zips this whole folder into `/assets/brand/ai-january-brand-kit.zip`. Anything added here ends up in that zip.
