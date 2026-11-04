@@ -39,9 +39,25 @@ h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-hei
 .go{font-weight:700;font-size:16px;background:var(--purple);color:var(--btn-ink);border:0;border-radius:10px;padding:10px 16px;box-shadow:0 2px 0 var(--ink)}
 .linkbtn{background:none;border:0;padding:2px 0;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px;font-weight:700}
 .small{background:none;border:0;padding:4px 0;font-size:14px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
-footer{border-top:1px solid var(--line);padding-block:22px calc(28px + env(safe-area-inset-bottom,0px));font-size:14px;color:var(--ink-soft)}
-footer .col{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
-footer a{color:inherit}
+/* Site footer (site/partials/footer.html): logo and tagline, three link columns, the venue address and email.
+   Stacks on phones: brand on top, links in two columns, then visit. Four columns from 900px. */
+.foot{border-top:1px solid var(--line);background:color-mix(in srgb,var(--purple-soft) 45%,var(--paper));padding-block:36px calc(28px + env(safe-area-inset-bottom,0px));font-size:15px;color:var(--ink-soft)}
+.foot-in{max-width:64rem;margin:0 auto}
+.foot-grid{display:grid;gap:28px}
+.foot-mark{display:inline-flex;align-items:center;gap:10px;font:700 24px var(--f-display);letter-spacing:-.01em;color:var(--ink);text-decoration:none}
+.foot-mark img{display:block;width:72px;height:auto}
+.foot-brand p{margin:12px 0 0;max-width:22rem}
+.foot-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 16px}
+.foot-h{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin:0 0 10px}
+.foot ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.foot a{color:var(--ink);text-decoration:none}
+.foot a:hover{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
+.foot address{font-style:normal;line-height:1.45;margin:0 0 18px}
+.foot-visit p:not(.foot-h){margin:0}
+.foot-base{border-top:1px solid var(--line);margin:32px 0 0;padding-top:18px;font-size:14px}
+.foot-base a{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+@media(min-width:600px){.foot-links{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:900px){.foot-grid{grid-template-columns:minmax(0,1.3fr) minmax(0,3fr) minmax(0,1.1fr);gap:40px}}
 
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;position:relative;z-index:3}
 /* Logo (site/assets/brand, see its README): the compact crown (transparent SVG, so the map shows through) with the name typed
