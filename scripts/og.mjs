@@ -464,7 +464,7 @@ function titleBlock(cv, str, top, maxW, sizes, maxLines) {
 export function renderHome() {
   const cv = mapLayer().clone();
   mark(cv);
-  kickerLine(cv, 'Jan 8–28, 2027 · New Orleans', 150);
+  kickerLine(cv, 'Jan 8–29, 2027 · New Orleans', 150);
   const end = titleBlock(cv, 'You’re invited to learn AI.', 178, 700, [100, 92, 84], 2);
   ['Three weeks of free workshops, office hours,', 'and conversations. Beginners welcome.'].forEach((l, i) =>
     text(cv, FONTS.body, 28, l, PAD, end + 62 + i * 40, C.ink));

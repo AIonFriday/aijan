@@ -7,7 +7,7 @@
   const { $, esc, say, act, countFor, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
-  // The days sessions can land on. Days before FIRST show faded; Fri Jan 29 stays open in case a session lands on parade day.
+  // The days sessions can land on (Jan 8–29). Days before FIRST show faded. Parades start Jan 29.
   const FIRST = '2027-01-08';
   const LAST = '2027-01-29';
   const NOTES = { '2027-01-06': 'Twelfth Night', '2027-01-18': 'MLK Day', '2027-01-29': 'Parades start' };

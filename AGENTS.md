@@ -4,7 +4,7 @@ Instructions for AI coding agents (and humans) working in this repo. Read this b
 
 ## What this is
 
-The website for AI January: free AI sessions in New Orleans, Jan 8–28, 2027. A static site built by a tiny Node script and served by a Cloudflare Worker (`aijan-web`). Most visitors are beginners on phones, so plain words and a fast, calm page matter more than features.
+The website for AI January: free AI sessions in New Orleans, Jan 8–29, 2027. A static site built by a tiny Node script and served by a Cloudflare Worker (`aijan-web`). Most visitors are beginners on phones, so plain words and a fast, calm page matter more than features.
 
 ## Commands
 

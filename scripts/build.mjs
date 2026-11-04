@@ -90,14 +90,14 @@ const head = (o) =>
     ogTitle: o.ogTitle || o.title,
     // Each session has its own share image (title and date over the map); other pages share the home one.
     ogImage: `${SITE_URL}${o.ogImage || '/og/home.png'}`,
-    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–28, 2027.',
+    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–29, 2027.',
   });
 const here = ' aria-current="page"';
 // The Sessions page is wider than the rest (calendar plus the vote box), so its header widens to match.
 const header = (current) => fill(partials.header, { barWide: current === 'sessions' ? ' wide' : '', navSessions: current === 'sessions' ? here : '', navGuide: current === 'guide' ? here : '', navKrewe: current === 'krewe' ? here : '', navMe: current === 'me' ? here : '' });
 
 const PAGES = {
-  'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–28, 2027. Beginners welcome.' },
+  'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–29, 2027. Beginners welcome.' },
   'sessions.html': { path: '/sessions', title: 'Sessions · AI January', description: 'Every free AI session in New Orleans this January, on a calendar or by topic. Vote for the ideas you want next.', current: 'sessions' },
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },

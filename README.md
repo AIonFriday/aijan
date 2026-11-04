@@ -1,6 +1,6 @@
 # AI January
 
-Free, practical AI learning in New Orleans, **January 8–28, 2027**. Three weeks of workshops, office hours, and conversations, mostly at The Nieux (2040 St. Charles Ave). Beginners welcome, and there's something for every level.
+Free, practical AI learning in New Orleans, **January 8–29, 2027**. Three weeks of workshops, office hours, and conversations, mostly at The Nieux (2040 St. Charles Ave). Beginners welcome, and there's something for every level.
 
 Presented by [The Nieux Society](https://www.nieuxsociety.com/) and [AI Friday](https://aifri.day/).
 
