@@ -6,7 +6,7 @@ The feeling to aim for: a friendly invitation, not a tech product. A nervous beg
 
 The AI January identity kit (IO2-v1) lives in `site/assets/brand/`, with its own README and the full usage guide (`AI-January-IO2-Usage.pdf`). The crown is purple ironwork with "AI" in the negative space; the name is Bricolage Grotesque Bold in ink.
 
-- **Header:** the compact lockup at 240px from 720px wide; the compact crown plus the name in between; the crown alone on phones (60px) so the nav fits. The home hero's dateline starts with "AI January" so phones still see the name.
+- **Header:** the compact crown (transparent, so the map shows through) with "AI January" typed beside it in Bricolage Bold, the wordmark's font. No backing box. The crown alone on phones under 480px (60px) so the nav fits. The home hero's dateline starts with "AI January" so phones still see the name.
 - **Share images:** `scripts/og.mjs` draws the compact lockup from its SVG paths, 300px wide, top left.
 - **Icons:** `/favicon.ico` (16, 32, 48), `favicon.svg`, and `favicon-192.png` for home screens.
 - **Kit rules:** light backgrounds only (white or `--paper`), keep space around it, never stretch, crop, rotate or recolor parts. Smallest sizes: master lockup 320px, master crown 160px, compact lockup 240px, compact crown 48px. Use the master versions for big places like posters and slides.

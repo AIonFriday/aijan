@@ -42,14 +42,12 @@ footer .col{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-betwe
 footer a{color:inherit}
 
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;position:relative;z-index:3}
-/* Logo (site/assets/brand, see its README). Light backgrounds only. From 720px: the compact lockup (240px, the kit's floor).
-   480-719px: the compact crown with the name beside it. Phones: the crown alone (above the kit's 48px floor) so the nav fits;
+/* Logo (site/assets/brand, see its README): the compact crown (transparent SVG, so the map shows through) with the name typed
+   beside it in Bricolage Bold, the kit's wordmark font. Light backgrounds only. On small phones the crown stands alone so the nav fits;
    the link's aria-label says the name, and the home hero's dateline starts with it. */
-.mark{display:inline-flex;align-items:center;gap:7px;font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:-.01em;color:var(--ink);text-decoration:none;white-space:nowrap;background:color-mix(in srgb,var(--paper) 85%,transparent);border-radius:8px;padding:2px 6px;margin-left:-6px}
-.mark img{display:block;height:auto}
-.mark-crown{width:60px}
-.mark-lockup{display:none!important;width:240px}
-@media(min-width:720px){.mark .mark-lockup{display:block!important}.mark .mark-crown,.mark .mark-name{display:none}}
+.mark{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:-.01em;color:var(--ink);text-decoration:none;white-space:nowrap;text-shadow:0 0 2px var(--paper),0 0 8px var(--paper)}
+.mark-crown{display:block;width:88px;height:auto}
+@media(max-width:719px){.mark{font-size:21px;gap:8px}.mark-crown{width:60px}}
 @media(max-width:479px){.mark-name{display:none}}
 .nav{display:flex;gap:4px;background:color-mix(in srgb,var(--paper) 85%,transparent);border-radius:999px;padding:2px}
 .nav a{color:var(--ink);text-decoration:none;font-size:15px;font-weight:700;padding:6px 10px;border-radius:999px}
