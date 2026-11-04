@@ -216,9 +216,9 @@ class Canvas {
       }
     }
   }
-  // Fills polygons (lists of [x, y], y down) with the non-zero rule and anti-aliasing.
+  // Fills polygons (lists of [x, y], y down) with the non-zero rule (or even-odd) and anti-aliasing.
   // Signed-area accumulation, after font-rs by Raph Levien.
-  fill(polys, col, alpha = 1) {
+  fill(polys, col, alpha = 1, evenOdd = false) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const pl of polys) for (const [x, y] of pl) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
     if (!(maxX > minX)) return;
@@ -261,7 +261,8 @@ class Canvas {
         acc += a[y * mw + x];
         const cx = x + ox;
         if (cy < 0 || cy >= this.h || cx < 0 || cx >= this.w) continue;
-        const cov = Math.min(1, Math.abs(acc));
+        let cov = Math.abs(acc);
+        if (evenOdd) { cov %= 2; if (cov > 1) cov = 2 - cov; } else cov = Math.min(1, cov);
         if (cov > 0.002) this.blend(cy * this.w + cx, col, cov * alpha);
       }
     }
@@ -403,9 +404,41 @@ function mapLayer() {
 }
 
 const PAD = 64;
+// The logo: the compact lockup from site/assets/brand (crown + wordmark as outlined SVG paths), drawn at 300px
+// wide (the kit's floor for the compact lockup is 240px). The file uses only absolute M L H V C Q Z commands.
+const LOGO = (() => {
+  const svg = readFileSync(join(here, '..', 'site/assets/brand/ai-january-compact-lockup-color.svg'), 'utf8');
+  const [, vw, vh] = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/).map(Number);
+  const parts = [...svg.matchAll(/<g[^>]*transform="translate\(([-\d.]+) ([-\d.]+)\)"[^>]*>\s*<path([^>]*)\sd="([^"]+)"/g)].map(([, tx, ty, attrs, d]) => ({
+    tx: +tx, ty: +ty, col: hex(attrs.match(/fill="(#[0-9A-Fa-f]{6})"/)[1]), evenOdd: /fill-rule="evenodd"/.test(attrs), d,
+  }));
+  if (parts.length !== 2) throw new Error('Logo SVG changed shape: expected a symbol and a wordmark path');
+  return { vw, vh, parts };
+})();
+function svgPolys(d, map) {
+  const polys = [], tok = d.match(/[MLHVCQZ]|-?[\d.]+(?:e-?\d+)?/g);
+  let i = 0, cmd = '', cur = [0, 0], start = [0, 0], pl = null;
+  const num = () => +tok[i++], push = (p) => { pl.push(map(p)); cur = p; };
+  while (i < tok.length) {
+    if (/[A-Z]/.test(tok[i])) cmd = tok[i++];
+    if (cmd === 'M') { pl = []; polys.push(pl); start = [num(), num()]; push(start); cmd = 'L'; }
+    else if (cmd === 'L') push([num(), num()]);
+    else if (cmd === 'H') push([num(), cur[1]]);
+    else if (cmd === 'V') push([cur[0], num()]);
+    else if (cmd === 'C') {
+      const [x0, y0] = cur, x1 = num(), y1 = num(), x2 = num(), y2 = num(), x3 = num(), y3 = num();
+      for (let k = 1; k <= 8; k++) { const t = k / 8, u = 1 - t; push([u*u*u*x0 + 3*u*u*t*x1 + 3*u*t*t*x2 + t*t*t*x3, u*u*u*y0 + 3*u*u*t*y1 + 3*u*t*t*y2 + t*t*t*y3]); }
+    } else if (cmd === 'Q') {
+      const [x0, y0] = cur, x1 = num(), y1 = num(), x2 = num(), y2 = num();
+      for (let k = 1; k <= 6; k++) { const t = k / 6, u = 1 - t; push([u*u*x0 + 2*u*t*x1 + t*t*x2, u*u*y0 + 2*u*t*y1 + t*t*y2]); }
+    } else if (cmd === 'Z') { cur = start; cmd = ''; }
+    else throw new Error(`Unsupported SVG path command "${cmd || tok[i]}" in the logo`);
+  }
+  return polys;
+}
 function mark(cv) {
-  const f = FONTS.display, w = text(cv, f, 30, 'AI ', PAD, 72, C.ink, { tracking: -0.01 });
-  text(cv, f, 30, 'January', PAD + w, 72, C.purple, { tracking: -0.01 });
+  const width = 300, s = width / LOGO.vw, x = PAD - 40 * s, y = 30; // the file has a 40-unit margin; line the crown up with the text
+  for (const p of LOGO.parts) cv.fill(svgPolys(p.d, ([px, py]) => [x + (p.tx + px) * s, y + (p.ty + py) * s]), p.col, 1, p.evenOdd);
 }
 function kickerLine(cv, str, y) { text(cv, FONTS.mono, 19, str.toUpperCase(), PAD, y, C.purple, { tracking: 0.08 }); }
 
