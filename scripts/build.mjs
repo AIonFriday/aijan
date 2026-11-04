@@ -102,6 +102,7 @@ const PAGES = {
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },
   'where.html': { path: '/where', title: 'Where it is · AI January', description: 'Most AI January sessions are at The Nieux, 2040 St. Charles Ave, in the Eiffel Tower building. Address, parking, streetcar, and the rooms.', current: 'where' },
+  'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
   'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me' },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.' },
 };
