@@ -101,6 +101,7 @@ const PAGES = {
   'sessions.html': { path: '/sessions', title: 'Sessions · AI January', description: 'Every free AI session in New Orleans this January, on a calendar or by topic. Vote for the ideas you want next.', current: 'sessions' },
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },
+  'where.html': { path: '/where', title: 'Where it is · AI January', description: 'Most AI January sessions are at The Nieux, 2040 St. Charles Ave, in the Eiffel Tower building. Address, parking, streetcar, and the rooms.', current: 'where' },
   'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me' },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.' },
 };
@@ -151,6 +152,8 @@ for (const s of visible) {
     count: s.count,
     startsAt: s.startsAt || '',
     location,
+    // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
+    locationHtml: location === data.defaultLocation ? `<a href="/where">${esc(location)}</a>` : esc(location),
     description: s.description,
     when,
     level: data.levels[s.level],
