@@ -39,17 +39,19 @@ export async function toggle(env, user, slug, kind, body) {
   if (!(kind in KINDS)) return err(404, 'Not found');
   if (KINDS[kind] && s.status !== KINDS[kind]) return err(409, kind === 'rsvp' ? 'This one isn’t scheduled yet.' : 'This one is already scheduled.');
   const on = body.on !== false;
+  let added = false;
   if (on) {
     const guideAs = kind === 'guide' ? text(body.guideAs, 80) || null : null;
-    await env.DB.prepare(
+    const saved = await env.DB.prepare(
       'INSERT INTO attendance (session_id, user_id, kind, guide_as, guide_status) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING'
     ).bind(slug, user.id, kind, guideAs, kind === 'guide' ? 'requested' : null).run();
+    added = saved.meta.changes > 0;
   } else {
     await env.DB.prepare('DELETE FROM attendance WHERE session_id = ? AND user_id = ? AND kind = ?').bind(slug, user.id, kind).run();
   }
   const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM attendance WHERE session_id = ? AND kind = ?').bind(slug, kind).first();
-  // count = seed count + saved taps (what people see); saved = saved taps only.
-  return json({ ok: true, on, slug, kind, count: kind === 'guide' ? null : s.count + row.n, saved: row.n });
+  // count = seed count + saved taps (what people see); saved = saved taps only; added = this tap was new.
+  return json({ ok: true, on, added, slug, kind, count: kind === 'guide' ? null : s.count + row.n, saved: row.n });
 }
 
 // POST /api/suggestions  { text }

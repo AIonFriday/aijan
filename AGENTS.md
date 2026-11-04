@@ -12,12 +12,13 @@ The website for AI January: free AI sessions in New Orleans, Jan 8–29, 2027. A
 npm install
 npm run build    # node scripts/build.mjs: data + site/ -> dist/
 npm run check    # validate data/sessions.json, then check dist/ links (run build first)
+npm test         # the tests in tests/
 npm run dev      # apply D1 migrations locally, then wrangler dev on http://localhost:8787
 ```
 
 For local sign-in, copy `.dev.vars.example` to `.dev.vars` first. Emailed sign-in links print in the terminal.
 
-Always run `npm run build && npm run check` before you finish. There are no other tests yet.
+Always run `npm run build && npm run check && npm test` before you finish.
 
 ## Layout
 
@@ -68,4 +69,5 @@ Always run `npm run build && npm run check` before you finish. There are no othe
 - `docs/schema.md`: the data model for D1.
 - `docs/design.md`: tokens, type, layout rules.
 - `docs/auth.md`: the sign-in plan.
+- `docs/slack.md`: how form submissions and taps reach the organizers in Slack.
 - `docs/roadmap.md`: what's not built yet.

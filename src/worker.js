@@ -13,6 +13,7 @@
 import { makeAuth, providers, BASE_PATH } from './auth.js';
 import * as api from './api.js';
 import { sendTapNote } from './email.js';
+import { postTap } from './slack.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const later = (ctx, p) => ctx?.waitUntil ? ctx.waitUntil(p.catch((e) => console.error(e))) : p.catch((e) => console.error(e));
@@ -52,6 +53,14 @@ export default {
       if (origin && origin !== url.origin) return api.err(403, 'Wrong origin');
       if (!(request.headers.get('Content-Type') || '').startsWith('application/json')) return api.err(415, 'Send JSON');
       const body = await request.json().catch(() => ({}));
+      // Tells the organizers in Slack. Never holds up or breaks the tap itself.
+      const tellOrganizers = (tap, person, result) =>
+        later(ctx, postTap(env, { tap, person, result, session: api.session(tap.slug), origin: url.origin }));
+      // For the routes below, which hand their response straight back to the browser.
+      const tellAfter = async (tap, res) => {
+        if (res.ok) tellOrganizers(tap, user, await res.clone().json());
+        return res;
+      };
 
       // Email first: a signed-out tap with just an email. The tap counts now; the email carries the details
       // and a one-time link to My sessions. See emailFirst in src/auth.js for who stays in on this device.
@@ -67,6 +76,7 @@ export default {
         const res = await api.run(env, { id: who.userId }, tap);
         if (!res.ok) return res;
         const result = await res.json();
+        tellOrganizers(tap, { email }, result);
         if (await api.canEmail(env, email)) {
           mail.tapNote = { tap, session: api.session(tap.slug), count: result.count };
           later(ctx, auth.api.signInMagicLink({ body: { email, callbackURL: '/me' }, headers: request.headers }));
@@ -85,11 +95,11 @@ export default {
         if (res.ok && m[2] === 'rsvp' && body.on !== false) {
           later(ctx, sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session: api.session(m[1]), origin: url.origin, url: `${url.origin}/me`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) }));
         }
-        return res;
+        return tellAfter({ ...body, type: m[2], slug: m[1] }, res);
       }
-      if (path === '/api/suggestions') return api.suggest(env, user, body);
-      if (path === '/api/guide-offers') return api.offerToGuide(env, user, body);
-      if (path === '/api/krewes') return api.kreweRequest(env, user, body);
+      if (path === '/api/suggestions') return tellAfter({ ...body, type: 'suggest' }, await api.suggest(env, user, body));
+      if (path === '/api/guide-offers') return tellAfter({ ...body, type: 'guideOffer' }, await api.offerToGuide(env, user, body));
+      if (path === '/api/krewes') return tellAfter({ ...body, type: 'krewe' }, await api.kreweRequest(env, user, body));
       return api.err(404, 'Not found');
     } catch (e) {
       console.error(e);
