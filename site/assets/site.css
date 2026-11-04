@@ -27,10 +27,12 @@ h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-hei
 .sessions{padding-top:28px}
 .ask{margin-top:24px}
 .ask p{margin:0 0 10px;font-weight:700;font-size:17px}
-.ask-opts{display:flex;flex-wrap:wrap;gap:8px}
-.ask-opts button{border:1.5px solid var(--purple);background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--ink);border-radius:999px;padding:10px 16px;font-size:16px;font-weight:700}
+.ask-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:32rem}
+.ask-opts button{display:grid;gap:2px;text-align:left;border:1.5px solid var(--purple);background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:16px;font-weight:700;line-height:1.25}
+.ask-opts button span{font-weight:400;font-size:14px;color:var(--ink-soft)}
 .ask-opts button:hover{background:var(--purple);color:var(--btn-ink)}
-.ask-opts .all{border-color:transparent;background:none;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
+.ask-opts button:hover span{color:var(--purple-soft)}
+.ask-opts .all{grid-column:1/-1;justify-self:start;padding:6px 0;border-color:transparent;background:none;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
 .ask-opts .all:hover{background:none;color:var(--purple)}
 
 .opts{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
@@ -76,12 +78,16 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 }
 
 
-/* sessions: one row of "show me" chips, then two calm groups. Cards show when, what, who, and one button; details open on tap. */
+/* sessions: a row of topic chips and a quieter row of level chips, then two calm groups. Cards show when, what, who, and one button; details open on tap. */
 .show{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;margin:4px 0 8px;scrollbar-width:none}
 .show::-webkit-scrollbar{display:none}
 @media(min-width:700px){.show{flex-wrap:wrap;overflow:visible}}
 .chip{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-size:15px;white-space:nowrap}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.show.lvl{align-items:center;margin-top:0}
+.show.lvl .lab{flex:0 0 auto;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-right:2px}
+.show.lvl .chip{font-size:14px;padding:5px 12px}
+.show.lvl .chip[aria-pressed="true"]{background:var(--purple-soft);border-color:var(--purple);color:var(--ink)}
 .group{margin-top:30px}
 .ghead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 4px}
 .ghead h3{font-size:22px}

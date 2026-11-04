@@ -17,7 +17,7 @@ This is the plan for D1 (`aijan-db`). Today the site reads sessions from `data/s
 | `starts_at` | text, nullable | ISO time with offset. Empty means not set yet |
 | `length_min` | integer | Default 90 |
 | `location` | text, nullable | Empty means The Nieux, 2040 St. Charles Ave |
-| `level` | text | `all`, `new`, `sometimes`, `daily`, `build` |
+| `level` | text | `all`, `new` (New to AI), `sometimes` (Now and then), `daily` (Daily) |
 | `topics` | text (JSON list) | `work`, `life`, `make`, `curious` |
 | `tags` | text (JSON list) | Free words like `restaurants`, `faith` |
 | `office_hours` | boolean | Back end only, never shown as a category |
@@ -31,7 +31,7 @@ This is the plan for D1 (`aijan-db`). Today the site reads sessions from `data/s
 | Field | Type | Notes |
 | --- | --- | --- |
 | `id`, `name`, `email`, `image` | | From Better Auth (Google, Apple, email link) |
-| `level` | text, nullable | Same five levels. Asked once, used to suggest sessions |
+| `level` | text, nullable | Same levels as sessions. Asked once, used to suggest sessions |
 | `newsletter` | boolean | Newsletter tool not chosen yet |
 | `role` | text | `member` or `organizer` |
 
