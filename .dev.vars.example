@@ -1,0 +1,15 @@
+# Copy to .dev.vars for `npm run dev`. .dev.vars is gitignored. Never commit real keys.
+# Make a secret with: openssl rand -base64 32
+BETTER_AUTH_SECRET=change-me-to-a-long-random-string
+
+# Print emailed sign-in links in the terminal instead of sending them (localhost only).
+DEV_LOG_LINKS=true
+
+# Optional locally. Each sign-in button only shows when its keys are set.
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+# APPLE_CLIENT_ID=
+# APPLE_TEAM_ID=
+# APPLE_KEY_ID=
+# APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+# RESEND_API_KEY=

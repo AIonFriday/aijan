@@ -4,6 +4,8 @@
   "name": "aijan-web",
   "main": "src/worker.js",
   "compatibility_date": "2026-10-01",
+  // Better Auth uses a few Node APIs (AsyncLocalStorage).
+  "compatibility_flags": ["nodejs_compat"],
   "build": { "command": "node scripts/build.mjs" },
   "assets": {
     "directory": "./dist",
@@ -13,6 +15,15 @@
     "not_found_handling": "404-page",
     // Only /api/* reaches the Worker code; everything else is served straight from dist/.
     "run_worker_first": ["/api/*"]
+  },
+  // Users, sign-in sessions, and taps. Tables are in migrations/. Preview links share this database.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "aijan-db", "database_id": "8dd790c4-6e28-422b-8ca0-d0f281df4858", "migrations_dir": "migrations" }
+  ],
+  // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
+  "vars": {
+    // Sign-in emails come from this address. Its domain must be verified in Resend.
+    "EMAIL_FROM": "AI January <hello@joinaijanuary.com>"
   },
   "observability": { "enabled": true }
 }

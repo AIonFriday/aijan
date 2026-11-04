@@ -4,13 +4,20 @@
   "description": "AI January: free AI sessions in New Orleans, Jan 8–28, 2027. Site and Worker.",
   "license": "MIT",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs --check && node scripts/check-html.mjs",
-    "dev": "wrangler dev"
+    "dev": "wrangler d1 migrations apply aijan-db --local && wrangler dev",
+    "db:migrate": "wrangler d1 migrations apply aijan-db --remote",
+    "deploy": "wrangler d1 migrations apply aijan-db --remote && wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.151.0"
+  },
+  "dependencies": {
+    "better-auth": "1.7.12"
   }
 }

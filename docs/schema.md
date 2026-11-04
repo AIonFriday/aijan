@@ -1,6 +1,8 @@
 # Data model
 
-This is the plan for D1 (`aijan-db`). Today the site reads `data/sessions.json`, which uses the same field names in camelCase.
+This is the plan for D1 (`aijan-db`). Today the site reads sessions from `data/sessions.json`, which uses the same field names in camelCase.
+
+**Built so far** (`migrations/0001_sign_in_and_taps.sql`): Better Auth's `user`, `session`, `account`, `verification`, plus `attendance`, `suggestions`, `guide_offers`, and `krewe_requests`. The `sessions` table isn't built yet, so for now `attendance.session_id` holds the session's slug. When sessions move to D1, seed them with `id` = slug and nothing else has to change.
 
 ## sessions
 
@@ -33,7 +35,7 @@ This is the plan for D1 (`aijan-db`). Today the site reads `data/sessions.json`,
 | `newsletter` | boolean | Newsletter tool not chosen yet |
 | `role` | text | `member` or `organizer` |
 
-Better Auth also creates its own `account`, `session` and `verification` tables.
+The `user` columns from Better Auth are camelCase (`emailVerified`, `createdAt`, `updatedAt`). Better Auth also has its own `account`, `session` and `verification` tables.
 
 ## attendance
 
@@ -54,6 +56,12 @@ A session can have any number of guides.
 Ideas people send in. Never shown until an organizer turns one into a `proposed` session.
 
 `id`, `text`, `user_id`, `status` (`new`, `accepted`, `declined`), `session_id` (once accepted), `created_at`.
+
+## guide_offers
+
+The offer-to-guide form on `/guide`, not tied to one session. Offers for one session are `attendance` rows with `kind = guide`.
+
+`id`, `user_id`, `topics` (JSON list: `work`, `life`, `make`, `curious`), `what`, `guide_as` (group name, if any), `details` (JSON: `level`, `times`), `status` (`new`, `approved`, `declined`), `created_at`.
 
 ## krewe_requests
 

@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { renderHome, renderSession } from './og.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SITE_URL = process.env.SITE_URL || 'https://aijan.example'; // domain not chosen yet
+const SITE_URL = process.env.SITE_URL || 'https://joinaijanuary.com';
 const NEEDED = 5;
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
@@ -29,7 +29,7 @@ const fill = (tpl, vars) =>
     if (!(k in vars)) throw new Error(`Template value {{${k}}} is missing`);
     return k.endsWith('Html') || k in RAW ? vars[k] : esc(vars[k]);
   });
-const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navGuide: 1, navKrewe: 1 };
+const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navGuide: 1, navKrewe: 1, navMe: 1 };
 
 // ---------- 1. validate ----------
 const data = JSON.parse(read('data/sessions.json'));
@@ -92,12 +92,14 @@ const head = (o) =>
     ogImage: `${SITE_URL}${o.ogImage || '/og/home.png'}`,
     ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–28, 2027.',
   });
-const header = (current) => fill(partials.header, { navGuide: current === 'guide' ? ' aria-current="page"' : '', navKrewe: current === 'krewe' ? ' aria-current="page"' : '' });
+const here = ' aria-current="page"';
+const header = (current) => fill(partials.header, { navGuide: current === 'guide' ? here : '', navKrewe: current === 'krewe' ? here : '', navMe: current === 'me' ? here : '' });
 
 const PAGES = {
   'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–28, 2027. Beginners welcome.' },
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },
+  'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me' },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.' },
 };
 for (const file of readdirSync(join(root, 'site/pages'))) {
