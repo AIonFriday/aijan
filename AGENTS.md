@@ -22,7 +22,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 
 ## Layout
 
-- `data/sessions.json`: session data. The build validates it (slug format, status, level, topics, timezone offset on `startsAt`).
+- `data/sessions.json`: session data. The build validates it (slug format, status, level, topics, timezone offset on `startsAt`). While `"example": true`, session pages are noindexed and left out of the sitemap, llms.txt and Event structured data; set it to `false` when the real lineup lands.
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, rendered once per session to `dist/sessions/<slug>.html` and served at `/sessions/<slug>`.
 - `scripts/og.mjs`: draws the 1200x630 share images at build time (`/og/home.png`, `/og/sessions/<slug>.png`) with fonts from `scripts/fonts/`. Plain Node, no packages.
@@ -43,6 +43,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 - Session URLs are `/sessions/<slug>`. Slugs never change once shared.
 - All times are New Orleans time (`America/Chicago`). Store `startsAt` with an offset.
 - Mobile first. Check every change at 390px wide and at desktop width.
+- Search basics: every page has one `<h1>` and a meta description, and structured data is valid JSON. `check-html.mjs` enforces this. The build writes `sitemap.xml`, `robots.txt`, `llms.txt` and schema.org JSON-LD (Organization, EventSeries and FAQPage on the home page; Place on /where; Event on each scheduled session).
 
 **Code rules:**
 - No frameworks. Plain HTML, CSS and JavaScript in the browser, with no libraries. The build script uses only Node built-ins. The one runtime dependency is `better-auth`, bundled into the Worker; don't add others without an issue.

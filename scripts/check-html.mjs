@@ -34,6 +34,13 @@ for (const f of html) {
     if (!url.startsWith('/')) { problems.push(`${where}: use a root-relative link, not "${url}"`); continue; }
     if (!resolves(url)) problems.push(`${where}: broken link ${url}`);
   }
+  // Search basics: one <h1> per page, a description, and structured data that parses.
+  const h1s = (src.match(/<h1[\s>]/g) || []).length;
+  if (h1s !== 1) problems.push(`${where}: needs exactly one <h1> (has ${h1s})`);
+  if (!/<meta name="description" content="[^"]+">/.test(src)) problems.push(`${where}: missing meta description`);
+  for (const [, json] of src.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)) {
+    try { JSON.parse(json); } catch { problems.push(`${where}: structured data (ld+json) is not valid JSON`); }
+  }
   // Share images are absolute URLs (crawlers need that), so check their path against dist/ too.
   for (const [, path] of src.matchAll(/property="og:image" content="https?:\/\/[^/"]+(\/[^"]*)"/g)) {
     if (!resolves(path)) problems.push(`${where}: share image ${path} was not built`);
@@ -49,6 +56,7 @@ else {
   if (!urls.length) problems.push('sitemap.xml lists no pages');
   for (const u of urls) if (!resolves(u.pathname)) problems.push(`sitemap.xml: broken link ${u.pathname}`);
 }
+if (!existsSync(join(dist, 'llms.txt'))) problems.push('llms.txt is missing');
 if (!existsSync(robotsPath) || !/^Sitemap: https?:\/\/\S+\/sitemap\.xml$/m.test(readFileSync(robotsPath, 'utf8'))) problems.push('robots.txt must name the sitemap');
 
 if (problems.length) {

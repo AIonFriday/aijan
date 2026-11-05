@@ -10,7 +10,7 @@
 //   3. Renders site/pages/*.html with the shared partials into dist/ (sessions.html is the /sessions page).
 //   4. Renders one page per session from site/templates/session.html into dist/sessions/<slug>.html.
 //   5. Draws share images (scripts/og.mjs): dist/og/home.png and dist/og/sessions/<slug>.png.
-//   6. Writes dist/sitemap.xml, dist/robots.txt and the IndexNow key file.
+//   6. Writes dist/sitemap.xml, dist/robots.txt, dist/llms.txt and the IndexNow key file.
 //   7. Zips site/assets/brand/ into dist/assets/brand/ai-january-brand-kit.zip for the /brand page.
 //
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html".
@@ -85,8 +85,52 @@ const partials = {
   footer: read('site/partials/footer.html').replace('{{brandLink}}', existsSync(join(root, 'site/pages/brand.html')) ? '<li><a href="/brand">Brand and logos</a></li>' : ''),
   sheet: read('site/partials/sheet.html'),
 };
+// ---------- search engines and answer engines ----------
+// Structured data (schema.org JSON-LD) so Google and AI answer engines can read the plain facts: what this is,
+// when, where, that it's free, and who runs it. </ is escaped so a value can never close the script tag.
+const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
+const PLACE = {
+  '@type': 'Place',
+  name: 'The Nieux',
+  address: { '@type': 'PostalAddress', streetAddress: '2040 St. Charles Ave', addressLocality: 'New Orleans', addressRegion: 'LA', postalCode: '70130', addressCountry: 'US' },
+};
+const PRESENTERS = [
+  { '@type': 'Organization', name: 'Nieux Society', url: 'https://www.nieuxsociety.com/' },
+  { '@type': 'Organization', name: 'AI Friday', url: 'https://aifri.day/' },
+];
+const ORG = { '@type': 'Organization', '@id': `${SITE_URL}/#org`, name: 'AI January', url: `${SITE_URL}/`, logo: `${SITE_URL}/assets/brand/favicon-512.png`, email: 'january@aifri.day', parentOrganization: PRESENTERS };
+const FREE = { '@type': 'Offer', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
+const MONTH_EVENT = {
+  '@type': 'EventSeries',
+  '@id': `${SITE_URL}/#event`,
+  name: 'AI January',
+  description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans. Beginners welcome.',
+  url: `${SITE_URL}/`,
+  image: `${SITE_URL}/og/home.png`,
+  startDate: '2027-01-08',
+  endDate: '2027-01-29',
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  isAccessibleForFree: true,
+  location: PLACE,
+  organizer: PRESENTERS,
+  offers: { ...FREE, url: `${SITE_URL}/sessions` },
+};
+// The home page's questions, read from its own <details> so the structured copy never drifts from the page.
+const strip = (h) => h.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').replace(/&amp;/g, '&').trim();
+const faqLd = (html) => ({
+  '@type': 'FAQPage',
+  mainEntity: [...html.matchAll(/<details><summary>(.*?)<\/summary>(.*?)<\/details>/gs)].map(([, q, a]) => ({
+    '@type': 'Question', name: strip(q), acceptedAnswer: { '@type': 'Answer', text: strip(a.replace(/<\/p>\s*<p>/g, '</p> <p>')) },
+  })),
+});
+const graph = (...items) => ld({ '@context': 'https://schema.org', '@graph': items });
+
 const head = (o) =>
   fill(read('site/partials/head.html'), {
+    // Personal pages, the 404 and example sessions stay out of search results.
+    robotsHtml: o.noindex ? '<meta name="robots" content="noindex">' : '',
+    jsonLdHtml: o.jsonLdHtml || '',
     title: o.title,
     description: o.description,
     url: SITE_URL + o.path,
@@ -109,13 +153,18 @@ const PAGES = {
   'brand.html': { path: '/brand', title: 'Logos and brand · AI January', ogTitle: 'AI January logos and brand', description: 'Logos, colors, fonts, share images, and a short description of AI January, free to use when you write about us or put us on a flyer.' },
   'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
   'privacy.html': { path: '/privacy', title: 'Privacy · AI January', description: 'What AI January keeps when you use the site, who sees it, and how to have it deleted.' },
-  'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me' },
-  '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.' },
+  'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me', noindex: true },
+  '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.', noindex: true },
 };
 for (const file of readdirSync(join(root, 'site/pages'))) {
   const meta = PAGES[file];
   if (!meta) throw new Error(`Add site/pages/${file} to PAGES in scripts/build.mjs`);
-  const html = fill(read(`site/pages/${file}`), { ...partials, head: head(meta), header: header(meta.current) });
+  const src = read(`site/pages/${file}`);
+  const jsonLdHtml = file === 'index.html'
+    ? graph(ORG, { '@type': 'WebSite', '@id': `${SITE_URL}/#site`, name: 'AI January', url: `${SITE_URL}/`, publisher: { '@id': ORG['@id'] } }, MONTH_EVENT, faqLd(src))
+    : file === 'where.html' ? graph({ ...PLACE, '@id': `${SITE_URL}/where#place`, url: `${SITE_URL}/where` })
+    : '';
+  const html = fill(src, { ...partials, head: head({ ...meta, jsonLdHtml }), header: header(meta.current) });
   writeFileSync(join(dist, file), html);
 }
 
@@ -124,6 +173,28 @@ const tz = data.timeZone;
 const part = (d, o) => d.toLocaleString('en-US', { timeZone: tz, ...o });
 const clock = (d) => part(d, { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
 const tpl = read('site/templates/session.html');
+// One scheduled session as a schema.org Event, part of the AI January series.
+const sessionEvent = (s, location) => {
+  const start = new Date(s.startsAt);
+  const iso = (d) => d.toLocaleString('sv-SE', { timeZone: tz }).replace(' ', 'T') + s.startsAt.slice(-6);
+  return {
+    '@type': 'Event',
+    name: s.title,
+    description: s.description,
+    url: `${SITE_URL}/sessions/${s.slug}`,
+    image: `${SITE_URL}/og/sessions/${s.slug}.png`,
+    startDate: s.startsAt,
+    endDate: iso(new Date(start.getTime() + 90 * 60000)),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    isAccessibleForFree: true,
+    location: location === data.defaultLocation ? PLACE : { '@type': 'Place', name: location, address: location },
+    organizer: PRESENTERS,
+    ...(s.guides.length ? { performer: s.guides.map((name) => ({ '@type': 'Person', name })) } : {}),
+    offers: { ...FREE, url: `${SITE_URL}/sessions/${s.slug}` },
+    superEvent: { '@id': `${SITE_URL}/#event` },
+  };
+};
 for (const s of visible) {
   const scheduled = s.status === 'scheduled';
   const location = s.location || data.defaultLocation;
@@ -151,6 +222,8 @@ for (const s of visible) {
     head: head({
       path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: scheduled ? 'event' : 'website',
       ogImage: `/og/sessions/${s.slug}.png`, ogImageAlt: `${s.title}. ${scheduled ? when : 'Not scheduled yet'}. A free AI session in New Orleans.`,
+      noindex: data.example,
+      jsonLdHtml: scheduled && !data.example ? graph(sessionEvent(s, location)) : '',
     }),
     header: header(),
     slug: s.slug,
@@ -179,12 +252,47 @@ writeFileSync(join(dist, 'og/home.png'), renderHome());
 
 // ---------- 6. sitemap, robots.txt and IndexNow key ----------
 // /me is personal and /404 isn't a real page, so neither goes to search engines.
+// Example sessions (data.example) stay out too, so search engines never list made-up guides and dates.
+const listedSessions = data.example ? [] : visible;
 const sitemapPaths = [
-  ...Object.values(PAGES).map((p) => p.path).filter((p) => p !== '/me' && p !== '/404'),
-  ...visible.map((s) => `/sessions/${s.slug}`),
+  ...Object.values(PAGES).filter((p) => !p.noindex).map((p) => p.path),
+  ...listedSessions.map((s) => `/sessions/${s.slug}`),
 ];
 writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((p) => `  <url><loc>${esc(SITE_URL + p)}</loc></url>`).join('\n')}\n</urlset>\n`);
-writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+// llms.txt (llmstxt.org): a short plain-text summary for AI assistants that read the site, with the key pages.
+const llmsSessions = listedSessions.filter((s) => s.status === 'scheduled').map((s) => {
+  const d = new Date(s.startsAt);
+  return `- [${s.title}](${SITE_URL}/sessions/${s.slug}): ${part(d, { weekday: 'short', month: 'short', day: 'numeric' })}, ${clock(d)}. ${s.description}`;
+});
+const pageLine = (file, label) => `- [${label}](${SITE_URL}${PAGES[file].path}): ${PAGES[file].description}`;
+writeFileSync(join(dist, 'llms.txt'), `# AI January
+
+> Free AI sessions for everyone in New Orleans, Jan 8–29, 2027. Three weeks of workshops, office hours, and conversations, most at The Nieux, 2040 St. Charles Ave. Beginners welcome. Presented by Nieux Society and AI Friday.
+
+- Every session is free. No AI experience needed.
+- Sessions are 90 minutes, on weekdays, grouped by topic: My job, Home and family, Making things, Just curious.
+- The month starts with AI Friday: the kickoff, Friday Jan 8, 2027, 9 AM.
+- Anyone can suggest a session. Once five people want it and a guide signs up, it goes on the calendar.
+- Volunteers who lead sessions are called guides. No slides: they open a laptop and help the people at their table.
+- Groups (an office, congregation, class, or block) can ask for their own session.
+- All times are New Orleans time (Central).
+- Contact: january@aifri.day
+
+## Pages
+
+${pageLine('index.html', 'Home')}
+${pageLine('sessions.html', 'Sessions')}
+${pageLine('where.html', 'Where it is')}
+${pageLine('guide.html', 'Guide a session')}
+${pageLine('krewe.html', 'Bring a group')}
+${pageLine('why.html', 'Why AI January')}
+${llmsSessions.length ? `\n## Scheduled sessions\n\n${llmsSessions.join('\n')}\n` : ''}
+## Optional
+
+${pageLine('brand.html', 'Logos and brand')}
+${pageLine('privacy.html', 'Privacy')}
+`);
 // IndexNow reads this file at the site root to confirm we own the domain. The key is public by design.
 const INDEXNOW_KEY = '5549035db5f241c1b11c0c47c3a7f890';
 writeFileSync(join(dist, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY);

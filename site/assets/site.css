@@ -14,14 +14,14 @@
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5}
-section[id],h2[id]{scroll-margin-top:16px}
+section[id],h2[id],h1[id]{scroll-margin-top:16px}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .col{max-width:46rem;margin:0 auto}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .example{font:12px var(--f-mono);color:var(--ink-soft);background:var(--gold-soft);border-radius:6px;padding:3px 8px;display:inline-block;margin-left:8px;vertical-align:1px}
 .kicker{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
-h2{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,7vw,46px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
+h2,h1.as-h2{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,7vw,46px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
 h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-height:1.2}
 .lede{margin:0 0 20px;color:var(--ink-soft);max-width:36rem}
 .sessions{padding-top:28px}
