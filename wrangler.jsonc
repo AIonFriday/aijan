@@ -39,7 +39,7 @@
     // The one channel where @Beignet answers and can use the admin tools. Mentions anywhere else are ignored.
     "SLACK_ADMIN_CHANNEL": "C0CF1Q9AMBK",
     // The model Beignet uses, as an OpenRouter id (https://openrouter.ai/models). Any model that supports tools works.
-    "BOT_MODEL": "anthropic/claude-opus-5.5"
+    "BOT_MODEL": "anthropic/claude-sonnet-5.5"
   },
   "observability": { "enabled": true }
 }

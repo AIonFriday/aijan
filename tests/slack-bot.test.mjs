@@ -97,7 +97,7 @@ test('a mention runs Claude’s tool calls as an organizer and replies in the th
   }
   const first = calls.claude[0];
   assert.equal(first.url, 'https://openrouter.ai/api/v1/chat/completions');
-  assert.equal(first.model, 'anthropic/claude-opus-5.5');
+  assert.equal(first.model, 'anthropic/claude-sonnet-5.5');
   const names = first.tools.map((t) => t.function.name);
   assert.ok(names.includes('list_sessions') && names.includes('edit_session'));
   assert.ok(!names.includes('add_admin') && !names.includes('remove_admin'), 'no owner tools in Slack');

@@ -30,7 +30,7 @@ In one channel, anyone can @mention Beignet and get an answer in the thread. Bei
 - The channel is `SLACK_ADMIN_CHANNEL` under `vars` in `wrangler.jsonc`. Right now that's the same private `#ai-january-inbox` channel, so its emails stay private. Mentions anywhere else are ignored.
 - Beignet acts as an organizer, never an owner, so it can't make or remove admin keys (a new key would be posted for the whole channel to read). Tool calls are logged with `via: "slack"` and the Slack user's id.
 - Mention it in the thread under one of its own posts (like a new session idea) and it reads that post too: "@Beignet add this as an idea for Making things".
-- The model is `BOT_MODEL` under `vars` in `wrangler.jsonc`, an OpenRouter id like `anthropic/claude-opus-5.5`. Any OpenRouter model that supports tools works; change the id and merge.
+- The model is `BOT_MODEL` under `vars` in `wrangler.jsonc`, an OpenRouter id, now `anthropic/claude-sonnet-5.5`. Any OpenRouter model that supports tools works; change the id and merge. The OpenRouter key has a $10 a day cap, so each mention is kept small: at most 6 tool rounds, short answers, light thinking, and the last 20 thread messages. That's roughly 5 to 10 cents a mention on Sonnet.
 
 How it works: Slack posts each event to `POST /api/slack/events`. The Worker checks Slack's signature, hands the mention to a Durable Object (`SlackBot`, one per Slack event id, so Slack's retries don't run twice) and answers Slack right away. The Durable Object does the work from an alarm, so a slow answer isn't cut off. It adds :eyes: to the message while it works. The code is `src/slack-bot.js`, with tests in `tests/slack-bot.test.mjs`.
 

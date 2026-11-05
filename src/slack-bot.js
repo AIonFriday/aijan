@@ -13,9 +13,9 @@ import { toolsFor, runTool, INSTRUCTIONS } from './mcp.js';
 
 const SLACK = 'https://slack.com/api/';
 const MAX_AGE_S = 60 * 5; // Slack's advice: refuse requests signed more than five minutes ago.
-const MAX_ROUNDS = 10; // tool rounds per mention, so a confused loop can't run forever
-const HISTORY = 30; // thread messages the model sees
-const DEFAULT_MODEL = 'anthropic/claude-opus-5.5'; // an OpenRouter model id
+const MAX_ROUNDS = 6; // tool rounds per mention, so a confused loop can't run forever (or run up the bill)
+const HISTORY = 20; // thread messages the model sees
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-5.5'; // an OpenRouter model id
 
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -155,7 +155,14 @@ export async function answer(env, m, deps) {
   if (!thread.length) return 'Hi! Ask me about sessions or who’s coming, and I can make changes on the site too.';
   const messages = [{ role: 'system', content: SYSTEM }, ...thread];
   for (let round = 0; round < MAX_ROUNDS; round++) {
-    const res = await chat(env, { model: env.BOT_MODEL || DEFAULT_MODEL, messages, tools, max_tokens: 16000 });
+    const res = await chat(env, {
+      model: env.BOT_MODEL || DEFAULT_MODEL,
+      messages,
+      tools,
+      // The OpenRouter key has a daily spend cap, so answers stay short and thinking stays light.
+      max_tokens: 4000,
+      reasoning: { effort: 'low' },
+    });
     const choice = res.choices?.[0];
     if (!choice?.message) throw new Error(`OpenRouter sent no answer: ${JSON.stringify(res).slice(0, 300)}`);
     const msg = choice.message;
