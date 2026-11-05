@@ -17,7 +17,7 @@ Rough order. Open an issue before starting anything large.
 - [x] Session pages rendered from D1 so new sessions get pages right away.
 - [x] "My sessions" for signed-in people (`/me`).
 - [ ] Practical info about The Nieux: parking, access, Wi-Fi.
-- [x] Umami analytics.
+- [x] Umami analytics, with events for taps, forms and the email sheet. See [analytics.md](analytics.md).
 - [x] Choose the domain: joinaijanuary.com.
 
 ## Later
