@@ -12,7 +12,7 @@ import { fromRow, saveSession, LEVELS as LEVEL_NAMES, TOPICS as TOPIC_NAMES } fr
 
 const PROTOCOLS = ['2025-11-25', '2025-06-18', '2025-03-26'];
 const SERVER = { name: 'aijan-admin', title: 'AI January admin', version: '1.0.0' };
-const INSTRUCTIONS =
+export const INSTRUCTIONS =
   'Admin tools for joinaijanuary.com (AI January, free AI sessions in New Orleans, Jan 8–29, 2027). ' +
   'All times are New Orleans time: give startsAt with an offset, like 2027-01-12T08:00:00-06:00. ' +
   'Slugs never change once a session exists. Changes show on the site right away, so check with the admin before writing. ' +
@@ -349,6 +349,24 @@ const describe = (t) => ({
   annotations: { title: t.title, readOnlyHint: !!t.readOnly, destructiveHint: !!t.destructive, openWorldHint: false },
 });
 
+// The tools this admin may use, described the MCP way (name, title, description, inputSchema, annotations).
+export const toolsFor = (admin) => TOOLS.filter((t) => allowed(t, admin)).map(describe);
+
+// Runs one tool as this admin. Also used by Beignet in Slack (src/slack-bot.js), so both log the same way.
+// Returns { ok: true, out } or { ok: false, error } with a message that is safe to show.
+export async function runTool(env, admin, name, args, deps) {
+  const tool = BY_NAME.get(name);
+  if (!tool || !allowed(tool, admin)) return { ok: false, error: `Unknown tool: ${name}` };
+  try {
+    const out = await tool.run(env, admin, args && typeof args === 'object' && !Array.isArray(args) ? args : {}, deps);
+    console.log(JSON.stringify({ mcp: tool.name, admin: admin.email, ...(admin.via ? { via: admin.via } : {}), ok: true }));
+    return { ok: true, out };
+  } catch (e) {
+    if (!(e instanceof ToolError)) console.error(e);
+    return { ok: false, error: e instanceof ToolError ? e.message : 'Something went wrong on our end.' };
+  }
+}
+
 // --- HTTP + JSON-RPC ------------------------------------------------------------------------------------------
 
 const rpcResult = (id, result) => ({ jsonrpc: '2.0', id, result });
@@ -383,19 +401,13 @@ async function call(msg, env, admin, deps) {
     case 'ping':
       return rpcResult(id, {});
     case 'tools/list':
-      return rpcResult(id, { tools: TOOLS.filter((t) => allowed(t, admin)).map(describe) });
+      return rpcResult(id, { tools: toolsFor(admin) });
     case 'tools/call': {
-      const tool = BY_NAME.get(params.name);
-      if (!tool || !allowed(tool, admin)) return rpcError(id, -32602, `Unknown tool: ${params.name}`);
-      try {
-        const out = await tool.run(env, admin, params.arguments && typeof params.arguments === 'object' ? params.arguments : {}, deps);
-        console.log(JSON.stringify({ mcp: tool.name, admin: admin.email, ok: true }));
-        return rpcResult(id, { content: [{ type: 'text', text: JSON.stringify(out, null, 2) }], structuredContent: out, isError: false });
-      } catch (e) {
-        if (!(e instanceof ToolError)) console.error(e);
-        const message = e instanceof ToolError ? e.message : 'Something went wrong on our end.';
-        return rpcResult(id, { content: [{ type: 'text', text: message }], isError: true });
-      }
+      if (!BY_NAME.has(params.name) || !allowed(BY_NAME.get(params.name), admin)) return rpcError(id, -32602, `Unknown tool: ${params.name}`);
+      const r = await runTool(env, admin, params.name, params.arguments, deps);
+      return rpcResult(id, r.ok
+        ? { content: [{ type: 'text', text: JSON.stringify(r.out, null, 2) }], structuredContent: r.out, isError: false }
+        : { content: [{ type: 'text', text: r.error }], isError: true });
     }
     default:
       return rpcError(id, -32601, `Method not found: ${method}`);

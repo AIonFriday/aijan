@@ -16,3 +16,6 @@ DEV_LOG_LINKS=true
 # Slack notifications are off unless both of these are set. See docs/slack.md.
 # SLACK_BOT_TOKEN=
 # SLACK_CHANNEL=
+# Beignet answering @mentions in Slack also needs these two. See docs/slack.md.
+# SLACK_SIGNING_SECRET=
+# OPENROUTER_API_KEY=
