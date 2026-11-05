@@ -2,7 +2,7 @@
 
 Two tools count visits, both loaded from `site/partials/head.html`:
 
-- **Umami** (`AI January` on umami.dunn.us): no cookies. Only counts on joinaijanuary.com (`data-domains`).
+- **Umami** (`AI January` on umami.dunn.us): no cookies. Only counts on joinaijanuary.com (`data-domains`). Replays and heatmaps are on in the website's Umami settings (sample rate 1, mask level moderate, block selector `input, textarea` so text fields never show). They need `recorder.js`, loaded right after `script.js` in `head.html`. Lower the sample rates if traffic gets big.
 - **Google Analytics 4** (`G-DEWHWDYDEB`, under andrewedunn@gmail.com): sets cookies. Only loads on joinaijanuary.com, so previews and local dev stay out of the numbers.
 
 Search Console and Bing Webmaster Tools cover search. See the privacy page (`/privacy`) for what we tell visitors.
