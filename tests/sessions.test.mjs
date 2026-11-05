@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { fakeD1, root } from './d1.mjs';
-import { listSessions, getSession, validate, fromRow } from '../src/sessions.js';
+import { listSessions, getSession, validate, fromRow, saveSession } from '../src/sessions.js';
 import { site } from '../src/site.js';
 import { toggle, mine } from '../src/api.js';
 import { renderSession } from '../scripts/og-files.mjs';
@@ -176,7 +176,6 @@ test('validate catches what the build used to', () => {
 });
 
 test('saveSession adds and updates sessions, and refuses bad ones', async () => {
-  const { saveSession } = await import('../src/sessions.js');
   const env = setup();
   const made = await saveSession(env, { slug: 'ai-for-musicians', title: 'AI for musicians', description: 'Set lists and grant forms.', status: 'proposed', level: 'all', topics: ['make'] });
   assert.equal(made.ok, true);
@@ -187,7 +186,7 @@ test('saveSession adds and updates sessions, and refuses bad ones', async () => 
   const moved = await saveSession(env, { slug: 'ai-for-musicians', status: 'scheduled', startsAt: '2027-01-20T18:00:00-06:00', guides: ['Kermit'] });
   assert.equal(moved.ok && moved.created, false);
   assert.equal(moved.session.title, 'AI for musicians', 'fields left out keep their value');
-  assert.deepEqual(moved.session.guides, ['Kermit']);
+  assert.deepEqual(moved.session.guides, [{ name: 'Kermit' }], 'a plain name becomes a guide with no link');
 
   const bad = await saveSession(env, { slug: 'ai-for-musicians', status: 'scheduled', startsAt: '' });
   assert.equal(bad.ok, false);
@@ -214,4 +213,28 @@ test('saving a type keeps the office hours flag in step', async () => {
   const r = await saveSession(env, { slug: 'first-hour-with-ai', kind: 'office-hours' });
   assert.equal(r.session.kind, 'office-hours');
   assert.equal(r.session.officeHours, true);
+});
+
+test('guides can link to their website, and links in descriptions are clickable', async () => {
+  const env = setup();
+  const res = await saveSession(env, {
+    slug: 'build-a-game-with-ai',
+    description: 'See some of ours at hellogravel.com/play. Questions? Email january@aifri.day or see https://example.com/a?b=1&c=2.',
+    guides: [{ name: 'Hello Gravel Krewe', url: 'hellogravel.com' }, { name: 'Sam' }],
+  });
+  assert.equal(res.ok, true);
+  assert.deepEqual(res.session.guides, [{ name: 'Hello Gravel Krewe', url: 'https://hellogravel.com' }, { name: 'Sam' }]);
+  const html = await (await get(env, '/sessions/build-a-game-with-ai')).text();
+  assert.match(html, /<dd><a href="https:\/\/hellogravel\.com" target="_blank" rel="noopener">Hello Gravel Krewe<\/a>, Sam<\/dd>/);
+  assert.match(html, /<a href="https:\/\/hellogravel\.com\/play" target="_blank" rel="noopener">hellogravel\.com\/play<\/a>\. Questions/);
+  assert.match(html, /<a href="https:\/\/example\.com\/a\?b=1&amp;c=2" [^>]*>https:\/\/example\.com\/a\?b=1&amp;c=2<\/a>\./);
+  assert.match(html, /Email january@aifri\.day or/, 'email addresses stay plain text');
+  const [ld] = searchBasics(html);
+  const event = ld['@graph'].find((x) => x['@type'] === 'Event');
+  assert.equal(event.performer[0].url, 'https://hellogravel.com');
+
+  const bad = await saveSession(env, { slug: 'build-a-game-with-ai', guides: [{ name: 'X', url: 'javascript:alert(1)' }] });
+  assert.equal(bad.ok, false);
+  assert.match(bad.errors.join(), /isn’t a web address/);
+  assert.equal((await saveSession(env, { slug: 'build-a-game-with-ai', guides: [{ url: 'https://a.com' }] })).ok, false);
 });

@@ -48,7 +48,7 @@
       when = wantLine(n);
       btn = `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
     }
-    const who = s.guides.length ? `Guided by ${esc(s.guides.join(', '))}` : 'Needs a guide';
+    const who = s.guides.length ? `Guided by ${esc(s.guides.map((g) => g.name).join(', '))}` : 'Needs a guide';
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
     return `<li class="s" data-slug="${s.slug}"><div class="lead">${lead}</div>
       <div class="body"><div class="when2">${kindTag(s)}${when}</div>

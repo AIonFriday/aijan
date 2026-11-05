@@ -132,7 +132,14 @@ const SESSION_FIELDS = {
   location: { type: ['string', 'null'], description: 'Where, if not The Nieux. null means The Nieux.' },
   level: { type: 'string', enum: LEVELS, description: 'all, new (New to AI), sometimes (Now and then), daily (Daily).' },
   topics: { type: 'array', items: { type: 'string', enum: TOPICS }, description: 'work (My job), life (Home and family), make (Making things), curious (Just curious).' },
-  guides: { type: 'array', items: { type: 'string' }, description: 'Guide names as shown on the page (people or groups).' },
+  guides: {
+    type: 'array',
+    items: obj({
+      name: { type: 'string', description: 'The name shown on the page, like "Maya" or "Hello Gravel Krewe".' },
+      url: { type: 'string', description: 'Optional link for the name: their website or LinkedIn, like https://hellogravel.com.' },
+    }, ['name']),
+    description: 'Who guides it (people or groups), each with an optional link. Give the whole list: it replaces the old one. Empty means it needs a guide.',
+  },
   tags: { type: 'array', items: { type: 'string' }, description: 'Free words. Add "ai-for" to an idea titled "AI for …" (like "AI for teachers") to show it as a button in the "AI for…" row on /sessions.' },
   kind: { type: 'string', enum: ['talk', 'office-hours', 'hands-on', 'group'], description: 'Session type, shown as a tag: talk (Talks and demos: keynotes, panels, AI Friday), office-hours (drop in with questions), hands-on (make something with a Guide; the default), group (For your group: "AI for …" sessions, shown as buttons when not scheduled yet).' },
   officeHours: { type: 'boolean', description: 'Old flag for office hours; set kind to office-hours instead.' },
@@ -234,7 +241,7 @@ export const TOOLS = [
   {
     name: 'edit_session',
     title: 'Edit a session',
-    description: 'Changes a session’s title, description, status, date, length, place, level, topics or guide names. Leave out what stays the same. Set status to cancelled to cancel it. The slug can’t change.',
+    description: 'Changes a session’s title, description, status, date, length, place, level, topics, or guides and their links. Leave out what stays the same. Set status to cancelled to cancel it. The slug can’t change.',
     inputSchema: obj({ slug: { type: 'string' }, ...SESSION_FIELDS }, ['slug']),
     async run(env, admin, args, deps) {
       const s = await mustSession(env, deps, slug(args.slug));

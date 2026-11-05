@@ -15,7 +15,7 @@
     const n = countFor(s);
     const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
     const d = sched && fmt(s.startsAt);
-    const who = s.guides.length ? `Guided by ${esc(s.guides.join(', '))}` : 'Needs a guide';
+    const who = s.guides.length ? `Guided by ${esc(s.guides.map((g) => g.name).join(', '))}` : 'Needs a guide';
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
     const btn = sched
       ? `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`

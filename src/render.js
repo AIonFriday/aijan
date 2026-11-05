@@ -97,10 +97,28 @@ function sessionEvent(s, siteUrl, location) {
     isAccessibleForFree: true,
     location: location === DEFAULT_LOCATION ? PLACE : { '@type': 'Place', name: location, address: location },
     organizer: PRESENTERS,
-    ...(s.guides.length ? { performer: s.guides.map((name) => ({ '@type': 'Person', name })) } : {}),
+    ...(s.guides.length ? { performer: s.guides.map((g) => ({ '@type': 'Person', name: g.name, ...(g.url ? { url: g.url } : {}) })) } : {}),
     offers: { ...FREE, url: `${siteUrl}/sessions/${s.slug}` },
     superEvent: { '@id': `${siteUrl}/#event` },
   };
+}
+
+// A guide's name, linked to their website or LinkedIn when they have one. Opens in a new tab, like the footer links.
+const guideHtml = (g) => (g.url ? `<a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.name)}</a>` : esc(g.name));
+
+// Plain text with its web addresses turned into links, escaped. Catches https://… and www.… links and bare
+// addresses like hellogravel.com/play, but not email addresses. A period or comma at the end stays text.
+const LINK = /(?<![@\w.-])(?:https?:\/\/[^\s<>"]+|www\.[^\s<>"]+|[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|org|net|edu|gov|io|ai|day|dev|app|co|us|info|biz|me|games|xyz|nola)(?![\w@-])(?:\/[^\s<>"]*)?)/gi;
+export function linkify(text) {
+  let out = '', at = 0;
+  for (const m of String(text ?? '').matchAll(LINK)) {
+    const link = m[0].replace(/[.,;:!?)'"’”]+$/, '');
+    out += esc(text.slice(at, m.index));
+    const href = /^https?:/i.test(link) ? link : `https://${link}`;
+    out += `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(link)}</a>`;
+    at = m.index + link.length;
+  }
+  return out + esc(String(text ?? '').slice(at));
 }
 
 // The whole page for one session. t: { session, head, header, footer, sheet } template strings.
@@ -138,13 +156,13 @@ export function sessionPage(t, siteUrl, s) {
     location,
     // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
     locationHtml: location === DEFAULT_LOCATION ? `<a href="/where">${esc(location)}</a>` : esc(location),
-    description: s.description,
+    descriptionHtml: linkify(s.description),
     when: w.text,
     level: LEVELS[s.level],
     kind: s.kind,
     kindName: KINDS[s.kind].name,
     kindPromise: KINDS[s.kind].promise,
-    guides: s.guides.length ? s.guides.join(', ') : 'Looking for a guide',
+    guidesHtml: s.guides.length ? s.guides.map(guideHtml).join(', ') : 'Looking for a guide',
     guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
     tileHtml,
     statusLineHtml,

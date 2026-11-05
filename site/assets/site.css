@@ -291,6 +291,7 @@ textarea{min-height:76px;resize:vertical}
 .sp .st{font:13px var(--f-mono);color:var(--ink-soft)}
 .sp h1{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,7vw,44px);line-height:1.08;letter-spacing:-.02em;margin:2px 0 0;text-wrap:balance}
 .sp .desc{font-size:18px;margin:14px 0 18px;max-width:36rem}
+.sp .desc a{color:var(--purple);font-weight:700;overflow-wrap:anywhere}
 .facts{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;margin:0 0 20px;font-size:16px}
 .facts dt{font:12px var(--f-mono);color:var(--ink-soft);padding-top:3px;text-transform:uppercase;letter-spacing:.06em}
 .facts dd{margin:0}
