@@ -133,6 +133,8 @@ const SESSION_FIELDS = {
   level: { type: 'string', enum: LEVELS, description: 'all, new (New to AI), sometimes (Now and then), daily (Daily).' },
   topics: { type: 'array', items: { type: 'string', enum: TOPICS }, description: 'work (My job), life (Home and family), make (Making things), curious (Just curious).' },
   guides: { type: 'array', items: { type: 'string' }, description: 'Guide names as shown on the page (people or groups).' },
+  tags: { type: 'array', items: { type: 'string' }, description: 'Free words. Add "ai-for" to an idea titled "AI for …" (like "AI for teachers") to show it as a button in the "AI for…" row on /sessions.' },
+  officeHours: { type: 'boolean', description: 'True for drop-in office hours. Back end only, never shown as a category.' },
 };
 
 export const TOOLS = [
@@ -195,7 +197,7 @@ export const TOOLS = [
           .filter((s) => !args.status || s.status === args.status)
           .map((s) => ({
             slug: s.slug, title: s.title, status: s.status, visible: s.visible, startsAt: s.startsAt || null, level: s.level,
-            guides: s.guides, taps: counts[s.slug] || { rsvp: 0, want: 0, guide: 0 }, example: !!s.example,
+            guides: s.guides, tags: s.tags, taps: counts[s.slug] || { rsvp: 0, want: 0, guide: 0 }, example: !!s.example,
           })),
       };
     },

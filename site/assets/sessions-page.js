@@ -4,7 +4,7 @@
 //
 // Links in: /sessions?topic=work opens "By topic" with that topic picked. /sessions#vote jumps to the ideas.
 (() => {
-  const { $, esc, say, act, countFor, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
+  const { $, esc, say, act, me, countFor, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   // The days sessions can land on (Jan 8–29). Days before FIRST show faded. Parades start Jan 29.
@@ -147,10 +147,27 @@
   }
 
   // ---------- vote ----------
+  // Ideas tagged "ai-for" ("AI for teachers") show as one row of buttons, so the list stays short.
+  // Everything else is a general topic and gets a full card.
+  const isGroup = (s) => s.tags.includes('ai-for');
+  const groupName = (s) => {
+    const w = s.title.replace(/^AI for (your )?/i, '');
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  };
+  function pill(s) {
+    const n = countFor(s);
+    const on = me.want.has(s.slug);
+    return `<li data-slug="${s.slug}"><button type="button" class="pill" data-act="want" aria-pressed="${on}"
+      aria-label="${esc(s.title)}: ${n} want it">${on ? '✓ ' : ''}${esc(groupName(s))}${n ? ` <small>${n} want it</small>` : ''}</button></li>`;
+  }
   function renderVote() {
     const list = ideas();
+    const topics = list.filter((s) => !isGroup(s));
+    const groups = list.filter(isGroup);
     $('#n-vote').textContent = `${list.length} idea${list.length === 1 ? '' : 's'}`;
-    $('#list-vote').innerHTML = list.length ? list.map(card).join('') : '<li class="empty">No ideas waiting right now. Suggest one below.</li>';
+    $('#list-vote').innerHTML = topics.length ? topics.map(card).join('') : '<li class="empty">No ideas waiting right now. Suggest one below.</li>';
+    $('#ai-for').hidden = !groups.length;
+    $('#list-for').innerHTML = groups.map(pill).join('');
   }
 
   // Suggestions never create a session. Organizers review every idea first.
