@@ -23,6 +23,8 @@ The code is `src/mcp.js`, the keys table is `migrations/0003_admin_keys.sql`, an
 
 RSVPs only go on scheduled sessions and wants only on ideas, the same rule as the buttons on the site.
 
+Beignet in Slack can use these tools too, except `add_admin` and `remove_admin`. See `docs/slack.md`.
+
 ## Keys
 
 - A key looks like `aj_` plus 43 characters. Only its SHA-256 hash is stored, in `admin_keys`. Nobody can read a key back out, so a lost key is replaced, not recovered.

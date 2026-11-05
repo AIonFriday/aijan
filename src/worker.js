@@ -10,6 +10,7 @@
 //   POST /api/suggestions            suggest an idea (goes to review)
 //   POST /api/guide-offers           the offer-to-guide form on /guide
 //   POST /api/krewes                 bring-your-krewe request
+//   POST /api/slack/events           Slack events: Beignet answers @mentions in the admin channel. See src/slack-bot.js.
 //   POST /mcp                        the admin MCP (one key per admin). See src/mcp.js and docs/admin.md.
 // Data lives in D1 (aijan-db). See docs/architecture.md and docs/schema.md.
 
@@ -32,6 +33,7 @@ import * as api from './api.js';
 import { sendTapNote } from './email.js';
 import { postTap } from './slack.js';
 import { handleMcp } from './mcp.js';
+import { handleSlackEvents, SlackBotBase } from './slack-bot.js';
 
 useFiles({
   fonts: { 'BricolageGrotesque-ExtraBold.ttf': display, 'AtkinsonHyperlegible-Regular.ttf': body, 'AtkinsonHyperlegible-Bold.ttf': bold, 'IBMPlexMono-SemiBold.ttf': mono },
@@ -39,6 +41,21 @@ useFiles({
   logoSvg,
 });
 const pages = { templates: { session, head, header, footer, sheet }, renderSession };
+
+// What the admin tools need from the Worker: a new email gets a Better Auth account, the same kind a tap on the site makes.
+const adminDeps = (env, origin) => ({
+  createUser: async (e, email, name) => {
+    const ctx = await (await makeAuth(env, new Request(origin))).$context;
+    return (await ctx.internalAdapter.createUser({ email, name, emailVerified: false })).id;
+  },
+});
+
+// Beignet in Slack, one instance per Slack event. See src/slack-bot.js.
+export class SlackBot extends SlackBotBase {
+  deps(origin) {
+    return adminDeps(this.env, origin || 'https://joinaijanuary.com');
+  }
+}
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const later = (ctx, p) => ctx?.waitUntil ? ctx.waitUntil(p.catch((e) => console.error(e))) : p.catch((e) => console.error(e));
@@ -51,13 +68,17 @@ export default {
     if (path === '/api/health') return api.json({ ok: true, service: 'aijan-web' });
     if (path === '/mcp') {
       try {
-        return await handleMcp(request, env, {
-          // A new email gets a Better Auth account, the same kind a tap on the site makes.
-          createUser: async (e, email, name) => {
-            const ctx = await (await makeAuth(env, request)).$context;
-            return (await ctx.internalAdapter.createUser({ email, name, emailVerified: false })).id;
-          },
-        });
+        return await handleMcp(request, env, adminDeps(env, url.origin));
+      } catch (e) {
+        console.error(e);
+        return api.err(500, 'Something went wrong on our end.');
+      }
+    }
+    if (path === '/api/slack/events') {
+      try {
+        // Each Slack event gets its own Durable Object, which answers it from an alarm (src/slack-bot.js).
+        return await handleSlackEvents(request, env, (mention) =>
+          env.SLACK_BOT.get(env.SLACK_BOT.idFromName(mention.id || crypto.randomUUID())).fetch('https://slack-bot/', { method: 'POST', body: JSON.stringify(mention) }));
       } catch (e) {
         console.error(e);
         return api.err(500, 'Something went wrong on our end.');

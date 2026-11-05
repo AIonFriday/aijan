@@ -22,3 +22,24 @@ The bot is called Beignet. It's the app at https://api.slack.com/apps/A0CFU8MR48
 - Preview versions use the same secret and channel as production, so a form submitted on a preview link posts for real.
 
 The code is in `src/slack.js`, with tests in `tests/slack.test.mjs`.
+
+## Ask Beignet
+
+In one channel, anyone can @mention Beignet and get an answer in the thread. Beignet uses Claude and can use the organizer tools from the admin MCP (`docs/admin.md`): list sessions and people, add and edit sessions, hide and show them, add and remove people, export a door list. It asks first before it cancels or hides a session or takes someone off one, and a "yes" in the thread confirms.
+
+- The channel is `SLACK_ADMIN_CHANNEL` under `vars` in `wrangler.jsonc`. Right now that's the same private `#ai-january-inbox` channel, so its emails stay private. Mentions anywhere else are ignored.
+- Beignet acts as an organizer, never an owner, so it can't make or remove admin keys (a new key would be posted for the whole channel to read). Tool calls are logged with `via: "slack"` and the Slack user's id.
+- Mention it in the thread under one of its own posts (like a new session idea) and it reads that post too: "@Beignet add this as an idea for Making things".
+- It uses `claude-opus-5-5` unless `CLAUDE_MODEL` is set. `ANTHROPIC_BASE_URL` can point it at a Cloudflare AI Gateway.
+
+How it works: Slack posts each event to `POST /api/slack/events`. The Worker checks Slack's signature, hands the mention to a Durable Object (`SlackBot`, one per Slack event id, so Slack's retries don't run twice) and answers Slack right away. The Durable Object does the work from an alarm, so a slow answer isn't cut off. It adds :eyes: to the message while it works. The code is `src/slack-bot.js`, with tests in `tests/slack-bot.test.mjs`.
+
+### Setup
+
+Secrets (Cloudflare only, never committed): `SLACK_SIGNING_SECRET` (the app's Basic Information page) and `ANTHROPIC_API_KEY`. Beignet stays quiet until both are set, along with `SLACK_BOT_TOKEN`.
+
+In the Slack app (https://api.slack.com/apps/A0CFU8MR480):
+
+1. **OAuth & Permissions**, bot token scopes: add `app_mentions:read`, `groups:history` (to read threads in a private channel; `channels:history` for a public one) and `reactions:write`, next to the existing `chat:write`. Reinstall the app to the workspace when Slack asks. The bot token stays the same.
+2. **Event Subscriptions**: turn it on, set the Request URL to `https://joinaijanuary.com/api/slack/events` (Slack checks it right away, so this works once the code is live and `SLACK_SIGNING_SECRET` is set), and under bot events add `app_mention`. Save.
+3. Make sure Beignet is in the channel (`/invite @Beignet`).
