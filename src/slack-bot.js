@@ -1,7 +1,7 @@
-// ABOUTME: Beignet in Slack: when someone @mentions the bot in the admin channel, Claude answers in the thread
-// ABOUTME: and can use every organizer tool from the admin MCP (src/mcp.js). See docs/slack.md.
+// ABOUTME: Beignet in Slack: when someone @mentions the bot in the admin channel, a model (through OpenRouter) answers
+// ABOUTME: in the thread and can use every organizer tool from the admin MCP (src/mcp.js). See docs/slack.md.
 //
-// Slack posts events to POST /api/slack/events. Slack wants an answer within 3 seconds and Claude can take longer,
+// Slack posts events to POST /api/slack/events. Slack wants an answer within 3 seconds and the model can take longer,
 // so the Worker checks the signature, hands the mention to a Durable Object (SlackBotBase, one per Slack event id)
 // and answers 200 right away. The Durable Object runs the work from an alarm, which may run for minutes, and the
 // event id doubles as a guard against Slack's retries running the same request twice.
@@ -14,8 +14,8 @@ import { toolsFor, runTool, INSTRUCTIONS } from './mcp.js';
 const SLACK = 'https://slack.com/api/';
 const MAX_AGE_S = 60 * 5; // Slack's advice: refuse requests signed more than five minutes ago.
 const MAX_ROUNDS = 10; // tool rounds per mention, so a confused loop can't run forever
-const HISTORY = 30; // thread messages Claude sees
-const DEFAULT_MODEL = 'claude-opus-5-5';
+const HISTORY = 30; // thread messages the model sees
+const DEFAULT_MODEL = 'anthropic/claude-opus-5.5'; // an OpenRouter model id
 
 const enc = new TextEncoder();
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -67,7 +67,7 @@ export async function handleSlackEvents(request, env, start) {
   }
   if (payload.type === 'url_verification') return ok({ challenge: payload.challenge });
   const mention = mentionFrom(payload, env);
-  if (mention && env.SLACK_BOT_TOKEN && env.ANTHROPIC_API_KEY) await start({ ...mention, origin: new URL(request.url).origin });
+  if (mention && env.SLACK_BOT_TOKEN && env.OPENROUTER_API_KEY) await start({ ...mention, origin: new URL(request.url).origin });
   return ok();
 }
 
@@ -83,12 +83,12 @@ async function slack(env, method, args, { get = false } = {}) {
   return reply;
 }
 
-// Never lets Claude's reply ping the whole channel.
+// Never lets the model's reply ping the whole channel.
 export const tidy = (text) => text.replace(/<!(channel|here|everyone)(\|[^>]*)?>/g, '$1').trim();
 
 const stripMention = (text, botUser) => (botUser ? text.split(`<@${botUser}>`).join('') : text).trim();
 
-// The thread so far, as Claude messages: Beignet's posts are the assistant, everyone else is the user.
+// The thread so far, as chat messages: Beignet's posts are the assistant, everyone else is the user.
 export async function threadMessages(env, m) {
   let msgs = [{ user: m.user, text: m.text, ts: m.ts }];
   if (m.thread !== m.ts) {
@@ -101,7 +101,7 @@ export async function threadMessages(env, m) {
     const mine = (m.botUser && x.user === m.botUser) || (x.bot_id && x.bot_profile?.name === 'Beignet');
     const body = String(x.text || '');
     if (!body.trim()) continue;
-    // Claude's turns start with the user, so a thread under one of Beignet's own posts (like a new session idea)
+    // The model's turns start with the user, so a thread under one of Beignet's own posts (like a new session idea)
     // starts with that post as context.
     if (mine && !out.length) out.push({ role: 'user', content: `Beignet posted this earlier:\n${body}` });
     else out.push({ role: mine ? 'assistant' : 'user', content: mine ? body : `<@${x.user || 'someone'}>: ${stripMention(body, m.botUser)}` });
@@ -109,7 +109,7 @@ export async function threadMessages(env, m) {
   return out;
 }
 
-// --- Claude ----------------------------------------------------------------------------------------------------
+// --- The model ----------------------------------------------------------------------------------------------------
 
 const SYSTEM = [
   'You are Beignet, the helper bot for the AI January organizers, answering in their private Slack channel.',
@@ -123,53 +123,51 @@ const SYSTEM = [
   'Emails are private to this channel: never suggest posting them anywhere else.',
 ].join('\n\n');
 
-async function claude(env, body) {
-  const res = await fetch((env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com') + '/v1/messages', {
+// OpenRouter's chat completions API (OpenAI format), so the model is a setting: BOT_MODEL in wrangler.jsonc.
+async function chat(env, body) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'x-api-key': env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      // If a safety check declines a request, the API retries it on another model in the same call.
-      'anthropic-beta': 'server-side-fallback-2026-07-01',
-      'content-type': 'application/json',
+      Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://joinaijanuary.com',
+      'X-Title': 'AI January Beignet',
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Claude said ${res.status}: ${(await res.text()).slice(0, 500)}`);
+  if (!res.ok) throw new Error(`OpenRouter said ${res.status}: ${(await res.text()).slice(0, 500)}`);
   return res.json();
 }
 
-// The reply for one mention. Runs Claude's tool calls as an organizer named for the Slack user.
+const parseArgs = (s) => {
+  try {
+    return typeof s === 'string' && s.trim() ? JSON.parse(s) : {};
+  } catch {
+    return null;
+  }
+};
+
+// The reply for one mention. Runs the model's tool calls as an organizer named for the Slack user.
 export async function answer(env, m, deps) {
   const admin = { name: `Beignet for <@${m.user}>`, email: `slack:${m.user}`, role: 'organizer', via: 'slack' };
-  const tools = toolsFor(admin).map((t) => ({ name: t.name, description: t.description, input_schema: t.inputSchema }));
-  const messages = await threadMessages(env, m);
-  if (!messages.length) return 'Hi! Ask me about sessions or who’s coming, and I can make changes on the site too.';
+  const tools = toolsFor(admin).map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.inputSchema } }));
+  const thread = await threadMessages(env, m);
+  if (!thread.length) return 'Hi! Ask me about sessions or who’s coming, and I can make changes on the site too.';
+  const messages = [{ role: 'system', content: SYSTEM }, ...thread];
   for (let round = 0; round < MAX_ROUNDS; round++) {
-    const res = await claude(env, {
-      model: env.CLAUDE_MODEL || DEFAULT_MODEL,
-      max_tokens: 16000,
-      system: SYSTEM,
-      tools,
-      messages,
-      output_config: { effort: 'medium' },
-      fallbacks: 'default',
-    });
-    if (res.stop_reason === 'refusal') return 'Sorry, I can’t help with that one.';
-    // The whole content goes back, thinking blocks included, so the next round sees it unchanged.
-    messages.push({ role: 'assistant', content: res.content });
-    if (res.stop_reason === 'pause_turn') continue;
-    const calls = res.content.filter((b) => b.type === 'tool_use');
-    if (res.stop_reason !== 'tool_use' || !calls.length) {
-      const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
-      return text || 'Done.';
-    }
-    const results = [];
+    const res = await chat(env, { model: env.BOT_MODEL || DEFAULT_MODEL, messages, tools, max_tokens: 16000 });
+    const choice = res.choices?.[0];
+    if (!choice?.message) throw new Error(`OpenRouter sent no answer: ${JSON.stringify(res).slice(0, 300)}`);
+    const msg = choice.message;
+    const calls = msg.tool_calls || [];
+    if (!calls.length) return (typeof msg.content === 'string' ? msg.content : '').trim() || 'Done.';
+    // The whole message goes back (reasoning included), so the next round sees it unchanged.
+    messages.push(msg);
     for (const c of calls) {
-      const r = await runTool(env, admin, c.name, c.input, deps);
-      results.push({ type: 'tool_result', tool_use_id: c.id, content: r.ok ? JSON.stringify(r.out) : r.error, ...(r.ok ? {} : { is_error: true }) });
+      const args = parseArgs(c.function?.arguments);
+      const r = args ? await runTool(env, admin, c.function?.name, args, deps) : { ok: false, error: 'The tool arguments weren’t valid JSON.' };
+      messages.push({ role: 'tool', tool_call_id: c.id, content: r.ok ? JSON.stringify(r.out) : `Error: ${r.error}` });
     }
-    messages.push({ role: 'user', content: results });
   }
   return 'That took more steps than I’m allowed. Could you break it into smaller asks?';
 }

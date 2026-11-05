@@ -1,5 +1,5 @@
-// ABOUTME: Tests for Beignet in Slack (src/slack-bot.js): signatures, which mentions count, and the Claude tool loop.
-// ABOUTME: Slack and the Claude API are faked by swapping globalThis.fetch; tests/d1.mjs stands in for D1.
+// ABOUTME: Tests for Beignet in Slack (src/slack-bot.js): signatures, which mentions count, and the model's tool loop.
+// ABOUTME: Slack and OpenRouter are faked by swapping globalThis.fetch; tests/d1.mjs stands in for D1.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
@@ -13,7 +13,7 @@ const sign = (body, ts = Math.floor(Date.now() / 1000)) => ({
   'X-Slack-Request-Timestamp': String(ts),
   'X-Slack-Signature': 'v0=' + createHmac('sha256', SECRET).update(`v0:${ts}:${body}`).digest('hex'),
 });
-const env0 = () => ({ SLACK_SIGNING_SECRET: SECRET, SLACK_ADMIN_CHANNEL: CHANNEL, SLACK_BOT_TOKEN: 'xoxb', ANTHROPIC_API_KEY: 'sk' });
+const env0 = () => ({ SLACK_SIGNING_SECRET: SECRET, SLACK_ADMIN_CHANNEL: CHANNEL, SLACK_BOT_TOKEN: 'xoxb', OPENROUTER_API_KEY: 'sk' });
 const mention = (over = {}) => ({
   type: 'event_callback',
   event_id: 'Ev1',
@@ -59,7 +59,7 @@ test('replies never ping the whole channel', () => {
   assert.equal(tidy('hey <!channel> and <!here|here>'), 'hey channel and here');
 });
 
-// Fakes Slack and Claude. `turns` are Claude's responses, in order.
+// Fakes Slack and OpenRouter. `turns` are the model's messages, in order.
 function fakeApis(turns) {
   const calls = { slack: [], claude: [] };
   const real = globalThis.fetch;
@@ -76,8 +76,8 @@ function fakeApis(turns) {
       }
       return Response.json({ ok: true });
     }
-    calls.claude.push(JSON.parse(init.body));
-    return Response.json(turns.shift());
+    calls.claude.push({ url, ...JSON.parse(init.body) });
+    return Response.json({ choices: [{ message: turns.shift() }] });
   };
   return { calls, restore: () => (globalThis.fetch = real) };
 }
@@ -87,8 +87,8 @@ test('a mention runs Claude’s tool calls as an organizer and replies in the th
   const env = { ...env0(), DB };
   await saveSession(env, { slug: 'first-hour-with-chatgpt', title: 'Your first hour with ChatGPT', description: 'Start here.', status: 'proposed', level: 'new', topics: ['curious'] });
   const { calls, restore } = fakeApis([
-    { stop_reason: 'tool_use', content: [{ type: 'text', text: 'Looking.' }, { type: 'tool_use', id: 't1', name: 'list_sessions', input: {} }] },
-    { stop_reason: 'end_turn', content: [{ type: 'text', text: 'One idea so far: *Your first hour with ChatGPT*. <!channel>' }] },
+    { role: 'assistant', content: 'Looking.', tool_calls: [{ id: 't1', type: 'function', function: { name: 'list_sessions', arguments: '{}' } }] },
+    { role: 'assistant', content: 'One idea so far: *Your first hour with ChatGPT*. <!channel>' },
   ]);
   try {
     await runMention(env, { channel: CHANNEL, user: 'UANDREW', text: '<@UBOT> what’s on?', ts: '100.1', thread: '100.1', botUser: 'UBOT' }, {});
@@ -96,12 +96,16 @@ test('a mention runs Claude’s tool calls as an organizer and replies in the th
     restore();
   }
   const first = calls.claude[0];
-  const names = first.tools.map((t) => t.name);
+  assert.equal(first.url, 'https://openrouter.ai/api/v1/chat/completions');
+  assert.equal(first.model, 'anthropic/claude-opus-5.5');
+  const names = first.tools.map((t) => t.function.name);
   assert.ok(names.includes('list_sessions') && names.includes('edit_session'));
   assert.ok(!names.includes('add_admin') && !names.includes('remove_admin'), 'no owner tools in Slack');
-  assert.deepEqual(first.messages, [{ role: 'user', content: '<@UANDREW>: what’s on?' }]);
-  const result = calls.claude[1].messages[2].content[0];
-  assert.equal(result.type, 'tool_result');
+  assert.equal(first.messages[0].role, 'system');
+  assert.deepEqual(first.messages.slice(1), [{ role: 'user', content: '<@UANDREW>: what’s on?' }]);
+  const result = calls.claude[1].messages[3];
+  assert.equal(result.role, 'tool');
+  assert.equal(result.tool_call_id, 't1');
   assert.match(result.content, /first-hour-with-chatgpt/);
   const reply = calls.slack.find((c) => c.method === 'chat.postMessage').body;
   assert.equal(reply.thread_ts, '100.1');
@@ -112,19 +116,19 @@ test('a mention runs Claude’s tool calls as an organizer and replies in the th
 
 test('in a thread, Claude sees the thread, starting from Beignet’s own post', async () => {
   const env = { ...env0(), DB: fakeD1() };
-  const { calls, restore } = fakeApis([{ stop_reason: 'end_turn', content: [{ type: 'text', text: 'Added.' }] }]);
+  const { calls, restore } = fakeApis([{ role: 'assistant', content: 'Added.' }]);
   try {
     await runMention(env, { channel: CHANNEL, user: 'UANDREW', text: '<@UBOT> add this as an idea for Making things', ts: '100.1', thread: '90.0', botUser: 'UBOT' }, {});
   } finally {
     restore();
   }
-  const msgs = calls.claude[0].messages;
+  const msgs = calls.claude[0].messages.slice(1);
   assert.equal(msgs.length, 2);
   assert.match(msgs[0].content, /^Beignet posted this earlier:\n\*New session idea\*/);
   assert.equal(msgs[1].content, '<@UANDREW>: add this as an idea for Making things');
 });
 
-test('a Claude failure becomes an apology in the thread', async () => {
+test('a model failure becomes an apology in the thread', async () => {
   const env = { ...env0(), DB: fakeD1() };
   const real = globalThis.fetch;
   const posted = [];

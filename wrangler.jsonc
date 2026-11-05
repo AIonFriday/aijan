@@ -30,14 +30,16 @@
   // Beignet answers @mentions in Slack from a Durable Object, one per Slack event (src/slack-bot.js, docs/slack.md).
   "durable_objects": { "bindings": [{ "name": "SLACK_BOT", "class_name": "SlackBot" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SlackBot"] }],
-  // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, ANTHROPIC_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
+  // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, OPENROUTER_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
   "vars": {
     // Sign-in emails come from this address. Its domain must be verified in Resend.
     "EMAIL_FROM": "AI January <hello@joinaijanuary.com>",
     // The private #ai-january-inbox channel in the AI Friday Slack. See docs/slack.md.
     "SLACK_CHANNEL": "C0CF1Q9AMBK",
     // The one channel where @Beignet answers and can use the admin tools. Mentions anywhere else are ignored.
-    "SLACK_ADMIN_CHANNEL": "C0CF1Q9AMBK"
+    "SLACK_ADMIN_CHANNEL": "C0CF1Q9AMBK",
+    // The model Beignet uses, as an OpenRouter id (https://openrouter.ai/models). Any model that supports tools works.
+    "BOT_MODEL": "anthropic/claude-opus-5.5"
   },
   "observability": { "enabled": true }
 }

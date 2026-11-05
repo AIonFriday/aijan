@@ -18,4 +18,4 @@ DEV_LOG_LINKS=true
 # SLACK_CHANNEL=
 # Beignet answering @mentions in Slack also needs these two. See docs/slack.md.
 # SLACK_SIGNING_SECRET=
-# ANTHROPIC_API_KEY=
+# OPENROUTER_API_KEY=
