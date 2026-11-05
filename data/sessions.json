@@ -1,5 +1,6 @@
 {
-  "_note": "Example sessions for the mockup. Real sessions will come from D1. See docs/schema.md.",
+  "_note": "Example sessions for the mockup. Real sessions will come from D1. See docs/schema.md. While example is true, session pages are kept out of search (noindex, not in the sitemap or llms.txt, no Event data). Set it to false when the real lineup lands.",
+  "example": true,
   "levels": {
     "all": "All levels",
     "new": "New to AI",
