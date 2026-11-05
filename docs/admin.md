@@ -23,6 +23,8 @@ The code is `src/mcp.js`, the keys table is `migrations/0003_admin_keys.sql`, an
 
 RSVPs only go on scheduled sessions and wants only on ideas, the same rule as the buttons on the site.
 
+To add an "AI for…" group to vote on, add an idea titled "AI for …" (like "AI for musicians") with the tag `ai-for`. It shows as a button in the "AI for…" row on /sessions instead of a full card. Keep that row short.
+
 Beignet in Slack can use these tools too, except `add_admin` and `remove_admin`. See `docs/slack.md`.
 
 ## Keys

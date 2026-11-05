@@ -378,6 +378,14 @@ textarea{min-height:76px;resize:vertical}
 .vote{background:var(--card);border:1.5px solid var(--green);border-radius:18px;padding:18px 16px 16px}
 .vote .ghead h2{font:800 24px/1.15 var(--f-display);margin:0}
 .vote .list{border-top:1px solid var(--line)}
+.ai-for{margin-top:18px}
+.ai-for h3{font-size:19px;margin:0 0 4px}
+.pills{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.pill{border:1.5px solid var(--green);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;min-height:40px}
+.pill small{font-weight:400;color:var(--ink-soft);margin-left:4px}
+.pill:hover{background:var(--green-soft)}
+.pill[aria-pressed="true"]{background:var(--green);color:var(--btn-ink)}
+.pill[aria-pressed="true"] small{color:var(--green-soft)}
 .suggest{margin-top:18px;display:grid;gap:8px}
 .suggest h3{font-size:19px}
 .suggest p{margin:0;color:var(--ink-soft);font-size:15px}

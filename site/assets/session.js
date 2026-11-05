@@ -33,12 +33,12 @@
     else navigator.clipboard?.writeText(url).then(() => say('Link copied'), () => say(url));
   });
 
-  // Add to calendar: a one-event .ics file, 90 minutes long.
+  // Add to calendar: a one-event .ics file, as long as the session (90 minutes unless it says otherwise).
   const ics = $('#ics');
   if (ics) {
     ics.addEventListener('click', () => {
       const start = new Date(s.startsAt);
-      const end = new Date(start.getTime() + 90 * 60000);
+      const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
       const f = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
       const escIcs = (t) => t.replace(/[\\,;]/g, (c) => '\\' + c);
       const text = [

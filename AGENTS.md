@@ -13,7 +13,7 @@ npm install
 npm run build    # node scripts/build.mjs: data + site/ -> dist/
 npm run check    # check dist/ links, h1s, descriptions, structured data (run build first)
 npm test         # the tests in tests/
-npm run dev      # apply D1 migrations locally (this seeds the example sessions), then wrangler dev on http://localhost:8787
+npm run dev      # apply D1 migrations locally (this seeds the January lineup), then wrangler dev on http://localhost:8787
 ```
 
 For local sign-in, copy `.dev.vars.example` to `.dev.vars` first. Emailed sign-in links print in the terminal.
@@ -22,7 +22,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 
 ## Layout
 
-- Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (the mockup lineup) are noindexed and left out of the sitemap, llms.txt and Event structured data; delete them when the real lineup lands.
+- Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`; the real lineup is seeded by `0004_real_lineup.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (made-up mockup sessions) are noindexed and left out of the sitemap, llms.txt and Event structured data; the real lineup has none. Ideas tagged `ai-for` (titled "AI for …") show in "Vote for what's next" as one row of buttons; other ideas get a full card.
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, filled in by the Worker (`src/render.js`) and served at `/sessions/<slug>`.
 - `src/render.js`: page pieces the build and the Worker share (head, header, structured data, the session page).

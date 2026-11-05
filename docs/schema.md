@@ -2,7 +2,7 @@
 
 The data model for D1 (`aijan-db`).
 
-**Built:** `migrations/0001_sign_in_and_taps.sql` (Better Auth's `user`, `session`, `account`, `verification`, plus `attendance`, `suggestions`, `guide_offers`, `krewe_requests`) and `migrations/0002_sessions.sql` (`sessions`, seeded with the example lineup). A session's `id` is its slug, so `attendance.session_id` is the slug too. `src/sessions.js` turns a row into camelCase (`startsAt`, `officeHours`, `count` for `seed_count`) for the pages, the browser and the emails.
+**Built:** `migrations/0001_sign_in_and_taps.sql` (Better Auth's `user`, `session`, `account`, `verification`, plus `attendance`, `suggestions`, `guide_offers`, `krewe_requests`) `migrations/0002_sessions.sql` (`sessions`, first seeded with example sessions) and `migrations/0004_real_lineup.sql` (deletes the examples and adds the real January lineup). A session's `id` is its slug, so `attendance.session_id` is the slug too. `src/sessions.js` turns a row into camelCase (`startsAt`, `officeHours`, `count` for `seed_count`) for the pages, the browser and the emails.
 
 ## sessions
 
@@ -19,7 +19,7 @@ The data model for D1 (`aijan-db`).
 | `location` | text, nullable | Empty means The Nieux, 2040 St. Charles Ave |
 | `level` | text | `all`, `new` (New to AI), `sometimes` (Now and then), `daily` (Daily) |
 | `topics` | text (JSON list) | `work`, `life`, `make`, `curious` |
-| `tags` | text (JSON list) | Free words like `restaurants`, `faith` |
+| `tags` | text (JSON list) | Free words like `restaurants`, `faith`. `ai-for` puts an idea in the "AI for…" row of buttons on /sessions |
 | `guides` | text (JSON list) | Names shown as the guide, like `Maya` or `AI Friday crew`. Empty means it needs a guide |
 | `office_hours` | 0/1 | Back end only, never shown as a category |
 | `seed_count` | integer | Starting count that live taps add to. 0 for real sessions |
