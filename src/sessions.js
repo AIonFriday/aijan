@@ -21,6 +21,23 @@ const list = (v) => {
   try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
 };
 
+// A guide is a name, plus an optional link to their website or LinkedIn: { name, url? }. Older rows and
+// admin tools may give a plain name string; this turns either into the object shape. A link with no
+// https:// gets one, so "hellogravel.com" works. Returns null for something that isn't a guide.
+export function guide(g) {
+  if (typeof g === 'string') g = { name: g };
+  if (!g || typeof g !== 'object' || typeof g.name !== 'string' || !g.name.trim()) return null;
+  const out = { name: g.name.trim() };
+  const url = typeof g.url === 'string' ? g.url.trim() : '';
+  if (url) out.url = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url.replace(/^\/+/, '')}`;
+  return out;
+}
+const guides = (a) => (Array.isArray(a) ? a.map(guide).filter(Boolean) : []);
+// Only real web links: http(s), with a dot in the host.
+const goodUrl = (u) => {
+  try { const x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') && x.hostname.includes('.'); } catch { return false; }
+};
+
 // A D1 row (snake_case, JSON lists as text) as the camelCase object everything else uses.
 export function fromRow(r) {
   return {
@@ -34,7 +51,7 @@ export function fromRow(r) {
     level: r.level,
     topics: list(r.topics),
     tags: list(r.tags),
-    guides: list(r.guides),
+    guides: guides(list(r.guides)),
     // Starting count that live taps add to. 0 for real sessions; the example sessions carry made-up numbers.
     count: r.seed_count || 0,
     kind: r.kind in KINDS ? r.kind : 'hands-on',
@@ -72,6 +89,11 @@ export function validate(s) {
   if (!Array.isArray(s.topics) || !s.topics.length) errors.push('needs at least one topic');
   else s.topics.forEach((t) => { if (!(t in TOPICS)) errors.push(`unknown topic "${t}"`); });
   if (s.guides !== undefined && !Array.isArray(s.guides)) errors.push('guides must be a list (can be empty)');
+  else (s.guides || []).forEach((g) => {
+    const n = guide(g);
+    if (!n) errors.push('each guide needs a name');
+    else if (n.url && !goodUrl(n.url)) errors.push(`the link for ${n.name} isn’t a web address, like https://example.com`);
+  });
   return errors;
 }
 
@@ -82,7 +104,7 @@ const COLUMNS = {
   title: 'title', description: 'description', status: 'status', visible: 'visible', startsAt: 'starts_at', lengthMin: 'length_min',
   location: 'location', level: 'level', topics: 'topics', tags: 'tags', guides: 'guides', officeHours: 'office_hours', kind: 'kind', count: 'seed_count', example: 'example',
 };
-const toColumn = (k, v) => (['topics', 'tags', 'guides'].includes(k) ? JSON.stringify(v ?? []) : typeof v === 'boolean' ? Number(v) : v === '' ? null : v ?? null);
+const toColumn = (k, v) => (k === 'guides' ? JSON.stringify(guides(v)) : ['topics', 'tags'].includes(k) ? JSON.stringify(v ?? []) : typeof v === 'boolean' ? Number(v) : v === '' ? null : v ?? null);
 export async function saveSession(env, input) {
   const before = input.slug ? await env.DB.prepare('SELECT * FROM sessions WHERE slug = ?').bind(input.slug).first() : null;
   const merged = { ...(before ? fromRow(before) : {}), ...input };

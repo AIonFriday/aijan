@@ -11,7 +11,7 @@ The code is `src/mcp.js`, the keys table is `migrations/0003_admin_keys.sql`, an
 | `list_sessions` | Every session, including hidden and cancelled ones, with RSVP, want and guide counts |
 | `get_session` | One session: every field, its counts and its page link |
 | `add_session` | A new session. The slug is made from the title and never changes |
-| `edit_session` | Change any field but the slug. Set `status` to `cancelled` to cancel |
+| `edit_session` | Change any field but the slug. Set `status` to `cancelled` to cancel. `guides` is a list of `{ name, url }`; the optional `url` (a website or LinkedIn) links the name on the session page |
 | `hide_session` / `show_session` | Take a session off the site and put it back, keeping everyone's taps |
 | `list_people` | Who RSVPed, wants it, or is guiding, with names and emails |
 | `add_person` | Add someone by email as an RSVP, a want, or an approved guide. Sends no email |
