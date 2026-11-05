@@ -46,6 +46,7 @@ API routes (built ones first):
 | `POST /api/suggestions` | Suggest an idea (goes to review). Built |
 | `POST /api/guide-offers` | The offer-to-guide form on `/guide`. Built |
 | `POST /api/krewes` | Bring-your-krewe request. Built |
+| `POST /mcp` | The admin MCP: sessions and the people in them, one key per admin. See [admin.md](admin.md). Built |
 | `GET /api/sessions` | Visible sessions with counts. Planned, once sessions move to D1 |
 
 Writes need a signed-in person, a JSON body, and (when the browser sends one) an `Origin` that matches the site.
