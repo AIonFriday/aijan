@@ -1,7 +1,7 @@
 // One session's page (/sessions/<slug>). The build writes the page's facts into the HTML for search engines
 // and link previews; this script only handles the buttons. The session's data sits in data-* attributes on <article>.
 (() => {
-  const { $, me, say, act, track, countFor, NEEDED } = window.AJ;
+  const { $, me, say, act, track, countFor, wantText, NEEDED } = window.AJ;
   const el = $('article.sp');
   const s = { ...el.dataset, count: Number(el.dataset.count) };
   const scheduled = s.status === 'scheduled';
@@ -14,11 +14,13 @@
     const on = mine();
     const n = countFor(s);
     main.setAttribute('aria-pressed', on);
-    $('#cnt').textContent = n;
-    if (scheduled) main.textContent = on ? 'You’re going ✓' : 'RSVP';
+    if (scheduled) {
+      main.textContent = on ? 'You’re going ✓' : 'RSVP';
+      $('#cnt').textContent = n ? ` · ${n} going` : '';
+    }
     else {
       main.textContent = on ? 'You want this ✓' : 'I want this';
-      $('#more').textContent = n >= NEEDED ? 'enough people, scheduling soon' : `${NEEDED - n} more and we schedule it`;
+      $('#cnt').textContent = n >= NEEDED ? ' · enough people, scheduling soon' : n ? ` · ${wantText(n)}` : '';
     }
     const g = $('#guide');
     if (g && me.guide.has(s.slug)) g.outerHTML = '<b>Thanks. An organizer will reach out about guiding.</b>';

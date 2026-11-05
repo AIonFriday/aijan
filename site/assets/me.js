@@ -2,7 +2,7 @@
 // device types their email and gets a one-time link here.
 // Session details come from /assets/sessions.js (window.AJ_DATA); what they picked comes from /api/me.
 (() => {
-  const { $, esc, me, act, emailLink, isEmail, lastEmail, countFor, NEEDED } = window.AJ;
+  const { $, esc, me, act, emailLink, isEmail, lastEmail, countFor, wantText, NEEDED } = window.AJ;
   const { sessions: S, timeZone: tz } = window.AJ_DATA;
   const bySlug = new Map(S.map((s) => [s.slug, s]));
 
@@ -14,18 +14,17 @@
 
   function row(s, kind) {
     const n = countFor(s);
-    let lead, when, btn = '';
+    let lead = '', when, btn = '';
     if (s.status === 'scheduled') {
       const d = fmt(s.startsAt);
       lead = `<div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div>`;
-      when = `${d.w} · ${d.t} · ${n} going`;
+      when = `${d.w} · ${d.t}${n ? ` · ${n} going` : ''}`;
     } else {
-      lead = `<div class="want" aria-hidden="true"><div class="d">${n}</div><div class="m">want it</div></div>`;
-      when = n >= NEEDED ? 'Enough people · scheduling soon' : `${NEEDED - n} more and we schedule it`;
+      when = n >= NEEDED ? 'Enough people · scheduling soon' : wantText(n) || 'Not scheduled yet';
     }
     if (kind === 'rsvp') btn = '<button class="go" type="button" data-act="rsvp" aria-pressed="true">Going ✓</button>';
     if (kind === 'want') btn = '<button class="go in" type="button" data-act="want" aria-pressed="true">Want it ✓</button>';
-    return `<li class="s" data-slug="${s.slug}"><div class="lead">${lead}</div>
+    return `<li class="s${lead ? '' : ' idea'}" data-slug="${s.slug}">${lead ? `<div class="lead">${lead}</div>` : ''}
       <div class="body"><div class="when2">${when}</div><a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a></div>
       <div class="act">${btn}</div></li>`;
   }

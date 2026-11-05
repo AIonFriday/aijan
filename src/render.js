@@ -58,6 +58,8 @@ export const header = (t, current) =>
 const part = (d, o) => d.toLocaleString('en-US', { timeZone: TIME_ZONE, ...o });
 const clock = (d) => part(d, { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
 const NEEDED = 5;
+// After "Not scheduled yet" on an idea's page: how many want it, or nothing at zero. session.js uses the same words.
+const wantLine = (n) => (n >= NEEDED ? ' · enough people, scheduling soon' : n ? ` · ${n} ${n === 1 ? 'wants' : 'want'} this` : '');
 
 // The plain facts about when a session is, used by its page, its share image and llms.txt.
 export function when(s) {
@@ -128,15 +130,15 @@ export function sessionPage(t, siteUrl, s) {
   let tileHtml, statusLineHtml, buttonsHtml, summary;
   if (w.scheduled) {
     tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>`;
-    statusLineHtml = `${esc(w.text)} · <span id="cnt">${s.count}</span> going`;
+    statusLineHtml = `${esc(w.text)}<span id="cnt">${s.count ? ` · ${s.count} going` : ''}</span>`;
     buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
     summary = `${w.text} at ${location}. Free. ${s.description}`;
   } else {
-    tileHtml = `<div class="tile w" aria-hidden="true"><div class="d" id="cnt">${s.count}</div><div class="m">want it</div></div>`;
-    const more = s.count >= NEEDED ? 'enough people, scheduling soon' : `${NEEDED - s.count} more and we schedule it`;
-    statusLineHtml = `Not scheduled yet · <span id="more">${more}</span>`;
+    // No big count tile on an idea, and no count at all until someone wants it.
+    tileHtml = '';
+    statusLineHtml = `Not scheduled yet<span id="cnt">${wantLine(s.count)}</span>`;
     buttonsHtml = '<button class="go in" type="button" id="main" aria-pressed="false">I want this</button>';
-    summary = `A free AI session idea in New Orleans. ${s.count} people want it. ${s.description}`;
+    summary = `A free AI session idea in New Orleans.${s.count ? ` ${s.count} ${s.count === 1 ? 'person wants' : 'people want'} it.` : ''} ${s.description}`;
   }
   return fill(t.session, {
     head: head(t, siteUrl, {

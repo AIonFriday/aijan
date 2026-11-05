@@ -54,6 +54,8 @@
   }
 
   // Live count for a session: the seed count plus taps saved in the database.
+  // How many want an idea, in words. Blank at zero: an empty count reads as sad, not as an invitation.
+  const wantText = (n) => (n > 0 ? `${n} ${n === 1 ? 'wants' : 'want'} this` : '');
   const countFor = (s) => s.count + ((me.counts[s.slug] || {})[s.status === 'scheduled' ? 'rsvp' : 'want'] || 0);
 
   // ---------- taps ----------
@@ -306,5 +308,5 @@
   const picked = (key) => pickedButtons(key).map((b) => b.textContent);
   const pickedValues = (key) => pickedButtons(key).map((b) => b.dataset.v);
 
-  window.AJ = { $, esc, me, say, act, track, ready, countFor, openSheet, emailLink, isEmail, lastEmail, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
+  window.AJ = { $, esc, me, say, act, track, ready, countFor, wantText, openSheet, emailLink, isEmail, lastEmail, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
 })();

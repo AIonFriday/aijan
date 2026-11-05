@@ -4,7 +4,7 @@
 //
 // Links in: /sessions?topic=work opens "By topic" with that topic picked. /sessions#vote jumps to the ideas.
 (() => {
-  const { $, esc, say, act, me, countFor, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
+  const { $, esc, say, act, me, countFor, wantText, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   // The days sessions can land on (Jan 8–29). Days before FIRST show faded. Parades start Jan 29.
@@ -158,7 +158,7 @@
     const n = countFor(s);
     const on = me.want.has(s.slug);
     return `<li data-slug="${s.slug}"><button type="button" class="pill" data-act="want" aria-pressed="${on}"
-      aria-label="${esc(s.title)}: ${n} want it">${on ? '✓ ' : ''}${esc(groupName(s))}${n ? ` <small>${n} want it</small>` : ''}</button></li>`;
+      aria-label="${esc(s.title)}${n ? `: ${wantText(n)}` : ''}">${on ? '✓ ' : ''}${esc(groupName(s))}${n ? ` <small>${wantText(n)}</small>` : ''}</button></li>`;
   }
   function renderVote() {
     const list = ideas();

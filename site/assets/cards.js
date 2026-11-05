@@ -1,7 +1,7 @@
 // Shared session list pieces for the home page and /sessions: topics, date formatting, one list row,
 // and the RSVP / "I want this" buttons. Load after app.js and sessions.js. Adds to window.AJ.
 (() => {
-  const { esc, me, act, countFor, NEEDED } = window.AJ;
+  const { esc, me, act, countFor, wantText, NEEDED } = window.AJ;
   const { levels: LEVELS, kinds: KINDS, timeZone: tz } = window.AJ_DATA;
 
   // The session type as a small colored tag: Talks and demos, Office hours, Hands-on, For your group.
@@ -29,7 +29,9 @@
     };
   };
 
-  const wantLine = (n) => (n >= NEEDED ? 'Enough people · scheduling soon' : `${NEEDED - n} more and we schedule it`);
+  // The line under an idea: how many want it, or nothing yet. We don't count down to five out loud.
+  const wantLine = (n) => (n >= NEEDED ? 'Enough people · scheduling soon' : wantText(n));
+  const guideLine = (s) => (s.guides.length ? `Guided by ${esc(s.guides.map((g) => g.name).join(', '))}` : 'Looking for a guide');
   const byTime = (a, b) => (a.startsAt > b.startsAt ? 1 : -1);
   const byWant = (a, b) => countFor(b) - countFor(a);
 
@@ -37,23 +39,21 @@
     const sched = s.status === 'scheduled';
     const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
     const n = countFor(s);
-    let lead, when, btn;
+    let lead = '', when, btn;
     if (sched) {
       const d = fmt(s.startsAt);
       lead = `<div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div>`;
-      when = `${d.w} · ${d.t} · ${n} going`;
+      when = `${d.w} · ${d.t}${n ? ` · ${n} going` : ''}`;
       btn = `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`;
     } else {
-      lead = `<div class="want" aria-hidden="true"><div class="d">${n}</div><div class="m">want it</div></div>`;
       when = wantLine(n);
       btn = `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
     }
-    const who = s.guides.length ? `Guided by ${esc(s.guides.map((g) => g.name).join(', '))}` : 'Needs a guide';
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
-    return `<li class="s" data-slug="${s.slug}"><div class="lead">${lead}</div>
+    return `<li class="s${sched ? '' : ' idea'}" data-slug="${s.slug}">${lead ? `<div class="lead">${lead}</div>` : ''}
       <div class="body"><div class="when2">${kindTag(s)}${when}</div>
         <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
-        <p class="meta">${who}${lvl}</p></div>
+        <p class="meta">${guideLine(s)}${lvl}</p></div>
       <div class="act">${btn}</div></li>`;
   }
 
@@ -68,5 +68,5 @@
     });
   }
 
-  Object.assign(window.AJ, { TOPICS, fmt, card, kindTag, wantLine, byTime, byWant, wireButtons });
+  Object.assign(window.AJ, { TOPICS, fmt, card, kindTag, wantLine, guideLine, byTime, byWant, wireButtons });
 })();
