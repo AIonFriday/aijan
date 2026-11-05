@@ -2,7 +2,10 @@
 // and the RSVP / "I want this" buttons. Load after app.js and sessions.js. Adds to window.AJ.
 (() => {
   const { esc, me, act, countFor, NEEDED } = window.AJ;
-  const { levels: LEVELS, timeZone: tz } = window.AJ_DATA;
+  const { levels: LEVELS, kinds: KINDS, timeZone: tz } = window.AJ_DATA;
+
+  // The session type as a small colored tag: Talks and demos, Office hours, Hands-on, For your group.
+  const kindTag = (s) => `<span class="kind k-${s.kind}">${esc(KINDS[s.kind]?.name || '')}</span>`;
 
   // What people want to use AI for. Keys match TOPICS in src/sessions.js.
   const TOPICS = [
@@ -48,7 +51,7 @@
     const who = s.guides.length ? `Guided by ${esc(s.guides.join(', '))}` : 'Needs a guide';
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
     return `<li class="s" data-slug="${s.slug}"><div class="lead">${lead}</div>
-      <div class="body"><div class="when2">${when}</div>
+      <div class="body"><div class="when2">${kindTag(s)}${when}</div>
         <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
         <p class="meta">${who}${lvl}</p></div>
       <div class="act">${btn}</div></li>`;
@@ -65,5 +68,5 @@
     });
   }
 
-  Object.assign(window.AJ, { TOPICS, fmt, card, wantLine, byTime, byWant, wireButtons });
+  Object.assign(window.AJ, { TOPICS, fmt, card, kindTag, wantLine, byTime, byWant, wireButtons });
 })();

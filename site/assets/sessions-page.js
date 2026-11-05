@@ -86,7 +86,7 @@
         const evs = days.get(k) || [];
         const note = NOTES[k] ? `<small>${NOTES[k]}</small>` : '';
         return `<div class="mday${inMonth(k) ? '' : ' out'}"><span class="n">${label(k, { day: 'numeric' })}${note}</span>${
-          inMonth(k) ? evs.map((s) => `<a class="ev" href="/sessions/${s.slug}"><b>${fmt(s.startsAt).t}</b>${esc(s.title)}</a>`).join('') : ''}</div>`;
+          inMonth(k) ? evs.map((s) => `<a class="ev k-${s.kind}" href="/sessions/${s.slug}"><b>${fmt(s.startsAt).t}</b>${esc(s.title)}</a>`).join('') : ''}</div>`;
       }).join('')).join('');
     $('#month-full').style.setProperty('--cols', cols);
     $('#month-full').innerHTML = full;
@@ -147,9 +147,9 @@
   }
 
   // ---------- vote ----------
-  // Ideas tagged "ai-for" ("AI for teachers") show as one row of buttons, so the list stays short.
-  // Everything else is a general topic and gets a full card.
-  const isGroup = (s) => s.tags.includes('ai-for');
+  // "For your group" ideas ("AI for teachers") show as one row of buttons, so the list stays short.
+  // Everything else gets a full card.
+  const isGroup = (s) => s.kind === 'group';
   const groupName = (s) => {
     const w = s.title.replace(/^AI for (your )?/i, '');
     return w.charAt(0).toUpperCase() + w.slice(1);

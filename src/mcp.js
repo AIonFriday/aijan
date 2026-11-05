@@ -134,7 +134,8 @@ const SESSION_FIELDS = {
   topics: { type: 'array', items: { type: 'string', enum: TOPICS }, description: 'work (My job), life (Home and family), make (Making things), curious (Just curious).' },
   guides: { type: 'array', items: { type: 'string' }, description: 'Guide names as shown on the page (people or groups).' },
   tags: { type: 'array', items: { type: 'string' }, description: 'Free words. Add "ai-for" to an idea titled "AI for …" (like "AI for teachers") to show it as a button in the "AI for…" row on /sessions.' },
-  officeHours: { type: 'boolean', description: 'True for drop-in office hours. Back end only, never shown as a category.' },
+  kind: { type: 'string', enum: ['talk', 'office-hours', 'hands-on', 'group'], description: 'Session type, shown as a tag: talk (Talks and demos: keynotes, panels, AI Friday), office-hours (drop in with questions), hands-on (make something with a Guide; the default), group (For your group: "AI for …" sessions, shown as buttons when not scheduled yet).' },
+  officeHours: { type: 'boolean', description: 'Old flag for office hours; set kind to office-hours instead.' },
 };
 
 export const TOOLS = [
@@ -197,7 +198,7 @@ export const TOOLS = [
           .filter((s) => !args.status || s.status === args.status)
           .map((s) => ({
             slug: s.slug, title: s.title, status: s.status, visible: s.visible, startsAt: s.startsAt || null, level: s.level,
-            guides: s.guides, tags: s.tags, taps: counts[s.slug] || { rsvp: 0, want: 0, guide: 0 }, example: !!s.example,
+            guides: s.guides, kind: s.kind, tags: s.tags, taps: counts[s.slug] || { rsvp: 0, want: 0, guide: 0 }, example: !!s.example,
           })),
       };
     },

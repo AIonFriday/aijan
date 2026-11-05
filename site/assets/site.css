@@ -5,7 +5,7 @@
 :root{
   color-scheme:light;
   --paper:#F1EDF3; --card:#FBF9FC; --ink:#2A2035; --ink-soft:#5E5469; --line:#DCD4E2;
-  --purple:#6A4C8C; --purple-soft:#E6DEEF; --green:#4E7A5A; --green-soft:#DDEADF; --gold:#B08A2E; --gold-soft:#F2E7C9; --gold-bright:#D2A63C;
+  --purple:#6A4C8C; --purple-soft:#E6DEEF; --green:#4E7A5A; --green-soft:#DDEADF; --gold:#B08A2E; --gold-soft:#F2E7C9; --gold-bright:#D2A63C; --gold-ink:#7A5E17;
   --land-dim:#CBC2D3; --btn-ink:#FFFDF6;
   --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
@@ -124,6 +124,13 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 .bead{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--line)}
 .bead.on{background:var(--green);border-color:var(--green)}
 .body{min-width:0}
+/* session types: a small tag in each type's color (docs/design.md) */
+.kind{display:inline-block;font:600 11px/1 var(--f-body);letter-spacing:.02em;border-radius:999px;padding:3px 8px;margin-right:6px;vertical-align:1px;background:var(--purple-soft);color:var(--purple)}
+.kind.k-office-hours{background:var(--gold-soft);color:var(--gold-ink)}
+.kind.k-hands-on{background:var(--green-soft);color:var(--green)}
+.kind.k-group{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.sp-kind{margin:0 0 6px;color:var(--ink-soft);font-size:15px}
+.sp-kind .kind{font-size:12px;padding:4px 10px}
 .when2{font:12px var(--f-mono);color:var(--ink-soft)}
 .title{all:unset;cursor:pointer;display:block;color:var(--ink);font-family:var(--f-display);font-weight:700;font-size:19px;line-height:1.25;margin:1px 0 2px;text-wrap:balance}
 .title:hover{color:var(--purple)}
@@ -349,6 +356,9 @@ textarea{min-height:76px;resize:vertical}
 .month-full .mday{min-height:96px}
 .ev{display:block;background:var(--purple-soft);border-radius:6px;padding:4px 6px;font-size:13px;line-height:1.25;color:var(--ink);text-decoration:none}
 .ev b{display:block;font:600 11px var(--f-mono);color:var(--purple)}
+.ev.k-office-hours{background:var(--gold-soft)}.ev.k-office-hours b{color:var(--gold-ink)}
+.ev.k-hands-on{background:var(--green-soft)}.ev.k-hands-on b{color:var(--green)}
+.ev.k-group{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 .ev:hover{background:var(--purple);color:var(--btn-ink)}
 .ev:hover b{color:var(--btn-ink)}
 .month-dots .mdow{text-align:center;padding:0}
