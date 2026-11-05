@@ -3,18 +3,20 @@
 ## Today
 
 ```
-data/sessions.json ─┐
-site/pages/         ├─ scripts/build.mjs ─▶ dist/ ─▶ Worker "aijan-web" (static assets)
-site/templates/     │
-site/assets/       ─┘
+site/pages/   ─┐
+site/assets/  ─┴─ scripts/build.mjs ─▶ dist/ ─▶ Worker "aijan-web" ─┬─ static pages from dist/ (ASSETS)
+                                                                    ├─ session pages, share images, session list,
+D1 aijan-db: sessions ──────────────────────────────────────────────┤  sitemap, llms.txt (src/site.js, on request)
+site/templates/session.html ─────────────────────────────────────────┘
 ```
 
-- The build is one Node script with no dependencies. It validates the data, copies assets, fills page templates, and writes one page per session.
-- It also draws the share images (`scripts/og.mjs`): `dist/og/home.png` and `dist/og/sessions/<slug>.png`, with the title and date over the street map. That file has its own small font reader, path filler and PNG writer, so it needs nothing beyond Node. Fonts are in `scripts/fonts/`.
-- The Worker (`src/worker.js`) serves `dist/` through the `ASSETS` binding. Cloudflare's `auto-trailing-slash` HTML handling serves `/sessions/foo` from `dist/sessions/foo.html`. Unknown paths get `dist/404.html`.
-- Only `/api/*` runs Worker code (`run_worker_first`): sign-in and the taps people make. See the routes below.
+- The build is one Node script with no dependencies. It copies assets, fills the page templates, and draws the home share image. It knows nothing about sessions.
+- Sessions live in D1 (`sessions` table). The Worker draws everything that shows them on each request (`src/site.js`), so a change in the table shows up right away: `/sessions/<slug>` (from `site/templates/session.html`), `/assets/sessions.js` (`window.AJ_DATA` for the browser code), and the session lines in `/sitemap.xml` and `/llms.txt` (the built files have a marker where they go). Pages the build and the Worker both make share `src/render.js`.
+- Share images (`scripts/og.mjs`) put the title and date over the street map, with their own small font reader, path filler and PNG writer (only `Buffer` and `zlib`). The build draws `/og/home.png`. The Worker draws `/og/sessions/<slug>.png` on request (a few hundred ms of CPU) and keeps it in the Cache API; the page links it as `?v=<hash of what it shows>`, so a changed session gets a fresh image. Fonts are in `scripts/fonts/`, bundled into the Worker by the `rules` in `wrangler.jsonc`.
+- Everything else is plain files from `dist/` through the `ASSETS` binding. Unknown paths get `dist/404.html`.
+- Worker code runs for `/api/*` and the session routes above (`run_worker_first`). See the routes below.
 - Sign-in is Better Auth with Google, Apple, and an emailed link, stored in D1 (`aijan-db`). See [auth.md](auth.md).
-- RSVP, "I want this", "I could guide this", suggestions, guide offers, and krewe requests are saved in D1. Sessions themselves still come from `data/sessions.json`; the counts people see are the seed `count` plus saved taps.
+- RSVP, "I want this", "I could guide this", suggestions, guide offers, and krewe requests are saved in D1. The counts people see are a session's `seed_count` plus saved taps.
 - `better-auth` is the one runtime dependency. Wrangler bundles it into the Worker. Browser code stays plain JavaScript with no libraries.
 
 ## Next
@@ -48,14 +50,13 @@ API routes (built ones first):
 
 Writes need a signed-in person, a JSON body, and (when the browser sends one) an `Origin` that matches the site.
 
-When sessions move to D1, the session pages should be rendered by the Worker (or rebuilt on change) so new sessions get pages and share tags right away. `scripts/og.mjs` only uses `Buffer` and `zlib`, so it can move into the Worker (with `nodejs_compat`) to draw `/og/sessions/:slug.png` on request and cache it in R2. Keep `data/sessions.json` as seed data for local development.
 
 ## Deploys
 
 Deploys run only through GitHub. Nobody runs `wrangler deploy` by hand.
 
 - The Worker is connected to this repo with [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/).
-- A merge to `main` builds the site and deploys it to production. The deploy command should be `npm run deploy`, which applies new D1 migrations first.
+- A merge to `main` builds the site and deploys it to production. The deploy command should be `npm run deploy`, which applies new D1 migrations first. Until it is, apply a new migration to `aijan-db` by hand before its PR merges.
 - Every other branch (including PR branches) gets a preview version with its own URL. Cloudflare posts the link on the PR.
 - GitHub Actions (`.github/workflows/ci.yml`) runs the build, the checks and a `wrangler deploy --dry-run` on every PR. It never deploys.
 - Secrets are set in the Cloudflare dashboard (or `wrangler secret put` by a maintainer), never in the repo.

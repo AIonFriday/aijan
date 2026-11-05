@@ -1,30 +1,30 @@
 # Data model
 
-This is the plan for D1 (`aijan-db`). Today the site reads sessions from `data/sessions.json`, which uses the same field names in camelCase.
+The data model for D1 (`aijan-db`).
 
-**Built so far** (`migrations/0001_sign_in_and_taps.sql`): Better Auth's `user`, `session`, `account`, `verification`, plus `attendance`, `suggestions`, `guide_offers`, and `krewe_requests`. The `sessions` table isn't built yet, so for now `attendance.session_id` holds the session's slug. When sessions move to D1, seed them with `id` = slug and nothing else has to change.
+**Built:** `migrations/0001_sign_in_and_taps.sql` (Better Auth's `user`, `session`, `account`, `verification`, plus `attendance`, `suggestions`, `guide_offers`, `krewe_requests`) and `migrations/0002_sessions.sql` (`sessions`, seeded with the example lineup). A session's `id` is its slug, so `attendance.session_id` is the slug too. `src/sessions.js` turns a row into camelCase (`startsAt`, `officeHours`, `count` for `seed_count`) for the pages, the browser and the emails.
 
 ## sessions
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `id` | text | Primary key |
+| `id` | text | Primary key. Same as `slug` |
 | `slug` | text, unique | From the title. Never changes once shared. Page at `/sessions/<slug>` |
 | `title` | text | Short, plain words |
 | `description` | text | What you'll do and what to bring |
-| `status` | text | `proposed` (shown as "Not scheduled yet"), `scheduled`, `cancelled` |
-| `visible` | boolean | Hide without deleting |
+| `status` | text | `proposed` (shown as "Not scheduled yet"), `scheduled`, `cancelled`. Scheduled needs `starts_at` |
+| `visible` | 0/1 | 0 hides it without deleting |
 | `starts_at` | text, nullable | ISO time with offset. Empty means not set yet |
 | `length_min` | integer | Default 90 |
 | `location` | text, nullable | Empty means The Nieux, 2040 St. Charles Ave |
 | `level` | text | `all`, `new` (New to AI), `sometimes` (Now and then), `daily` (Daily) |
 | `topics` | text (JSON list) | `work`, `life`, `make`, `curious` |
 | `tags` | text (JSON list) | Free words like `restaurants`, `faith` |
-| `office_hours` | boolean | Back end only, never shown as a category |
-| `needed` | integer | Default 5. "I want this" count that gets it scheduled |
-| `seats` | integer, nullable | Default empty: no cap |
-| `proposed_by` | user id, nullable | |
-| `created_at` | text | |
+| `guides` | text (JSON list) | Names shown as the guide, like `Maya` or `AI Friday crew`. Empty means it needs a guide |
+| `office_hours` | 0/1 | Back end only, never shown as a category |
+| `seed_count` | integer | Starting count that live taps add to. 0 for real sessions |
+| `example` | 0/1 | 1 = mockup session: noindexed, left out of the sitemap, llms.txt and Event data |
+| `created_at`, `updated_at` | text | |
 
 ## users
 
@@ -70,5 +70,5 @@ The offer-to-guide form on `/guide`, not tied to one session. Offers for one ses
 ## How a session moves
 
 1. Someone suggests an idea. An organizer reviews it and posts it as `proposed`.
-2. People tap "I want this". At `needed` with an approved guide, an organizer sets a date and marks it `scheduled`.
+2. People tap "I want this". Once enough people want it and a guide is approved, an organizer sets a date and marks it `scheduled`.
 3. Everyone who wanted it gets an email: "It's happening Tuesday at 11:30. Can you make it?" One tap turns it into an RSVP.

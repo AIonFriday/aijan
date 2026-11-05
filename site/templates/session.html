@@ -1,5 +1,5 @@
-<!-- One session's page. scripts/build.mjs writes one of these per session in data/sessions.json, to dist/sessions/<slug>.html,
-     served at /sessions/<slug>. Values in {{...}} are HTML-escaped by the build unless the name ends in Html. -->
+<!-- One session's page, filled in by the Worker from the sessions table in D1 (sessionPage in src/render.js) and
+     served at /sessions/<slug>. Values in {{...}} are HTML-escaped unless the name ends in Html. -->
 {{head}}
 {{header}}
 <main class="wrap"><div class="col">

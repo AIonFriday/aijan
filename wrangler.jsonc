@@ -13,10 +13,17 @@
     // /sessions/foo serves dist/sessions/foo.html, and /guide serves dist/guide.html
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    // Only /api/* reaches the Worker code; everything else is served straight from dist/.
-    "run_worker_first": ["/api/*"]
+    // These reach the Worker code; everything else is served straight from dist/.
+    // Sessions live in D1, so their pages, share images, the browser's session list, the sitemap and llms.txt
+    // are drawn on request (src/site.js; keep this list the same as ROUTES there).
+    "run_worker_first": ["/api/*", "/assets/sessions.js", "/sessions/*", "/og/sessions/*", "/sitemap.xml", "/llms.txt"]
   },
-  // Users, sign-in sessions, and taps. Tables are in migrations/. Preview links share this database.
+  // Page templates, the map points and the logo come in as text, and the fonts as bytes, for src/site.js and scripts/og.mjs.
+  "rules": [
+    { "type": "Text", "globs": ["**/*.html", "**/*.svg", "**/nola-points.js"], "fallthrough": true },
+    { "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true }
+  ],
+  // Users, sign-in sessions, taps, and the sessions themselves. Tables are in migrations/. Preview links share this database.
   "d1_databases": [
     { "binding": "DB", "database_name": "aijan-db", "database_id": "8dd790c4-6e28-422b-8ca0-d0f281df4858", "migrations_dir": "migrations" }
   ],

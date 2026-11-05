@@ -1,11 +1,10 @@
 // The taps people make, saved in D1: RSVP, "I want this", "I could guide this", suggestions,
 // guide offers, and krewe requests. Every write belongs to a person: signed in on this device, or found by the
 // email they typed (POST /api/start in worker.js).
-// Sessions still come from data/sessions.json, so attendance.session_id holds the session's slug.
+// Sessions are in D1 (src/sessions.js). attendance.session_id holds the session's id, which is its slug.
 
-import data from '../data/sessions.json';
+import { getSession } from './sessions.js';
 
-const SESSIONS = new Map(data.sessions.filter((s) => s.status !== 'cancelled' && s.visible !== false).map((s) => [s.slug, s]));
 const KINDS = { rsvp: 'scheduled', want: 'proposed', guide: null }; // kind -> status it needs (null = any)
 const SIZES = ['5-10', '10-20', '20-40', '40+'];
 
@@ -14,7 +13,7 @@ const err = (status, error) => json({ error }, status);
 const text = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const id = () => crypto.randomUUID();
 
-// Live counts that sit on top of the seed counts in data/sessions.json.
+// Live counts that sit on top of each session's starting count (sessions.seed_count).
 export async function counts(env) {
   const { results } = await env.DB.prepare(
     "SELECT session_id, kind, COUNT(*) AS n FROM attendance WHERE kind IN ('want','rsvp') GROUP BY session_id, kind"
@@ -26,17 +25,19 @@ export async function counts(env) {
 
 // What one person has tapped.
 export async function mine(env, userId) {
-  const { results } = await env.DB.prepare('SELECT session_id, kind FROM attendance WHERE user_id = ?').bind(userId).all();
+  const { results } = await env.DB.prepare(
+    "SELECT a.session_id, a.kind FROM attendance a JOIN sessions s ON s.id = a.session_id WHERE a.user_id = ? AND s.visible = 1 AND s.status != 'cancelled'"
+  ).bind(userId).all();
   const out = { rsvp: [], want: [], guide: [] };
-  for (const r of results) if (SESSIONS.has(r.session_id)) out[r.kind].push(r.session_id);
+  for (const r of results) out[r.kind].push(r.session_id);
   return out;
 }
 
 // POST /api/sessions/:slug/:kind  { on: true|false }
 export async function toggle(env, user, slug, kind, body) {
-  const s = SESSIONS.get(slug);
-  if (!s) return err(404, 'No session with that link.');
   if (!(kind in KINDS)) return err(404, 'Not found');
+  const s = await getSession(env, slug);
+  if (!s) return err(404, 'No session with that link.');
   if (KINDS[kind] && s.status !== KINDS[kind]) return err(409, kind === 'rsvp' ? 'This one isn’t scheduled yet.' : 'This one is already scheduled.');
   const on = body.on !== false;
   let added = false;
@@ -95,7 +96,7 @@ export function run(env, user, tap) {
   return err(400, 'Unknown tap.');
 }
 
-export const session = (slug) => SESSIONS.get(slug) || null;
+export const session = (env, slug) => (slug ? getSession(env, String(slug)) : Promise.resolve(null));
 
 // No more than this many "here's what you picked" emails per address per day, so the email box
 // can't be used to flood someone. Taps past it still count; they just don't send email.

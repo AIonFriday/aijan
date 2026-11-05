@@ -4,7 +4,7 @@
   const { esc, me, act, countFor, NEEDED } = window.AJ;
   const { levels: LEVELS, timeZone: tz } = window.AJ_DATA;
 
-  // What people want to use AI for. Keys match "topics" in data/sessions.json.
+  // What people want to use AI for. Keys match TOPICS in src/sessions.js.
   const TOPICS = [
     ['work', 'My job', 'Your work, business or nonprofit'],
     ['life', 'Home and family', 'Meals, money, kids, trips'],

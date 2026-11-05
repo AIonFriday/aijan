@@ -6,7 +6,7 @@ Presented by [The Nieux Society](https://www.nieuxsociety.com/) and [AI Friday](
 
 This repo is the website: a list of sessions people can RSVP to, ideas people can say "I want this" to, a page for offering to guide a session, and a page for bringing your own group (your "krewe").
 
-> **Status:** working mockup. The sessions in `data/sessions.json` are examples, and the buttons don't save anything yet. Sign-in, RSVPs and the database are next. See [docs/roadmap.md](docs/roadmap.md).
+> **Status:** working mockup. The sessions in the database are examples for now. See [docs/roadmap.md](docs/roadmap.md).
 
 ## How it works
 
@@ -33,7 +33,7 @@ Deploys happen only through GitHub: merging to `main` publishes the site through
 ## What's where
 
 ```
-data/sessions.json      the sessions (examples for now)
+migrations/             D1 tables, including sessions (examples for now)
 site/pages/             home, guide, krewe and 404 pages
 site/templates/         the page template used for every session
 site/partials/          shared <head>, header, footer and sign-in sheet

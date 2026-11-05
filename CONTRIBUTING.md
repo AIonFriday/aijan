@@ -32,9 +32,9 @@ You need Node 20 or newer. No Cloudflare account is needed to run it locally.
 5. Open a pull request using the template. Add screenshots for anything visual.
 6. Cloudflare builds a preview of your branch and links it on the PR. Once a maintainer merges, the site deploys on its own. There's no manual deploy step.
 
-## Adding or editing example sessions
+## Adding or editing sessions
 
-Sessions live in `data/sessions.json`. Each one needs:
+Sessions live in the D1 database (`aijan-db`), in the `sessions` table. Locally, `npm run dev` seeds it with the example sessions from `migrations/0002_sessions.sql`; edit them with `npx wrangler d1 execute aijan-db --local --command "..."`. Code that saves sessions uses `saveSession` in `src/sessions.js`, which checks them first. Each one needs:
 
 | Field | Example | Notes |
 | --- | --- | --- |
@@ -42,15 +42,12 @@ Sessions live in `data/sessions.json`. Each one needs:
 | `title` | `AI for your restaurant` | Short and plain. |
 | `description` | `Write menu descriptions…` | One or two sentences. |
 | `status` | `scheduled` | `proposed` (an idea), `scheduled`, or `cancelled`. |
-| `startsAt` | `2027-01-13T11:30:00-06:00` | Required when scheduled. Include the offset. |
-| `level` | `new` | `all`, `new`, `sometimes`, `daily`, `build`. |
+| `starts_at` | `2027-01-13T11:30:00-06:00` | Required when scheduled. Include the offset. |
+| `level` | `new` | `all`, `new`, `sometimes`, `daily`. |
 | `topics` | `["work"]` | Any of `work`, `life`, `make`, `curious`. |
 | `guides` | `["Dee"]` | People or group names. Empty list means it needs a guide. |
-| `count` | `9` | RSVPs if scheduled, "I want this" if proposed. |
 
-Optional: `tags`, `location` (defaults to The Nieux), `officeHours`, `visible` (set `false` to hide).
-
-`npm run check` tells you if something is off.
+Optional: `tags`, `location` (defaults to The Nieux), `office_hours`, `visible` (0 hides it), `length_min` (default 90). See [docs/schema.md](docs/schema.md).
 
 ## Code of conduct
 

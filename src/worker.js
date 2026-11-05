@@ -1,4 +1,6 @@
-// The aijan-web Worker. It serves the built site from dist/ (env.ASSETS) and answers /api/*:
+// The aijan-web Worker. It serves the built site from dist/ (env.ASSETS), draws the pages that come from the
+// sessions table in D1 (src/site.js: /sessions/:slug, its share image, /assets/sessions.js, the sitemap and llms.txt),
+// and answers /api/*:
 //   /api/auth/*                      accounts (Better Auth: Google, Apple, emailed link). See src/auth.js.
 //   GET  /api/me                     who's in on this device, what they've tapped, live counts, which buttons work
 //   POST /api/start                  a signed-out tap with just an email   body { email, tap }
@@ -11,9 +13,30 @@
 // Data lives in D1 (aijan-db). See docs/architecture.md and docs/schema.md.
 
 import { makeAuth, providers, BASE_PATH } from './auth.js';
+import { site } from './site.js';
+import { useFiles, renderSession } from '../scripts/og.mjs';
+// Text and font files, bundled into the Worker by the "rules" in wrangler.jsonc.
+import session from '../site/templates/session.html';
+import head from '../site/partials/head.html';
+import header from '../site/partials/header.html';
+import footer from '../site/partials/footer.html';
+import sheet from '../site/partials/sheet.html';
+import points from '../site/assets/nola-points.js';
+import logoSvg from '../site/assets/brand/ai-january-compact-lockup-color.svg';
+import display from '../scripts/fonts/BricolageGrotesque-ExtraBold.ttf';
+import body from '../scripts/fonts/AtkinsonHyperlegible-Regular.ttf';
+import bold from '../scripts/fonts/AtkinsonHyperlegible-Bold.ttf';
+import mono from '../scripts/fonts/IBMPlexMono-SemiBold.ttf';
 import * as api from './api.js';
 import { sendTapNote } from './email.js';
 import { postTap } from './slack.js';
+
+useFiles({
+  fonts: { 'BricolageGrotesque-ExtraBold.ttf': display, 'AtkinsonHyperlegible-Regular.ttf': body, 'AtkinsonHyperlegible-Bold.ttf': bold, 'IBMPlexMono-SemiBold.ttf': mono },
+  points,
+  logoSvg,
+});
+const pages = { templates: { session, head, header, footer, sheet }, renderSession };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const later = (ctx, p) => ctx?.waitUntil ? ctx.waitUntil(p.catch((e) => console.error(e))) : p.catch((e) => console.error(e));
@@ -24,7 +47,14 @@ export default {
     const path = url.pathname;
 
     if (path === '/api/health') return api.json({ ok: true, service: 'aijan-web' });
-    if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
+    if (!path.startsWith('/api/')) {
+      try {
+        return (await site(request, env, ctx, pages)) || env.ASSETS.fetch(request);
+      } catch (e) {
+        console.error(e);
+        return new Response('Something went wrong on our end.', { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      }
+    }
 
     try {
       if (!env.DB || !env.BETTER_AUTH_SECRET) return api.err(503, 'Saving isn’t set up yet.');
@@ -55,7 +85,7 @@ export default {
       const body = await request.json().catch(() => ({}));
       // Tells the organizers in Slack. Never holds up or breaks the tap itself.
       const tellOrganizers = (tap, person, result) =>
-        later(ctx, postTap(env, { tap, person, result, session: api.session(tap.slug), origin: url.origin }));
+        later(ctx, api.session(env, tap.slug).then((session) => postTap(env, { tap, person, result, session, origin: url.origin })));
       // For the routes below, which hand their response straight back to the browser.
       const tellAfter = async (tap, res) => {
         if (res.ok) tellOrganizers(tap, user, await res.clone().json());
@@ -78,7 +108,7 @@ export default {
         const result = await res.json();
         tellOrganizers(tap, { email }, result);
         if (await api.canEmail(env, email)) {
-          mail.tapNote = { tap, session: api.session(tap.slug), count: result.count };
+          mail.tapNote = { tap, session: await api.session(env, tap.slug), count: result.count };
           later(ctx, auth.api.signInMagicLink({ body: { email, callbackURL: '/me' }, headers: request.headers }));
         }
         const out = api.json({ ...result, signedIn: who.isNew });
@@ -93,7 +123,7 @@ export default {
         const res = await api.toggle(env, user, m[1], m[2], body);
         // People who are in on this device get the RSVP in writing too, with the calendar invite.
         if (res.ok && m[2] === 'rsvp' && body.on !== false) {
-          later(ctx, sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session: api.session(m[1]), origin: url.origin, url: `${url.origin}/me`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) }));
+          later(ctx, api.session(env, m[1]).then((session) => sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session, origin: url.origin, url: `${url.origin}/me`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) })));
         }
         return tellAfter({ ...body, type: m[2], slug: m[1] }, res);
       }
