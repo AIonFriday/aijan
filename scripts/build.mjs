@@ -75,7 +75,7 @@ const PAGES = {
   'brand.html': { path: '/brand', title: 'Logos and brand · AI January', ogTitle: 'AI January logos and brand', description: 'Logos, colors, fonts, share images, and a short description of AI January, free to use when you write about us or put us on a flyer.' },
   'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
   'privacy.html': { path: '/privacy', title: 'Privacy · AI January', description: 'What AI January keeps when you use the site, who sees it, and how to have it deleted.' },
-  'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked.', current: 'me', noindex: true },
+  'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked: the ones you’re going to, the ones you want, and the ones you offered to guide.', current: 'me', noindex: true },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.', noindex: true },
 };
 for (const file of readdirSync(join(root, 'site/pages'))) {

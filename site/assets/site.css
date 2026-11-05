@@ -22,7 +22,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{
 .example{font:12px var(--f-mono);color:var(--ink-soft);background:var(--gold-soft);border-radius:6px;padding:3px 8px;display:inline-block;margin-left:8px;vertical-align:1px}
 .kicker{font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
 h2,h1.as-h2{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,7vw,46px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 8px;text-wrap:balance}
-h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-height:1.2}
+h3,h2.as-h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0;line-height:1.2;letter-spacing:normal}
 .lede{margin:0 0 20px;color:var(--ink-soft);max-width:36rem}
 .sessions{padding-top:28px}
 .ask{margin-top:24px}
@@ -107,7 +107,7 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 .show.lvl .chip[aria-pressed="true"]{background:var(--purple-soft);border-color:var(--purple);color:var(--ink)}
 .group{margin-top:30px}
 .ghead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 4px}
-.ghead h3{font-size:22px}
+.ghead h3,.ghead .as-h3{font-size:22px}
 .ghead span{font:13px var(--f-mono);color:var(--ink-soft)}
 .gnote{margin:0 0 12px;color:var(--ink-soft);font-size:15px}
 .list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
@@ -190,7 +190,7 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(42px,10vw,80px);
 /* email sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(42,32,53,.35);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--card);width:100%;max-width:30rem;border-radius:18px 18px 0 0;padding:22px max(18px,env(safe-area-inset-left,0px)) calc(22px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;box-sizing:border-box}
-.sheet h3{font-family:var(--f-display);font-size:22px;margin:0}
+.sheet h3,.sheet .as-h3{font-family:var(--f-display);font-size:22px;margin:0}
 .sheet p{margin:0;color:var(--ink-soft)}
 .sheet-step{display:grid;gap:12px}
 .sheet-step label{font-weight:700;margin-bottom:-4px}
@@ -241,12 +241,12 @@ textarea{min-height:76px;resize:vertical}
 .err{font-size:14px;color:#9A3B3B;font-weight:700}
 .done{background:var(--card);border:1.5px solid var(--purple);border-radius:18px;padding:22px;display:grid;gap:8px}
 .krewe .done{border-color:var(--green)}
-.done h3{font-size:24px}
+.done h3,.done .as-h3{font-size:24px}
 .done p{margin:0;color:var(--ink-soft)}
 
 /* where it is (/where) */
 .where{padding:28px 0 56px}
-.where h3{margin:34px 0 12px}
+.where h3,.where .as-h3{margin:34px 0 12px}
 .where a:not(.go){color:var(--purple);font-weight:700}
 .where-hero{margin:4px 0 16px}
 .where-hero img,.rooms img{display:block;width:100%;height:auto;border-radius:18px;background:var(--purple-soft)}
@@ -502,3 +502,16 @@ textarea{min-height:76px;resize:vertical}
 .share figcaption{margin-top:10px;font-size:15px}
 @media(max-width:479px){.logos{grid-template-columns:1fr}.logo-card:not(.wide) .logo-art img{max-width:220px}}
 @media(max-width:479px){.swatch{grid-template-columns:36px minmax(0,1fr);column-gap:10px}.swatch .sw{width:36px;height:36px}}
+
+/* Hold the space that script-drawn lists will fill, so the page doesn't jump when they arrive (layout shift).
+   Sizes match the current lineup; :empty drops the hold the moment the list is drawn. */
+#ask:empty{min-height:208px}
+#next:empty,#close:empty{min-height:476px}
+#needs:empty{min-height:492px}
+#month-dots:empty{min-height:214px}
+#month-full:empty{min-height:598px}
+#day-head:empty{min-height:24px}
+#day-list:empty{min-height:97px}
+#list-vote:empty{min-height:100vh}
+#mine-wait{min-height:222px}
+@media(min-width:700px){#ask:empty{min-height:173px}#next:empty,#close:empty{min-height:192px}#needs:empty{min-height:290px}}

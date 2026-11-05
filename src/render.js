@@ -67,7 +67,7 @@ export function when(s) {
   const start = new Date(s.startsAt);
   const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
   const day = part(start, { weekday: 'short', month: 'short', day: 'numeric' });
-  return { scheduled: true, start, end, day, startClock: clock(start), text: `${day}, ${clock(start)} – ${clock(end)}`, month: part(start, { month: 'short' }).toUpperCase(), dayNum: part(start, { day: 'numeric' }) };
+  return { scheduled: true, start, end, day, startClock: clock(start), text: `${day}, ${clock(start)} – ${clock(end)}`, date: part(start, { month: 'short', day: 'numeric' }), month: part(start, { month: 'short' }).toUpperCase(), dayNum: part(start, { day: 'numeric' }) };
 }
 
 // What the share image shows. Its hash goes in the image URL, so a change to the session gets a fresh image
@@ -123,6 +123,19 @@ export function linkify(text) {
   return out + esc(String(text ?? '').slice(at));
 }
 
+// Search engines show about 60 characters of a title and 160 of a description, so keep inside those.
+// The date tells apart sessions that share a name (office hours); the site name goes when there's no room.
+export function sessionTitle(s, w = when(s)) {
+  const options = w.scheduled ? [`${s.title} · ${w.date} · AI January`, `${s.title} · ${w.date}`] : [];
+  return [...options, `${s.title} · AI January`].find((t) => t.length <= 60) || s.title;
+}
+export function clip(text, max = 160) {
+  const t = String(text).replace(/\s+/g, ' ').trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  return cut.slice(0, cut.lastIndexOf(' ') > max * 0.6 ? cut.lastIndexOf(' ') : cut.length).replace(/[\s,.;:–—-]+$/, '') + '…';
+}
+
 // The whole page for one session. t: { session, head, header, footer, sheet } template strings.
 export function sessionPage(t, siteUrl, s) {
   const w = when(s);
@@ -142,7 +155,7 @@ export function sessionPage(t, siteUrl, s) {
   }
   return fill(t.session, {
     head: head(t, siteUrl, {
-      path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: w.scheduled ? 'event' : 'website',
+      path: `/sessions/${s.slug}`, title: sessionTitle(s, w), ogTitle: s.title, description: clip(summary), ogType: w.scheduled ? 'event' : 'website',
       ogImage: `/og/sessions/${s.slug}.png?v=${shareVersion(s)}`, ogImageAlt: `${s.title}. ${w.scheduled ? w.text : 'Not scheduled yet'}. A free AI session in New Orleans.`,
       noindex: s.example,
       jsonLdHtml: w.scheduled && !s.example ? graph(sessionEvent(s, siteUrl, location)) : '',
