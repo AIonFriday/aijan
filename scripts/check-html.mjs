@@ -5,6 +5,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ROUTES } from '../src/site.js';
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist');
 if (!existsSync(dist)) {
@@ -16,10 +17,12 @@ const walk = (d) => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirect
 const files = walk(dist);
 const html = files.filter((f) => f.endsWith('.html'));
 
+// Paths the Worker draws from D1 (src/site.js) aren't files in dist/; tests/sessions.test.mjs covers them.
+const drawn = (p) => ROUTES.some((r) => (r.endsWith('/*') ? p.startsWith(r.slice(0, -1)) : p === r));
 // Same rules as Cloudflare's auto-trailing-slash html_handling: /x serves x.html or x/index.html.
 const resolves = (path) => {
   const p = decodeURIComponent(path.split(/[?#]/)[0]);
-  if (p === '' || p === '/') return true;
+  if (p === '' || p === '/' || drawn(p)) return true;
   const base = join(dist, p);
   return [base, base + '.html', join(base, 'index.html')].some((c) => existsSync(c) && statSync(c).isFile());
 };

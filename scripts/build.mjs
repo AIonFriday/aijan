@@ -2,104 +2,43 @@
 // Builds the static site into dist/. No dependencies: plain Node 20+.
 //
 //   node scripts/build.mjs          build dist/
-//   node scripts/build.mjs --check  only validate data/sessions.json (used in CI)
 //
 // What it does:
-//   1. Validates data/sessions.json.
-//   2. Copies site/assets/ to dist/assets/ and writes dist/assets/sessions.js (window.AJ_DATA).
-//   3. Renders site/pages/*.html with the shared partials into dist/ (sessions.html is the /sessions page).
-//   4. Renders one page per session from site/templates/session.html into dist/sessions/<slug>.html.
-//   5. Draws share images (scripts/og.mjs): dist/og/home.png and dist/og/sessions/<slug>.png.
-//   6. Writes dist/sitemap.xml, dist/robots.txt, dist/llms.txt and the IndexNow key file.
-//   7. Zips site/assets/brand/ into dist/assets/brand/ai-january-brand-kit.zip for the /brand page.
+//   1. Copies site/assets/ to dist/assets/.
+//   2. Renders site/pages/*.html with the shared partials into dist/ (sessions.html is the /sessions page).
+//   3. Draws the home share image (scripts/og.mjs): dist/og/home.png.
+//   4. Writes dist/sitemap.xml, dist/robots.txt, dist/llms.txt and the IndexNow key file.
+//   5. Zips site/assets/brand/ into dist/assets/brand/ai-january-brand-kit.zip for the /brand page.
 //
-// Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html".
+// Sessions are not built: they live in D1, and the Worker draws their pages, share images, /assets/sessions.js
+// and the session lines in the sitemap and llms.txt on request (src/site.js). Page pieces both use are in src/render.js.
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync } from 'node:fs';
 import { deflateRawSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderHome, renderSession } from './og.mjs';
+import { renderHome } from './og-files.mjs';
+import { esc, fill, graph, PLACE, PRESENTERS, FREE, head as headFor, header as headerFor, footer, SESSIONS_MARK } from '../src/render.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = process.env.SITE_URL || 'https://joinaijanuary.com';
-const NEEDED = 5;
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const fill = (tpl, vars) =>
-  tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => {
-    if (!(k in vars)) throw new Error(`Template value {{${k}}} is missing`);
-    return k.endsWith('Html') || k in RAW ? vars[k] : esc(vars[k]);
-  });
-const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
 
-// ---------- 1. validate ----------
-const data = JSON.parse(read('data/sessions.json'));
-function validate({ sessions, levels, topics }) {
-  const errors = [];
-  const seen = new Set();
-  sessions.forEach((s, i) => {
-    const at = `sessions[${i}] (${s.slug || 'no slug'})`;
-    for (const k of ['slug', 'title', 'description', 'status', 'level']) if (!s[k]) errors.push(`${at}: missing ${k}`);
-    if (s.slug && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(s.slug)) errors.push(`${at}: slug must be lowercase words joined by hyphens`);
-    if (seen.has(s.slug)) errors.push(`${at}: duplicate slug`);
-    seen.add(s.slug);
-    if (!['proposed', 'scheduled', 'cancelled'].includes(s.status)) errors.push(`${at}: status must be proposed, scheduled or cancelled`);
-    if (s.status === 'scheduled' && !s.startsAt) errors.push(`${at}: scheduled sessions need startsAt`);
-    if (s.startsAt && Number.isNaN(Date.parse(s.startsAt))) errors.push(`${at}: startsAt is not a valid date`);
-    if (s.startsAt && !/[+-]\d\d:\d\d$|Z$/.test(s.startsAt)) errors.push(`${at}: startsAt needs a UTC offset, e.g. 2027-01-12T08:00:00-06:00`);
-    if (!(s.level in levels)) errors.push(`${at}: unknown level "${s.level}"`);
-    if (!Array.isArray(s.topics) || !s.topics.length) errors.push(`${at}: needs at least one topic`);
-    else s.topics.forEach((t) => { if (!(t in topics)) errors.push(`${at}: unknown topic "${t}"`); });
-    if (!Array.isArray(s.guides)) errors.push(`${at}: guides must be a list (can be empty)`);
-    if (typeof s.count !== 'number') errors.push(`${at}: count must be a number`);
-  });
-  return errors;
-}
-const errors = validate(data);
-if (errors.length) {
-  console.error('data/sessions.json has problems:\n  ' + errors.join('\n  '));
-  process.exit(1);
-}
-if (process.argv.includes('--check')) {
-  console.log(`data/sessions.json OK (${data.sessions.length} sessions)`);
-  process.exit(0);
-}
-
-// ---------- 2. assets ----------
+// ---------- 1. assets ----------
 const dist = join(root, 'dist');
 rmSync(dist, { recursive: true, force: true });
-mkdirSync(join(dist, 'sessions'), { recursive: true });
-mkdirSync(join(dist, 'og/sessions'), { recursive: true });
+mkdirSync(join(dist, 'og'), { recursive: true });
 cpSync(join(root, 'site/assets'), join(dist, 'assets'), { recursive: true });
 cpSync(join(root, 'site/assets/brand/favicon.ico'), join(dist, 'favicon.ico')); // browsers ask for /favicon.ico on their own
-const visible = data.sessions.filter((s) => s.status !== 'cancelled' && s.visible !== false);
-const clientData = { levels: data.levels, topics: data.topics, timeZone: data.timeZone, defaultLocation: data.defaultLocation, sessions: visible };
-writeFileSync(join(dist, 'assets/sessions.js'), `// Generated by scripts/build.mjs from data/sessions.json. Do not edit.\nwindow.AJ_DATA=${JSON.stringify(clientData)};\n`);
 
-// ---------- 3. pages ----------
-const partials = {
-  header: read('site/partials/header.html'),
-  // The footer's Brand link shows up once site/pages/brand.html exists, so no build links to a missing page.
-  footer: read('site/partials/footer.html').replace('{{brandLink}}', existsSync(join(root, 'site/pages/brand.html')) ? '<li><a href="/brand">Brand and logos</a></li>' : ''),
-  sheet: read('site/partials/sheet.html'),
-};
+// ---------- 2. pages ----------
+const t = { head: read('site/partials/head.html'), header: read('site/partials/header.html'), footer: read('site/partials/footer.html'), sheet: read('site/partials/sheet.html') };
+const partials = { footer: footer(t.footer), sheet: t.sheet };
+
 // ---------- search engines and answer engines ----------
-// Structured data (schema.org JSON-LD) so Google and AI answer engines can read the plain facts: what this is,
-// when, where, that it's free, and who runs it. </ is escaped so a value can never close the script tag.
-const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
-const PLACE = {
-  '@type': 'Place',
-  name: 'The Nieux',
-  address: { '@type': 'PostalAddress', streetAddress: '2040 St. Charles Ave', addressLocality: 'New Orleans', addressRegion: 'LA', postalCode: '70130', addressCountry: 'US' },
-};
-const PRESENTERS = [
-  { '@type': 'Organization', name: 'Nieux Society', url: 'https://www.nieuxsociety.com/' },
-  { '@type': 'Organization', name: 'AI Friday', url: 'https://aifri.day/' },
-];
+// Structured data for the home page and /where. The shared pieces (PLACE, PRESENTERS, FREE) are in src/render.js.
 const ORG = { '@type': 'Organization', '@id': `${SITE_URL}/#org`, name: 'AI January', url: `${SITE_URL}/`, logo: `${SITE_URL}/assets/brand/favicon-512.png`, email: 'january@aifri.day', parentOrganization: PRESENTERS };
-const FREE = { '@type': 'Offer', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
 const MONTH_EVENT = {
   '@type': 'EventSeries',
   '@id': `${SITE_URL}/#event`,
@@ -124,25 +63,8 @@ const faqLd = (html) => ({
     '@type': 'Question', name: strip(q), acceptedAnswer: { '@type': 'Answer', text: strip(a.replace(/<\/p>\s*<p>/g, '</p> <p>')) },
   })),
 });
-const graph = (...items) => ld({ '@context': 'https://schema.org', '@graph': items });
-
-const head = (o) =>
-  fill(read('site/partials/head.html'), {
-    // Personal pages, the 404 and example sessions stay out of search results.
-    robotsHtml: o.noindex ? '<meta name="robots" content="noindex">' : '',
-    jsonLdHtml: o.jsonLdHtml || '',
-    title: o.title,
-    description: o.description,
-    url: SITE_URL + o.path,
-    ogType: o.ogType || 'website',
-    ogTitle: o.ogTitle || o.title,
-    // Each session has its own share image (title and date over the map); other pages share the home one.
-    ogImage: `${SITE_URL}${o.ogImage || '/og/home.png'}`,
-    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–29, 2027.',
-  });
-const here = ' aria-current="page"';
-// The Sessions page is wider than the rest (calendar plus the vote box), so its header widens to match.
-const header = (current) => fill(partials.header, { barWide: current === 'sessions' ? ' wide' : '', navSessions: current === 'sessions' ? here : '', navGuide: current === 'guide' ? here : '', navKrewe: current === 'krewe' ? here : '', navMe: current === 'me' ? here : '' });
+const head = (o) => headFor(t, SITE_URL, o);
+const header = (current) => headerFor(t, current);
 
 const PAGES = {
   'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–29, 2027. Beginners welcome.' },
@@ -168,103 +90,17 @@ for (const file of readdirSync(join(root, 'site/pages'))) {
   writeFileSync(join(dist, file), html);
 }
 
-// ---------- 4. one page per session ----------
-const tz = data.timeZone;
-const part = (d, o) => d.toLocaleString('en-US', { timeZone: tz, ...o });
-const clock = (d) => part(d, { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
-const tpl = read('site/templates/session.html');
-// One scheduled session as a schema.org Event, part of the AI January series.
-const sessionEvent = (s, location) => {
-  const start = new Date(s.startsAt);
-  const iso = (d) => d.toLocaleString('sv-SE', { timeZone: tz }).replace(' ', 'T') + s.startsAt.slice(-6);
-  return {
-    '@type': 'Event',
-    name: s.title,
-    description: s.description,
-    url: `${SITE_URL}/sessions/${s.slug}`,
-    image: `${SITE_URL}/og/sessions/${s.slug}.png`,
-    startDate: s.startsAt,
-    endDate: iso(new Date(start.getTime() + 90 * 60000)),
-    eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    isAccessibleForFree: true,
-    location: location === data.defaultLocation ? PLACE : { '@type': 'Place', name: location, address: location },
-    organizer: PRESENTERS,
-    ...(s.guides.length ? { performer: s.guides.map((name) => ({ '@type': 'Person', name })) } : {}),
-    offers: { ...FREE, url: `${SITE_URL}/sessions/${s.slug}` },
-    superEvent: { '@id': `${SITE_URL}/#event` },
-  };
-};
-for (const s of visible) {
-  const scheduled = s.status === 'scheduled';
-  const location = s.location || data.defaultLocation;
-  let tileHtml, statusLineHtml, when, buttonsHtml, summary, share = {};
-  if (scheduled) {
-    const start = new Date(s.startsAt);
-    const end = new Date(start.getTime() + 90 * 60000);
-    const day = part(start, { weekday: 'short', month: 'short', day: 'numeric' });
-    when = `${day}, ${clock(start)} – ${clock(end)}`;
-    tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${part(start, { month: 'short' }).toUpperCase()}</div><div class="d">${part(start, { day: 'numeric' })}</div></div>`;
-    statusLineHtml = `${esc(when)} · <span id="cnt">${s.count}</span> going`;
-    buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
-    summary = `${when} at ${location}. Free. ${s.description}`;
-    share = { month: part(start, { month: 'short' }).toUpperCase(), day: part(start, { day: 'numeric' }) };
-  } else {
-    when = 'Not set yet. We pick a date once five people want it.';
-    tileHtml = `<div class="tile w" aria-hidden="true"><div class="d" id="cnt">${s.count}</div><div class="m">want it</div></div>`;
-    const more = s.count >= NEEDED ? 'enough people, scheduling soon' : `${NEEDED - s.count} more and we schedule it`;
-    statusLineHtml = `Not scheduled yet · <span id="more">${more}</span>`;
-    buttonsHtml = '<button class="go in" type="button" id="main" aria-pressed="false">I want this</button>';
-    summary = `A free AI session idea in New Orleans. ${s.count} people want it. ${s.description}`;
-  }
-  const html = fill(tpl, {
-    ...partials,
-    head: head({
-      path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: scheduled ? 'event' : 'website',
-      ogImage: `/og/sessions/${s.slug}.png`, ogImageAlt: `${s.title}. ${scheduled ? when : 'Not scheduled yet'}. A free AI session in New Orleans.`,
-      noindex: data.example,
-      jsonLdHtml: scheduled && !data.example ? graph(sessionEvent(s, location)) : '',
-    }),
-    header: header(),
-    slug: s.slug,
-    title: s.title,
-    status: s.status,
-    count: s.count,
-    startsAt: s.startsAt || '',
-    location,
-    // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
-    locationHtml: location === data.defaultLocation ? `<a href="/where">${esc(location)}</a>` : esc(location),
-    description: s.description,
-    when,
-    level: data.levels[s.level],
-    guides: s.guides.length ? s.guides.join(', ') : 'Looking for a guide',
-    guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
-    tileHtml,
-    statusLineHtml,
-    buttonsHtml,
-  });
-  writeFileSync(join(dist, 'sessions', `${s.slug}.html`), html);
-  writeFileSync(join(dist, 'og/sessions', `${s.slug}.png`), renderSession({ title: s.title, scheduled, when, where: location, ...share }));
-}
-
-// ---------- 5. share images for the other pages ----------
+// ---------- 3. the home share image ----------
+// Session share images are drawn by the Worker (src/site.js) from the same code.
 writeFileSync(join(dist, 'og/home.png'), renderHome());
 
-// ---------- 6. sitemap, robots.txt and IndexNow key ----------
+// ---------- 4. sitemap, robots.txt and IndexNow key ----------
 // /me is personal and /404 isn't a real page, so neither goes to search engines.
-// Example sessions (data.example) stay out too, so search engines never list made-up guides and dates.
-const listedSessions = data.example ? [] : visible;
-const sitemapPaths = [
-  ...Object.values(PAGES).filter((p) => !p.noindex).map((p) => p.path),
-  ...listedSessions.map((s) => `/sessions/${s.slug}`),
-];
-writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((p) => `  <url><loc>${esc(SITE_URL + p)}</loc></url>`).join('\n')}\n</urlset>\n`);
+// SESSIONS_MARK is where the Worker adds the sessions from D1 (example sessions stay out).
+const sitemapPaths = Object.values(PAGES).filter((p) => !p.noindex).map((p) => p.path);
+writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapPaths.map((p) => `  <url><loc>${esc(SITE_URL + p)}</loc></url>`).join('\n')}\n${SESSIONS_MARK}\n</urlset>\n`);
 writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 // llms.txt (llmstxt.org): a short plain-text summary for AI assistants that read the site, with the key pages.
-const llmsSessions = listedSessions.filter((s) => s.status === 'scheduled').map((s) => {
-  const d = new Date(s.startsAt);
-  return `- [${s.title}](${SITE_URL}/sessions/${s.slug}): ${part(d, { weekday: 'short', month: 'short', day: 'numeric' })}, ${clock(d)}. ${s.description}`;
-});
 const pageLine = (file, label) => `- [${label}](${SITE_URL}${PAGES[file].path}): ${PAGES[file].description}`;
 writeFileSync(join(dist, 'llms.txt'), `# AI January
 
@@ -287,7 +123,7 @@ ${pageLine('where.html', 'Where it is')}
 ${pageLine('guide.html', 'Guide a session')}
 ${pageLine('krewe.html', 'Bring a group')}
 ${pageLine('why.html', 'Why AI January')}
-${llmsSessions.length ? `\n## Scheduled sessions\n\n${llmsSessions.join('\n')}\n` : ''}
+${SESSIONS_MARK}
 ## Optional
 
 ${pageLine('brand.html', 'Logos and brand')}
@@ -297,7 +133,7 @@ ${pageLine('privacy.html', 'Privacy')}
 const INDEXNOW_KEY = '5549035db5f241c1b11c0c47c3a7f890';
 writeFileSync(join(dist, `${INDEXNOW_KEY}.txt`), INDEXNOW_KEY);
 
-// ---------- 7. the brand kit zip ----------
+// ---------- 5. the brand kit zip ----------
 // One download with every logo file, the usage guide and the README. A plain zip written by hand (deflate from
 // node:zlib, CRC-32 below) so the build stays dependency-free. Fixed file dates keep the zip the same build to build.
 const crcTable = Array.from({ length: 256 }, (_, n) => {
@@ -338,4 +174,4 @@ const brandDir = join(root, 'site/assets/brand');
 const kit = readdirSync(brandDir).sort().map((f) => ({ name: `ai-january-brand-kit/${f}`, data: readFileSync(join(brandDir, f)) }));
 writeFileSync(join(dist, 'assets/brand/ai-january-brand-kit.zip'), zip(kit));
 
-console.log(`Built dist/: ${Object.keys(PAGES).length} pages, ${visible.length} session pages, and ${visible.length + 1} share images.`);
+console.log(`Built dist/: ${Object.keys(PAGES).length} pages and the home share image. Session pages come from D1 at request time.`);

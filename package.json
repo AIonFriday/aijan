@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs --check && node scripts/check-html.mjs",
+    "check": "node scripts/check-html.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "dev": "wrangler d1 migrations apply aijan-db --local && wrangler dev",
     "db:migrate": "wrangler d1 migrations apply aijan-db --remote",

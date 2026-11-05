@@ -1,9 +1,8 @@
 // Email through Resend (https://resend.com): the "here's what you picked" note after a tap, and the link to My sessions.
 // Locally, with DEV_LOG_LINKS=true in .dev.vars and no RESEND_API_KEY, emails are printed to the terminal instead.
 
-import data from '../data/sessions.json';
+import { TIME_ZONE as TZ, DEFAULT_LOCATION } from './sessions.js';
 
-const TZ = data.timeZone;
 const LINK_NOTE = 'The button works once, for 24 hours.';
 
 // The link to My sessions, asked for on /me (or from an older bookmark).
@@ -75,12 +74,12 @@ const when = (iso) => {
   const time = d.toLocaleString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }).replace(':00', '');
   return `${day} at ${time}`;
 };
-const where = (s) => s.location || data.defaultLocation;
+const where = (s) => s.location || DEFAULT_LOCATION;
 
-// A one-event calendar file. Sessions run 90 minutes.
+// A one-event calendar file. Sessions run 90 minutes unless the session says otherwise.
 function ics(s, origin) {
   const start = new Date(s.startsAt);
-  const end = new Date(start.getTime() + 90 * 60000);
+  const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
   const stamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const txt = (v) => String(v).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
   const url = `${origin}/sessions/${s.slug}`;

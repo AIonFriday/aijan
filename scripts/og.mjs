@@ -1,18 +1,24 @@
-// Share images (Open Graph, 1200x630 PNG) drawn at build time with only Node built-ins.
+// Share images (Open Graph, 1200x630 PNG) with only Node built-ins (Buffer and zlib), so the same code runs in the
+// build (the home image) and in the Worker (one image per session, drawn on request from D1; see src/site.js).
 //
 // A small TrueType reader (glyf outlines + GPOS kerning), an anti-aliased path filler, and a PNG writer.
 // Fonts live in scripts/fonts/ (SIL Open Font License). Bricolage Grotesque there is a static ExtraBold
 // instance cut from the variable font; to remake it, see scripts/fonts/README.md.
 //
-//   import { renderHome, renderSession } from './og.mjs';
-//   writeFileSync('x.png', renderSession({ title, kicker, when, where, month, day, scheduled }));
+// It reads no files itself. Hand it the fonts, the map points and the logo once with useFiles():
+//   useFiles({ fonts: { 'IBMPlexMono-SemiBold.ttf': bytes, ... }, points: '<nola-points.js text>', logoSvg: '<svg text>' });
+//   renderSession({ title, when, where, month, day, scheduled })  // PNG bytes
+// scripts/og-files.mjs does this from disk for the build and the tests.
 
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { Buffer } from 'node:buffer';
 import { deflateSync } from 'node:zlib';
 
-const here = dirname(fileURLToPath(import.meta.url));
+let FILES = null;
+export function useFiles(files) {
+  FILES = files;
+  FONTS = null; LOGO = null; base = null;
+}
+const need = () => { if (!FILES) throw new Error('og.mjs: call useFiles() first'); return FILES; };
 export const W = 1200, H = 630;
 
 // Colors match the :root tokens in site/assets/site.css.
@@ -24,7 +30,9 @@ const C = {
 
 // ---------- TrueType ----------
 function loadFont(file) {
-  const b = readFileSync(join(here, 'fonts', file));
+  const bytes = need().fonts[file];
+  if (!bytes) throw new Error(`og.mjs: font ${file} was not passed to useFiles()`);
+  const b = Buffer.from(bytes);
   const u16 = (o) => b.readUInt16BE(o), i16 = (o) => b.readInt16BE(o), u32 = (o) => b.readUInt32BE(o);
   const tables = {};
   for (let i = 0, n = u16(4); i < n; i++) {
@@ -184,12 +192,14 @@ function loadFont(file) {
   return { upm, ascent, gid, advance, outline, kern };
 }
 
-const FONTS = {
+export const FONT_FILES = ['BricolageGrotesque-ExtraBold.ttf', 'AtkinsonHyperlegible-Regular.ttf', 'AtkinsonHyperlegible-Bold.ttf', 'IBMPlexMono-SemiBold.ttf'];
+let FONTS = null; // loaded on first use
+const fonts = () => (FONTS ||= {
   display: loadFont('BricolageGrotesque-ExtraBold.ttf'),
   body: loadFont('AtkinsonHyperlegible-Regular.ttf'),
   bold: loadFont('AtkinsonHyperlegible-Bold.ttf'),
   mono: loadFont('IBMPlexMono-SemiBold.ttf'),
-};
+});
 
 // ---------- canvas ----------
 class Canvas {
@@ -373,9 +383,9 @@ function wrap(font, size, str, maxW, tracking) {
 let base = null;
 function mapLayer() {
   if (base) return base;
-  const win = {};
-  new Function('window', readFileSync(join(here, '..', 'site/assets/nola-points.js'), 'utf8'))(win);
-  const D = win.NOLA_POINTS, N = D.nieux;
+  // nola-points.js is `window.NOLA_POINTS={w:..,h:..,nieux:[..],p:[..]};`. Read it as data (Workers can't eval code).
+  const literal = need().points.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[^=]*=/, '').trim().replace(/;$/, '');
+  const D = JSON.parse(literal.replace(/([{,])\s*([A-Za-z_]\w*)\s*:/g, '$1"$2":')), N = D.nieux;
   const hash = (i) => { let h = i * 374761393 + 668265263; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
   const cv = new Canvas(W, H, C.paper);
   const sc = 0.86, ox = 850 - N[0] * sc, oy = 350 - N[1] * sc, dot = 2;
@@ -396,9 +406,9 @@ function mapLayer() {
   cv.ringStroke(px, py, 15, 2, C.purple, 0.45);
   cv.circle(px, py, 8.5, C.ink);
   cv.circle(px, py, 7, C.gold);
-  const credit = 'Streets © OpenStreetMap contributors', cw = measure(FONTS.mono, 13, credit);
+  const credit = 'Streets © OpenStreetMap contributors', cw = measure(fonts().mono, 13, credit);
   cv.fill([roundRect(W - 32 - cw, H - 36, cw + 16, 24, 5)], C.paper, 0.9);
-  text(cv, FONTS.mono, 13, credit, W - 24 - cw, H - 19, C.inkSoft);
+  text(cv, fonts().mono, 13, credit, W - 24 - cw, H - 19, C.inkSoft);
   base = cv;
   return cv;
 }
@@ -406,8 +416,9 @@ function mapLayer() {
 const PAD = 64;
 // The logo: the compact lockup from site/assets/brand (crown + wordmark as outlined SVG paths), drawn at 300px
 // wide (the kit's floor for the compact lockup is 240px). The file uses only absolute M L H V C Q Z commands.
-const LOGO = (() => {
-  const svg = readFileSync(join(here, '..', 'site/assets/brand/ai-january-compact-lockup-color.svg'), 'utf8');
+let LOGO = null;
+const logo = () => LOGO ||= (() => {
+  const svg = need().logoSvg;
   const [, vw, vh] = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/).map(Number);
   const parts = [...svg.matchAll(/<g[^>]*transform="translate\(([-\d.]+) ([-\d.]+)\)"[^>]*>\s*<path([^>]*)\sd="([^"]+)"/g)].map(([, tx, ty, attrs, d]) => ({
     tx: +tx, ty: +ty, col: hex(attrs.match(/fill="(#[0-9A-Fa-f]{6})"/)[1]), evenOdd: /fill-rule="evenodd"/.test(attrs), d,
@@ -437,27 +448,27 @@ function svgPolys(d, map) {
   return polys;
 }
 function mark(cv) {
-  const width = 300, s = width / LOGO.vw, x = PAD - 40 * s, y = 30; // the file has a 40-unit margin; line the crown up with the text
-  for (const p of LOGO.parts) cv.fill(svgPolys(p.d, ([px, py]) => [x + (p.tx + px) * s, y + (p.ty + py) * s]), p.col, 1, p.evenOdd);
+  const width = 300, s = width / logo().vw, x = PAD - 40 * s, y = 30; // the file has a 40-unit margin; line the crown up with the text
+  for (const p of logo().parts) cv.fill(svgPolys(p.d, ([px, py]) => [x + (p.tx + px) * s, y + (p.ty + py) * s]), p.col, 1, p.evenOdd);
 }
-function kickerLine(cv, str, y) { text(cv, FONTS.mono, 19, str.toUpperCase(), PAD, y, C.purple, { tracking: 0.08 }); }
+function kickerLine(cv, str, y) { text(cv, fonts().mono, 19, str.toUpperCase(), PAD, y, C.purple, { tracking: 0.08 }); }
 
 // Biggest title size (down to a floor) that fits in `maxLines` lines.
 function fitTitle(str, maxW, sizes, maxLines) {
   for (const size of sizes) {
-    const lines = wrap(FONTS.display, size, str, maxW, -0.025);
+    const lines = wrap(fonts().display, size, str, maxW, -0.025);
     if (lines.length <= maxLines) return { size, lines };
   }
   // Still too long at the smallest size: keep the first lines and end with an ellipsis.
-  const size = sizes[sizes.length - 1], lines = wrap(FONTS.display, size, str, maxW, -0.025).slice(0, maxLines);
+  const size = sizes[sizes.length - 1], lines = wrap(fonts().display, size, str, maxW, -0.025).slice(0, maxLines);
   let last = lines[maxLines - 1].split(' ');
-  while (last.length > 1 && measure(FONTS.display, size, last.join(' ') + '…', -0.025) > maxW) last.pop();
+  while (last.length > 1 && measure(fonts().display, size, last.join(' ') + '…', -0.025) > maxW) last.pop();
   lines[maxLines - 1] = last.join(' ').replace(/[,:;.]$/, '') + '…';
   return { size, lines };
 }
 function titleBlock(cv, str, top, maxW, sizes, maxLines) {
   const { size, lines } = fitTitle(str, maxW, sizes, maxLines), lh = size * 1.02;
-  lines.forEach((l, i) => text(cv, FONTS.display, size, l, PAD - size * 0.04, top + size * 0.8 + i * lh, C.ink, { tracking: -0.025 }));
+  lines.forEach((l, i) => text(cv, fonts().display, size, l, PAD - size * 0.04, top + size * 0.8 + i * lh, C.ink, { tracking: -0.025 }));
   return top + lines.length * lh;
 }
 
@@ -467,7 +478,7 @@ export function renderHome() {
   kickerLine(cv, 'Jan 8–29, 2027 · New Orleans', 150);
   const end = titleBlock(cv, 'You’re invited to learn AI.', 178, 700, [100, 92, 84], 2);
   ['Three weeks of free workshops, office hours,', 'and conversations. Beginners welcome.'].forEach((l, i) =>
-    text(cv, FONTS.body, 28, l, PAD, end + 62 + i * 40, C.ink));
+    text(cv, fonts().body, 28, l, PAD, end + 62 + i * 40, C.ink));
   return cv.png();
 }
 
@@ -484,19 +495,19 @@ export function renderSession(s) {
   cv.fill([roundRect(tx + 2.5, ty + 32, tw - 5, th - 34.5, 13)], C.card);
   cv.rect(tx + 2.5, ty + 32, tw - 5, 14, C.card);
   const m = s.month || 'JAN';
-  text(cv, FONTS.mono, 18, m, tx + (tw - measure(FONTS.mono, 18, m, 0.08)) / 2, ty + 23, C.btnInk, { tracking: 0.08 });
+  text(cv, fonts().mono, 18, m, tx + (tw - measure(fonts().mono, 18, m, 0.08)) / 2, ty + 23, C.btnInk, { tracking: 0.08 });
   const d = s.scheduled ? s.day : '?';
-  text(cv, FONTS.display, 50, d, tx + (tw - measure(FONTS.display, 50, d)) / 2, ty + 88, s.scheduled ? C.ink : C.green);
+  text(cv, fonts().display, 50, d, tx + (tw - measure(fonts().display, 50, d)) / 2, ty + 88, s.scheduled ? C.ink : C.green);
 
   // Lines shrink to fit when a time or a place is long.
   const lx = tx + tw + 26, room = W - lx - 48;
   const line = (font, size, str, y, col) => text(cv, font, Math.min(size, (size * room) / measure(font, size, str)), str, lx, y, col);
   if (s.scheduled) {
-    line(FONTS.bold, 34, s.when, ty + 44, C.ink);
-    line(FONTS.body, 26, `${s.where} · Free`, ty + 86, C.inkSoft);
+    line(fonts().bold, 34, s.when, ty + 44, C.ink);
+    line(fonts().body, 26, `${s.where} · Free`, ty + 86, C.inkSoft);
   } else {
-    line(FONTS.bold, 34, 'Not scheduled yet', ty + 44, C.green);
-    line(FONTS.body, 26, 'When five people say “I want this,” we pick a date.', ty + 86, C.inkSoft);
+    line(fonts().bold, 34, 'Not scheduled yet', ty + 44, C.green);
+    line(fonts().body, 26, 'When five people say “I want this,” we pick a date.', ty + 86, C.inkSoft);
   }
   return cv.png();
 }

@@ -1,0 +1,167 @@
+// Page pieces shared by the build (static pages) and the Worker (session pages, drawn from D1 on request).
+// Plain JavaScript with no imports beyond src/sessions.js, so both can use it. Templates come in as strings:
+// the build reads them from disk, the Worker imports them as text modules.
+//
+// Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html" or is a partial.
+
+import { LEVELS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
+
+export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
+export const fill = (tpl, vars) =>
+  tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+    if (!(k in vars)) throw new Error(`Template value {{${k}}} is missing`);
+    return k.endsWith('Html') || k in RAW ? vars[k] : esc(vars[k]);
+  });
+
+// ---------- search engines and answer engines ----------
+// Structured data (schema.org JSON-LD) so Google and AI answer engines can read the plain facts: what this is,
+// when, where, that it's free, and who runs it. </ is escaped so a value can never close the script tag.
+export const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
+export const graph = (...items) => ld({ '@context': 'https://schema.org', '@graph': items });
+export const PLACE = {
+  '@type': 'Place',
+  name: 'The Nieux',
+  address: { '@type': 'PostalAddress', streetAddress: '2040 St. Charles Ave', addressLocality: 'New Orleans', addressRegion: 'LA', postalCode: '70130', addressCountry: 'US' },
+};
+export const PRESENTERS = [
+  { '@type': 'Organization', name: 'Nieux Society', url: 'https://www.nieuxsociety.com/' },
+  { '@type': 'Organization', name: 'AI Friday', url: 'https://aifri.day/' },
+];
+export const FREE = { '@type': 'Offer', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
+
+// ---------- shared partials ----------
+// t: { head, header, footer, sheet } template strings from site/partials/.
+export const footer = (tpl) => tpl.replace('{{brandLink}}', '<li><a href="/brand">Brand and logos</a></li>');
+
+export const head = (t, siteUrl, o) =>
+  fill(t.head, {
+    // Personal pages, the 404 and example sessions stay out of search results.
+    robotsHtml: o.noindex ? '<meta name="robots" content="noindex">' : '',
+    jsonLdHtml: o.jsonLdHtml || '',
+    title: o.title,
+    description: o.description,
+    url: siteUrl + o.path,
+    ogType: o.ogType || 'website',
+    ogTitle: o.ogTitle || o.title,
+    // Each session has its own share image (title and date over the map); other pages share the home one.
+    ogImage: `${siteUrl}${o.ogImage || '/og/home.png'}`,
+    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–29, 2027.',
+  });
+
+const here = ' aria-current="page"';
+// The Sessions page is wider than the rest (calendar plus the vote box), so its header widens to match.
+export const header = (t, current) =>
+  fill(t.header, { barWide: current === 'sessions' ? ' wide' : '', navSessions: current === 'sessions' ? here : '', navGuide: current === 'guide' ? here : '', navKrewe: current === 'krewe' ? here : '', navMe: current === 'me' ? here : '' });
+
+// ---------- one session ----------
+const part = (d, o) => d.toLocaleString('en-US', { timeZone: TIME_ZONE, ...o });
+const clock = (d) => part(d, { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
+const NEEDED = 5;
+
+// The plain facts about when a session is, used by its page, its share image and llms.txt.
+export function when(s) {
+  if (s.status !== 'scheduled') return { scheduled: false, text: 'Not set yet. We pick a date once five people want it.' };
+  const start = new Date(s.startsAt);
+  const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
+  const day = part(start, { weekday: 'short', month: 'short', day: 'numeric' });
+  return { scheduled: true, start, end, day, startClock: clock(start), text: `${day}, ${clock(start)} – ${clock(end)}`, month: part(start, { month: 'short' }).toUpperCase(), dayNum: part(start, { day: 'numeric' }) };
+}
+
+// What the share image shows. Its hash goes in the image URL, so a change to the session gets a fresh image
+// past every cache.
+export function shareFacts(s) {
+  const w = when(s);
+  return { title: s.title, scheduled: w.scheduled, when: w.text, where: s.location || DEFAULT_LOCATION, ...(w.scheduled ? { month: w.month, day: w.dayNum } : {}) };
+}
+export function shareVersion(s) {
+  let h = 0x811c9dc5;
+  for (const c of JSON.stringify(shareFacts(s))) h = Math.imul(h ^ c.charCodeAt(0), 0x01000193);
+  return (h >>> 0).toString(36);
+}
+
+// One scheduled session as a schema.org Event, part of the AI January series.
+function sessionEvent(s, siteUrl, location) {
+  const w = when(s);
+  const iso = (d) => d.toLocaleString('sv-SE', { timeZone: TIME_ZONE }).replace(' ', 'T') + s.startsAt.slice(-6);
+  return {
+    '@type': 'Event',
+    name: s.title,
+    description: s.description,
+    url: `${siteUrl}/sessions/${s.slug}`,
+    image: `${siteUrl}/og/sessions/${s.slug}.png?v=${shareVersion(s)}`,
+    startDate: s.startsAt,
+    endDate: iso(w.end),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    isAccessibleForFree: true,
+    location: location === DEFAULT_LOCATION ? PLACE : { '@type': 'Place', name: location, address: location },
+    organizer: PRESENTERS,
+    ...(s.guides.length ? { performer: s.guides.map((name) => ({ '@type': 'Person', name })) } : {}),
+    offers: { ...FREE, url: `${siteUrl}/sessions/${s.slug}` },
+    superEvent: { '@id': `${siteUrl}/#event` },
+  };
+}
+
+// The whole page for one session. t: { session, head, header, footer, sheet } template strings.
+export function sessionPage(t, siteUrl, s) {
+  const w = when(s);
+  const location = s.location || DEFAULT_LOCATION;
+  let tileHtml, statusLineHtml, buttonsHtml, summary;
+  if (w.scheduled) {
+    tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>`;
+    statusLineHtml = `${esc(w.text)} · <span id="cnt">${s.count}</span> going`;
+    buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
+    summary = `${w.text} at ${location}. Free. ${s.description}`;
+  } else {
+    tileHtml = `<div class="tile w" aria-hidden="true"><div class="d" id="cnt">${s.count}</div><div class="m">want it</div></div>`;
+    const more = s.count >= NEEDED ? 'enough people, scheduling soon' : `${NEEDED - s.count} more and we schedule it`;
+    statusLineHtml = `Not scheduled yet · <span id="more">${more}</span>`;
+    buttonsHtml = '<button class="go in" type="button" id="main" aria-pressed="false">I want this</button>';
+    summary = `A free AI session idea in New Orleans. ${s.count} people want it. ${s.description}`;
+  }
+  return fill(t.session, {
+    head: head(t, siteUrl, {
+      path: `/sessions/${s.slug}`, title: `${s.title} · AI January`, ogTitle: s.title, description: summary, ogType: w.scheduled ? 'event' : 'website',
+      ogImage: `/og/sessions/${s.slug}.png?v=${shareVersion(s)}`, ogImageAlt: `${s.title}. ${w.scheduled ? w.text : 'Not scheduled yet'}. A free AI session in New Orleans.`,
+      noindex: s.example,
+      jsonLdHtml: w.scheduled && !s.example ? graph(sessionEvent(s, siteUrl, location)) : '',
+    }),
+    header: header(t),
+    footer: footer(t.footer),
+    sheet: t.sheet,
+    slug: s.slug,
+    title: s.title,
+    status: s.status,
+    count: s.count,
+    startsAt: s.startsAt || '',
+    location,
+    // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
+    locationHtml: location === DEFAULT_LOCATION ? `<a href="/where">${esc(location)}</a>` : esc(location),
+    description: s.description,
+    when: w.text,
+    level: LEVELS[s.level],
+    guides: s.guides.length ? s.guides.join(', ') : 'Looking for a guide',
+    guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
+    tileHtml,
+    statusLineHtml,
+    buttonsHtml,
+  });
+}
+
+// ---------- sitemap and llms.txt ----------
+// The build writes both with a marker where the sessions go; the Worker fills it in from D1 on request.
+// Example sessions stay out, so search engines never list made-up guides and dates.
+export const SESSIONS_MARK = '<!--sessions-->';
+const listed = (sessions) => sessions.filter((s) => !s.example);
+
+export const sitemapWithSessions = (xml, siteUrl, sessions) =>
+  xml.replace(SESSIONS_MARK, listed(sessions).map((s) => `  <url><loc>${esc(`${siteUrl}/sessions/${s.slug}`)}</loc></url>`).join('\n')).replace(/\n\n+/g, '\n');
+
+export function llmsWithSessions(txt, siteUrl, sessions) {
+  const lines = listed(sessions).filter((s) => s.status === 'scheduled').map((s) => {
+    const w = when(s);
+    return `- [${s.title}](${siteUrl}/sessions/${s.slug}): ${w.day}, ${w.startClock}. ${s.description}`;
+  });
+  return txt.replace(SESSIONS_MARK, lines.length ? `\n## Scheduled sessions\n\n${lines.join('\n')}\n` : '');
+}

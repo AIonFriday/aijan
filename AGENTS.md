@@ -11,9 +11,9 @@ The website for AI January: free AI sessions in New Orleans, Jan 8–29, 2027. A
 ```sh
 npm install
 npm run build    # node scripts/build.mjs: data + site/ -> dist/
-npm run check    # validate data/sessions.json, then check dist/ links (run build first)
+npm run check    # check dist/ links, h1s, descriptions, structured data (run build first)
 npm test         # the tests in tests/
-npm run dev      # apply D1 migrations locally, then wrangler dev on http://localhost:8787
+npm run dev      # apply D1 migrations locally (this seeds the example sessions), then wrangler dev on http://localhost:8787
 ```
 
 For local sign-in, copy `.dev.vars.example` to `.dev.vars` first. Emailed sign-in links print in the terminal.
@@ -22,13 +22,15 @@ Always run `npm run build && npm run check && npm test` before you finish.
 
 ## Layout
 
-- `data/sessions.json`: session data. The build validates it (slug format, status, level, topics, timezone offset on `startsAt`). While `"example": true`, session pages are noindexed and left out of the sitemap, llms.txt and Event structured data; set it to `false` when the real lineup lands.
+- Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (the mockup lineup) are noindexed and left out of the sitemap, llms.txt and Event structured data; delete them when the real lineup lands.
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
-- `site/templates/session.html`: the page for one session, rendered once per session to `dist/sessions/<slug>.html` and served at `/sessions/<slug>`.
-- `scripts/og.mjs`: draws the 1200x630 share images at build time (`/og/home.png`, `/og/sessions/<slug>.png`) with fonts from `scripts/fonts/`. Plain Node, no packages.
+- `site/templates/session.html`: the page for one session, filled in by the Worker (`src/render.js`) and served at `/sessions/<slug>`.
+- `src/render.js`: page pieces the build and the Worker share (head, header, structured data, the session page).
+- `scripts/og.mjs`: draws the 1200x630 share images with fonts from `scripts/fonts/`: `/og/home.png` at build time, `/og/sessions/<slug>.png` in the Worker on request (cached). Only `Buffer` and `zlib`, no packages, no file reads (the caller passes the files; the build uses `scripts/og-files.mjs`).
 - `site/assets/`: `site.css` (all styles), `app.js` (the email sheet, saving taps, toast, shared helpers on `window.AJ`), `cards.js` (session rows and buttons shared by the home page and /sessions), `home.js` (hero tiles, "Coming up", "Almost there"), `sessions-page.js` (/sessions: calendar, by topic, vote for what's next), `guide.js`, `krewe.js`, `session.js`, `me.js` (My sessions), `map.js` + `nola-points.js` (hero map).
-- `src/worker.js`: serves `dist/` through the `ASSETS` binding. Only `/api/*` runs Worker code: `src/auth.js` (Better Auth), `src/api.js` (taps), `src/email.js` (Resend).
-- `migrations/`: D1 tables. Add a new numbered file; never edit one that has shipped.
+- `src/worker.js`: serves `dist/` through the `ASSETS` binding. Worker code runs only for `/api/*` (`src/auth.js` Better Auth, `src/api.js` taps, `src/email.js` Resend) and the session routes in `src/site.js`. Those routes are listed in `run_worker_first` in `wrangler.jsonc` and `ROUTES` in `src/site.js`; keep the two the same.
+- `migrations/`: D1 tables. Add a new numbered file; never edit one that has shipped. Production doesn't apply them on deploy yet, so a new migration has to be applied to `aijan-db` before its PR merges.
+- `tests/`: Node's test runner. `tests/d1.mjs` is a D1 stand-in over `node:sqlite` with every migration applied.
 - `dist/`: build output. Never edit it or commit it.
 
 ## Rules
