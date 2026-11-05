@@ -10,6 +10,7 @@
 //   POST /api/suggestions            suggest an idea (goes to review)
 //   POST /api/guide-offers           the offer-to-guide form on /guide
 //   POST /api/krewes                 bring-your-krewe request
+//   POST /mcp                        the admin MCP (one key per admin). See src/mcp.js and docs/admin.md.
 // Data lives in D1 (aijan-db). See docs/architecture.md and docs/schema.md.
 
 import { makeAuth, providers, BASE_PATH } from './auth.js';
@@ -30,6 +31,7 @@ import mono from '../scripts/fonts/IBMPlexMono-SemiBold.ttf';
 import * as api from './api.js';
 import { sendTapNote } from './email.js';
 import { postTap } from './slack.js';
+import { handleMcp } from './mcp.js';
 
 useFiles({
   fonts: { 'BricolageGrotesque-ExtraBold.ttf': display, 'AtkinsonHyperlegible-Regular.ttf': body, 'AtkinsonHyperlegible-Bold.ttf': bold, 'IBMPlexMono-SemiBold.ttf': mono },
@@ -47,6 +49,20 @@ export default {
     const path = url.pathname;
 
     if (path === '/api/health') return api.json({ ok: true, service: 'aijan-web' });
+    if (path === '/mcp') {
+      try {
+        return await handleMcp(request, env, {
+          // A new email gets a Better Auth account, the same kind a tap on the site makes.
+          createUser: async (e, email, name) => {
+            const ctx = await (await makeAuth(env, request)).$context;
+            return (await ctx.internalAdapter.createUser({ email, name, emailVerified: false })).id;
+          },
+        });
+      } catch (e) {
+        console.error(e);
+        return api.err(500, 'Something went wrong on our end.');
+      }
+    }
     if (!path.startsWith('/api/')) {
       try {
         return (await site(request, env, ctx, pages)) || env.ASSETS.fetch(request);
