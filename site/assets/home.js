@@ -2,7 +2,7 @@
 // "Coming up" (the next three sessions) and "Almost there" (the three ideas closest to five people).
 // Everything else lives on /sessions. Session data comes from /assets/sessions.js (window.AJ_DATA).
 (() => {
-  const { $, esc, countFor, NEEDED, TOPICS, fmt, wantLine, byTime, byWant, me, wireButtons } = window.AJ;
+  const { $, esc, countFor, NEEDED, TOPICS, fmt, wantLine, byTime, byWant, me, wireButtons, kindTag } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   $('#ask').innerHTML =
@@ -21,7 +21,7 @@
       ? `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`
       : `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
     return `<li class="hc${sched ? '' : ' idea'}" data-slug="${s.slug}">
-      <div class="when2">${sched ? `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d} · ${d.t}` : wantLine(n)}</div>
+      <div class="when2">${kindTag(s)}${sched ? `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d} · ${d.t}` : wantLine(n)}</div>
       <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
       <p class="meta">${who}${lvl}</p>
       <div class="hc-row"><span class="meta">${sched ? `${n} going` : `${Math.min(n, NEEDED)} of ${NEEDED} want it`}</span><span class="act">${btn}</span></div></li>`;

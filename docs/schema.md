@@ -19,10 +19,11 @@ The data model for D1 (`aijan-db`).
 | `location` | text, nullable | Empty means The Nieux, 2040 St. Charles Ave |
 | `level` | text | `all`, `new` (New to AI), `sometimes` (Now and then), `daily` (Daily) |
 | `topics` | text (JSON list) | `work`, `life`, `make`, `curious` |
-| `tags` | text (JSON list) | Free words like `restaurants`, `faith`. `ai-for` puts an idea in the "AI for…" row of buttons on /sessions |
+| `tags` | text (JSON list) | Free words like `restaurants`, `faith`. |
 | `guides` | text (JSON list) | Names shown as the guide, like `Maya` or `AI Friday crew`. Empty means it needs a guide |
 | `office_hours` | 0/1 | Back end only, never shown as a category |
 | `seed_count` | integer | Starting count that live taps add to. 0 for real sessions |
+| `kind` | text | Session type: `talk` (Talks and demos), `office-hours`, `hands-on` (default), `group` (For your group; ideas show as buttons on /sessions). Added in 0005 |
 | `example` | 0/1 | 1 = mockup session: noindexed, left out of the sitemap, llms.txt and Event data |
 | `created_at`, `updated_at` | text | |
 

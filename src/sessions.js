@@ -5,6 +5,13 @@
 
 export const LEVELS = { all: 'All levels', new: 'New to AI', sometimes: 'Now and then', daily: 'Daily' };
 export const TOPICS = { work: 'My job', life: 'Home and family', make: 'Making things', curious: 'Just curious' };
+// Session types. Each has a short promise shown on the session page.
+export const KINDS = {
+  talk: { name: 'Talks and demos', promise: 'Sit back and watch. Demos, talks or a panel, then time to ask questions.' },
+  'office-hours': { name: 'Office hours', promise: 'Drop in with your questions. Come and go whenever you like.' },
+  'hands-on': { name: 'Hands-on', promise: 'Make something real, with a Guide at your table.' },
+  group: { name: 'For your group', promise: 'Made for one kind of person, with examples from your world.' },
+};
 export const STATUSES = ['proposed', 'scheduled', 'cancelled'];
 export const TIME_ZONE = 'America/Chicago';
 export const DEFAULT_LOCATION = 'The Nieux, 2040 St. Charles';
@@ -30,6 +37,7 @@ export function fromRow(r) {
     guides: list(r.guides),
     // Starting count that live taps add to. 0 for real sessions; the example sessions carry made-up numbers.
     count: r.seed_count || 0,
+    kind: r.kind in KINDS ? r.kind : 'hands-on',
     officeHours: !!r.office_hours,
     // Example sessions stay out of search: noindex, not in the sitemap or llms.txt, no Event data.
     example: !!r.example,
@@ -59,6 +67,7 @@ export function validate(s) {
   if (s.status === 'scheduled' && !s.startsAt) errors.push('scheduled sessions need startsAt');
   if (s.startsAt && Number.isNaN(Date.parse(s.startsAt))) errors.push('startsAt is not a valid date');
   if (s.startsAt && !/[+-]\d\d:\d\d$|Z$/.test(s.startsAt)) errors.push('startsAt needs a UTC offset, e.g. 2027-01-12T08:00:00-06:00');
+  if (s.kind !== undefined && !(s.kind in KINDS)) errors.push(`unknown kind "${s.kind}"`);
   if (s.level && !(s.level in LEVELS)) errors.push(`unknown level "${s.level}"`);
   if (!Array.isArray(s.topics) || !s.topics.length) errors.push('needs at least one topic');
   else s.topics.forEach((t) => { if (!(t in TOPICS)) errors.push(`unknown topic "${t}"`); });
@@ -71,7 +80,7 @@ export function validate(s) {
 // or { ok: false, errors }. Pages, share images and lists pick the change up on the next request.
 const COLUMNS = {
   title: 'title', description: 'description', status: 'status', visible: 'visible', startsAt: 'starts_at', lengthMin: 'length_min',
-  location: 'location', level: 'level', topics: 'topics', tags: 'tags', guides: 'guides', officeHours: 'office_hours', count: 'seed_count', example: 'example',
+  location: 'location', level: 'level', topics: 'topics', tags: 'tags', guides: 'guides', officeHours: 'office_hours', kind: 'kind', count: 'seed_count', example: 'example',
 };
 const toColumn = (k, v) => (['topics', 'tags', 'guides'].includes(k) ? JSON.stringify(v ?? []) : typeof v === 'boolean' ? Number(v) : v === '' ? null : v ?? null);
 export async function saveSession(env, input) {
@@ -80,6 +89,7 @@ export async function saveSession(env, input) {
   if (merged.status === 'scheduled' && !merged.startsAt) merged.startsAt = undefined;
   const errors = validate(merged);
   if (errors.length) return { ok: false, errors };
+  if ('kind' in input) input = { ...input, officeHours: input.kind === 'office-hours' };
   const keys = Object.keys(COLUMNS).filter((k) => k in input);
   if (before) {
     if (keys.length) {
@@ -95,4 +105,4 @@ export async function saveSession(env, input) {
 }
 
 // What the browser gets as window.AJ_DATA (/assets/sessions.js): the same shape the build used to write.
-export const clientData = (sessions) => ({ levels: LEVELS, topics: TOPICS, timeZone: TIME_ZONE, defaultLocation: DEFAULT_LOCATION, sessions });
+export const clientData = (sessions) => ({ levels: LEVELS, topics: TOPICS, kinds: KINDS, timeZone: TIME_ZONE, defaultLocation: DEFAULT_LOCATION, sessions });

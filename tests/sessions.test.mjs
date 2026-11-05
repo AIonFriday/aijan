@@ -194,3 +194,24 @@ test('saveSession adds and updates sessions, and refuses bad ones', async () => 
   assert.match(bad.errors.join(), /need startsAt/);
   assert.equal((await saveSession(env, { slug: 'Bad Slug', title: 'x', description: 'x', status: 'proposed', level: 'all', topics: ['make'] })).ok, false);
 });
+
+test('every session has a type, shown on its page', async () => {
+  const env = setup();
+  const by = Object.fromEntries((await listSessions(env)).map((s) => [s.slug, s.kind]));
+  assert.equal(by['ai-friday-kickoff'], 'talk');
+  assert.equal(by['build-a-game-with-ai'], 'hands-on');
+  assert.equal(by['office-hours-jan-21'], 'office-hours');
+  assert.equal(by['ai-for-teachers'], 'group');
+  assert.equal(by['first-hour-with-ai'], 'hands-on');
+  const html = await (await get(env, '/sessions/office-hours-jan-21')).text();
+  assert.match(html, /<span class="kind k-office-hours">Office hours<\/span> Drop in/);
+  assert.match(validate({ ...(await getSession(env, 'ai-for-teachers')), kind: 'party' }).join(), /unknown kind/);
+});
+
+test('saving a type keeps the office hours flag in step', async () => {
+  const { saveSession } = await import('../src/sessions.js');
+  const env = setup();
+  const r = await saveSession(env, { slug: 'first-hour-with-ai', kind: 'office-hours' });
+  assert.equal(r.session.kind, 'office-hours');
+  assert.equal(r.session.officeHours, true);
+});

@@ -4,7 +4,7 @@
 //
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html" or is a partial.
 
-import { LEVELS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
+import { LEVELS, KINDS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
@@ -141,6 +141,9 @@ export function sessionPage(t, siteUrl, s) {
     description: s.description,
     when: w.text,
     level: LEVELS[s.level],
+    kind: s.kind,
+    kindName: KINDS[s.kind].name,
+    kindPromise: KINDS[s.kind].promise,
     guides: s.guides.length ? s.guides.join(', ') : 'Looking for a guide',
     guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
     tileHtml,

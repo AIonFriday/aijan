@@ -29,6 +29,9 @@ Light theme only. Muted Mardi Gras colors on lavender paper. Never a dark backgr
 | `--purple` / `--purple-soft` | `#6A4C8C` / `#E6DEEF` | Main actions, scheduled sessions, guides |
 | `--green` / `--green-soft` | `#4E7A5A` / `#DDEADF` | "I want this", krewes |
 | `--gold` / `--gold-soft` | `#B08A2E` / `#F2E7C9` | Accents, focus rings, underlines |
+| `--gold-ink` | `#7A5E17` | Gold text on `--gold-soft` (the "Office hours" tag), dark enough to read |
+
+Session types are small tags in these colors: Talks and demos (purple), Office hours (gold), Hands-on (green), For your group (plain, with a line border). The calendar entries use the same soft colors.
 
 ## Type
 

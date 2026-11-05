@@ -22,7 +22,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 
 ## Layout
 
-- Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`; the real lineup is seeded by `0004_real_lineup.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (made-up mockup sessions) are noindexed and left out of the sitemap, llms.txt and Event structured data; the real lineup has none. Ideas tagged `ai-for` (titled "AI for …") show in "Vote for what's next" as one row of buttons; other ideas get a full card.
+- Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`; the real lineup is seeded by `0004_real_lineup.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (made-up mockup sessions) are noindexed and left out of the sitemap, llms.txt and Event structured data; the real lineup has none. Ideas of type `group` (titled "AI for …") show in "Vote for what's next" as one row of buttons; other ideas get a full card.
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, filled in by the Worker (`src/render.js`) and served at `/sessions/<slug>`.
 - `src/render.js`: page pieces the build and the Worker share (head, header, structured data, the session page).
@@ -41,7 +41,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 - An idea needs **5** "I want this" to get scheduled. Show it as a count ("3 want it", "2 more and we schedule it"), not dots or progress bars.
 - Suggesting an idea never creates a session. Organizers review first.
 - Email first, never "sign in": a tap from someone new asks only for their email and counts right away. Google and Apple are one-tap shortcuts, and the emailed link brings people back to My sessions. Built on Better Auth. See `docs/auth.md`.
-- Sessions are grouped by topic (My job, Home and family, Making things, Just curious) and level, not by format. `officeHours` is back-end only.
+- Sessions are grouped by topic (My job, Home and family, Making things, Just curious) and level. Each also has a type (`kind`: Talks and demos, Office hours, Hands-on, For your group), shown as a small tag so people know what they'd walk into; types are labels, not a way to browse. AI Friday is a session name, not a type.
 - Session URLs are `/sessions/<slug>`. Slugs never change once shared.
 - All times are New Orleans time (`America/Chicago`). Store `startsAt` with an offset.
 - Mobile first. Check every change at 390px wide and at desktop width.
