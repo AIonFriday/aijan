@@ -1,7 +1,7 @@
 // Guide a session: sessions that need a guide (from the same data as the home page), and the offer-to-guide form.
 // A guide can be a person or a group ("AI Friday crew"). Organizers approve every offer before it shows.
 (() => {
-  const { $, esc, me, say, act, countFor, wirePills, picked, pickedValues } = window.AJ;
+  const { $, esc, me, say, act, countFor, wantText, wirePills, picked, pickedValues } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   const needs = S.filter((s) => s.status === 'proposed' && !s.guides.length).slice(0, 4);
@@ -10,7 +10,7 @@
       .map((n) => {
         const on = me.guide.has(n.slug);
         return `<li><div><a class="t" href="/sessions/${n.slug}">${esc(n.title)}</a>
-          <div class="m">Not scheduled yet · ${countFor(n)} want it · ${LEVELS[n.level]}</div></div>
+          <div class="m">Not scheduled yet${countFor(n) ? ` · ${wantText(countFor(n))}` : ''} · ${LEVELS[n.level]}</div></div>
           <button class="pill" type="button" data-slug="${n.slug}" aria-pressed="${on}">${on ? 'Offered. Thanks!' : 'I could guide this'}</button></li>`;
       })
       .join('');
