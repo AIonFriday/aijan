@@ -13,7 +13,7 @@
   });
   document.addEventListener('aj:change', (e) => {
     if (e.detail.tap?.type !== 'krewe') return;
-    $('#kform-wrap').innerHTML = `<div class="done" tabindex="-1"><span class="kicker">Request sent</span><h3>${esc(e.detail.tap.groupName)} is on the list.</h3>
+    $('#kform-wrap').innerHTML = `<div class="done" tabindex="-1"><span class="kicker">Request sent</span><h2 class="as-h3">${esc(e.detail.tap.groupName)} is on the list.</h2>
       <p>We’ll match you with a guide and email you a time within a few days.</p></div>`;
     $('#kform-wrap .done').focus();
   });
