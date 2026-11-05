@@ -58,6 +58,8 @@ export class SlackBot extends SlackBotBase {
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Where the button in a "here's what you picked" email lands. The utm tags let analytics tell email visits from direct ones.
+const EMAIL_ME = '/me?utm_source=email&utm_medium=email&utm_campaign=tap_note';
 const later = (ctx, p) => ctx?.waitUntil ? ctx.waitUntil(p.catch((e) => console.error(e))) : p.catch((e) => console.error(e));
 
 export default {
@@ -146,7 +148,7 @@ export default {
         tellOrganizers(tap, { email }, result);
         if (await api.canEmail(env, email)) {
           mail.tapNote = { tap, session: await api.session(env, tap.slug), count: result.count };
-          later(ctx, auth.api.signInMagicLink({ body: { email, callbackURL: '/me' }, headers: request.headers }));
+          later(ctx, auth.api.signInMagicLink({ body: { email, callbackURL: EMAIL_ME }, headers: request.headers }));
         }
         const out = api.json({ ...result, signedIn: who.isNew });
         for (const c of set.getSetCookie ? set.getSetCookie() : []) out.headers.append('Set-Cookie', c);
@@ -160,7 +162,7 @@ export default {
         const res = await api.toggle(env, user, m[1], m[2], body);
         // People who are in on this device get the RSVP in writing too, with the calendar invite.
         if (res.ok && m[2] === 'rsvp' && body.on !== false) {
-          later(ctx, api.session(env, m[1]).then((session) => sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session, origin: url.origin, url: `${url.origin}/me`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) })));
+          later(ctx, api.session(env, m[1]).then((session) => sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session, origin: url.origin, url: `${url.origin}${EMAIL_ME}`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) })));
         }
         return tellAfter({ ...body, type: m[2], slug: m[1] }, res);
       }

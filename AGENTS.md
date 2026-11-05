@@ -73,5 +73,6 @@ Always run `npm run build && npm run check && npm test` before you finish.
 - `docs/design.md`: tokens, type, layout rules.
 - `docs/auth.md`: the sign-in plan.
 - `docs/admin.md`: the admin MCP: tools, keys, connecting.
+- `docs/analytics.md`: the analytics events (`AJ.track`) and UTM tags for links we share.
 - `docs/slack.md`: how form submissions and taps reach the organizers in Slack.
 - `docs/roadmap.md`: what's not built yet.

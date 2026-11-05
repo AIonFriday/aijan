@@ -15,6 +15,22 @@
   const me = { signedIn: false, user: null, going: new Set(), want: new Set(), guide: new Set(), counts: {}, providers: [] };
   const changed = (detail = {}) => document.dispatchEvent(new CustomEvent('aj:change', { detail }));
 
+  // ---------- analytics ----------
+  // One event name per action, sent to both Umami and Google Analytics. Never send an email, a name or
+  // anything someone typed: only event names, session slugs and short labels. The list is in docs/analytics.md.
+  function track(name, data = {}) {
+    try { window.umami?.track(name, data); } catch {}
+    try { window.gtag?.('event', name, data); } catch {}
+  }
+  const TAP_EVENTS = { rsvp: 'rsvp', want: 'want', guide: 'offer_to_guide', suggest: 'suggest_idea', guideOffer: 'guide_form', krewe: 'group_request' };
+  // A tap the server saved. `via` says how we knew who it was: known (already in on this device),
+  // email (just typed it in the sheet) or sso (back from Google or Apple).
+  function trackTap(tap, via) {
+    if (!TAP_EVENTS[tap?.type]) return;
+    if (tap.on === false) return track('undo', { type: tap.type, slug: tap.slug });
+    track(TAP_EVENTS[tap.type], tap.slug ? { slug: tap.slug, via } : { via });
+  }
+
   let toastTimer;
   function say(message) {
     const t = $('#toast');
@@ -107,6 +123,7 @@
     }
     try {
       const result = await send(tap);
+      trackTap(tap, 'known');
       changed({ tap, result });
     } catch (e) {
       if (e.status === 401) { me.signedIn = false; return act(tap); }
@@ -131,7 +148,13 @@
     const input = $('#sheet-email');
     if (!input.value) input.value = lastEmail();
     sheet.hidden = false;
+    track('email_sheet_open', { for: tap?.type || 'other' });
     ($('#sheet-email-form:not([hidden]) input') || $('.sso:not([hidden])', sheet) || $('#cancel', sheet)).focus();
+  }
+  // Closed without giving an email: the cancel button, a tap outside, or Escape.
+  function dismissSheet() {
+    track('email_sheet_cancel', { for: waiting?.type || 'other' });
+    closeSheet();
   }
   function closeSheet() {
     $('#sheet').hidden = true;
@@ -154,6 +177,8 @@
       const r = await call('/api/start', { email, tap });
       try { localStorage.setItem(EMAIL_KEY, email); } catch {}
       closeSheet();
+      track('email_added', { for: tap.type, new: r.signedIn ? 'yes' : 'no' });
+      trackTap(tap, 'email');
       if (r.signedIn) { me.signedIn = true; me.user = { name: '', email }; }
       else keepLocal(tap);
       if (sets()[tap.type]) saved(tap, r, !r.signedIn);
@@ -168,6 +193,7 @@
 
   async function social(provider, button) {
     button.disabled = true;
+    track('sso_start', { provider });
     try {
       const r = await call('/api/auth/sign-in/social', { provider, callbackURL: here(), errorCallbackURL: withFlag('signin', 'failed') });
       location.href = r.url;
@@ -181,6 +207,7 @@
   async function emailLink(email) {
     try {
       await call('/api/auth/sign-in/magic-link', { email, callbackURL: '/me', errorCallbackURL: withFlag('signin', 'expired') });
+      track('my_sessions_link');
       try { localStorage.setItem(EMAIL_KEY, email); } catch {}
       return true;
     } catch (e) {
@@ -228,9 +255,9 @@
     document.querySelectorAll('[data-sso]').forEach((b) => b.addEventListener('click', () => social(b.dataset.sso, b)));
     if (sheet) {
       $('#sheet-email-form').addEventListener('submit', (e) => { e.preventDefault(); start(e.target); });
-      $('#cancel').addEventListener('click', closeSheet);
-      sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
+      $('#cancel').addEventListener('click', dismissSheet);
+      sheet.addEventListener('click', (e) => { if (e.target === sheet) dismissSheet(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !sheet.hidden) dismissSheet(); });
     }
     document.querySelectorAll('[data-signout]').forEach((b) => b.addEventListener('click', signOut));
 
@@ -254,6 +281,7 @@
     if (tap && me.signedIn) {
       try {
         const result = await send(tap);
+        trackTap(tap, 'sso');
         changed({ tap, result, afterSignIn: true });
         showAcct();
         return;
@@ -278,5 +306,5 @@
   const picked = (key) => pickedButtons(key).map((b) => b.textContent);
   const pickedValues = (key) => pickedButtons(key).map((b) => b.dataset.v);
 
-  window.AJ = { $, esc, me, say, act, ready, countFor, openSheet, emailLink, isEmail, lastEmail, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
+  window.AJ = { $, esc, me, say, act, track, ready, countFor, openSheet, emailLink, isEmail, lastEmail, signOut, wirePills, picked, pickedValues, NEEDED, siteUrl: location.origin };
 })();

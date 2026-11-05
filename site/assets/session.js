@@ -1,7 +1,7 @@
 // One session's page (/sessions/<slug>). The build writes the page's facts into the HTML for search engines
 // and link previews; this script only handles the buttons. The session's data sits in data-* attributes on <article>.
 (() => {
-  const { $, me, say, act, countFor, NEEDED } = window.AJ;
+  const { $, me, say, act, track, countFor, NEEDED } = window.AJ;
   const el = $('article.sp');
   const s = { ...el.dataset, count: Number(el.dataset.count) };
   const scheduled = s.status === 'scheduled';
@@ -29,6 +29,7 @@
   document.addEventListener('aj:change', paint);
 
   $('#share').addEventListener('click', () => {
+    track('share', { slug: s.slug, method: navigator.share ? 'native' : 'copy' });
     if (navigator.share) navigator.share({ title: s.title, url }).catch(() => {});
     else navigator.clipboard?.writeText(url).then(() => say('Link copied'), () => say(url));
   });
@@ -37,6 +38,7 @@
   const ics = $('#ics');
   if (ics) {
     ics.addEventListener('click', () => {
+      track('add_to_calendar', { slug: s.slug });
       const start = new Date(s.startsAt);
       const end = new Date(start.getTime() + 90 * 60000);
       const f = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
