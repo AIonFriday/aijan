@@ -2,7 +2,7 @@
 // plus "Vote for what's next" (ideas that aren't scheduled yet) and "suggest one".
 // Session data comes from /assets/sessions.js (window.AJ_DATA). Shared pieces come from cards.js.
 //
-// Links in: /sessions?topic=work opens "By topic" with that topic picked. /sessions#vote jumps to the ideas.
+// Links in: /sessions?topic=work (or ?topic=work,curious for several) opens "By topic" with those topics picked. /sessions#vote jumps to the ideas.
 (() => {
   const { $, esc, say, act, me, countFor, wantText, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
@@ -18,7 +18,8 @@
   // ---------- view switch ----------
   const params = new URLSearchParams(location.search);
   let view = params.has('topic') ? 'topic' : 'cal';
-  let topic = TOPICS.some(([k]) => k === params.get('topic')) ? params.get('topic') : 'all';
+  // The topics picked, any number of them. An empty set means every topic.
+  const topics = new Set((params.get('topic') || '').split(',').filter((k) => TOPICS.some(([t]) => t === k)));
   let level = 'any';
 
   $('#views').addEventListener('click', (e) => {
@@ -123,7 +124,14 @@
   $('#lvl').insertAdjacentHTML('beforeend', [['any', 'Any level'], ...Object.entries(LEVELS).filter(([k]) => k !== 'all')].map(([k, v]) => chip(k, v, 'l')).join(''));
   $('#tiles').addEventListener('click', (e) => {
     const b = e.target.closest('[data-t]');
-    if (b) { topic = b.dataset.t === topic ? 'all' : b.dataset.t; render(); }
+    if (!b) return;
+    if (b.dataset.t === 'all') topics.clear();
+    else if (topics.has(b.dataset.t)) topics.delete(b.dataset.t);
+    else topics.add(b.dataset.t);
+    // Keep the address in step so the page can be shared or reloaded with the same picks.
+    const picked = TOPICS.map(([k]) => k).filter((k) => topics.has(k)).join(',');
+    history.replaceState(null, '', picked ? `?topic=${picked}` : '?topic=all');
+    render();
   });
   $('#lvl').addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
@@ -133,9 +141,9 @@
   const fitsLevel = (s) => level === 'any' || s.level === level || s.level === 'all';
 
   function renderTopics() {
-    document.querySelectorAll('#tiles [data-t]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === topic));
+    document.querySelectorAll('#tiles [data-t]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === 'all' ? !topics.size : topics.has(b.dataset.t)));
     document.querySelectorAll('#lvl .chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.l === level));
-    const groups = TOPICS.filter(([k]) => topic === 'all' || k === topic).map(([k, name]) => {
+    const groups = TOPICS.filter(([k]) => !topics.size || topics.has(k)).map(([k, name]) => {
       const sc = scheduled().filter((s) => s.topics.includes(k) && fitsLevel(s));
       const id = ideas().filter((s) => s.topics.includes(k) && fitsLevel(s));
       if (!sc.length && !id.length) return '';
