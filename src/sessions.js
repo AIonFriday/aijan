@@ -58,6 +58,8 @@ export function fromRow(r) {
     officeHours: !!r.office_hours,
     // Example sessions stay out of search: noindex, not in the sitemap or llms.txt, no Event data.
     example: !!r.example,
+    // When the row last changed, for <lastmod> in the sitemap.
+    ...(r.updated_at ? { updatedAt: r.updated_at } : {}),
   };
 }
 

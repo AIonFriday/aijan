@@ -28,7 +28,8 @@ export const PRESENTERS = [
   { '@type': 'Organization', name: 'Nieux Society', url: 'https://www.nieuxsociety.com/' },
   { '@type': 'Organization', name: 'AI Friday', url: 'https://aifri.day/' },
 ];
-export const FREE = { '@type': 'Offer', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock' };
+// validFrom is when RSVPs opened. Google's Event report warns when an offer has none.
+export const FREE = { '@type': 'Offer', price: 0, priceCurrency: 'USD', availability: 'https://schema.org/InStock', validFrom: '2026-11-05T00:00:00-06:00' };
 
 // ---------- shared partials ----------
 // t: { head, header, footer, sheet } template strings from site/partials/.
@@ -101,7 +102,8 @@ function sessionEvent(s, siteUrl, location) {
     organizer: PRESENTERS,
     ...(s.guides.length ? { performer: s.guides.map((g) => ({ '@type': 'Person', name: g.name, ...(g.url ? { url: g.url } : {}) })) } : {}),
     offers: { ...FREE, url: `${siteUrl}/sessions/${s.slug}` },
-    superEvent: { '@id': `${siteUrl}/#event` },
+    // No superEvent link to the home page's EventSeries: Google reads a bare {"@id"} as a second Event with no
+    // name, date or place and flags the whole page as invalid.
   };
 }
 
@@ -191,8 +193,10 @@ export function sessionPage(t, siteUrl, s) {
 export const SESSIONS_MARK = '<!--sessions-->';
 const listed = (sessions) => sessions.filter((s) => !s.example);
 
+// Each session carries <lastmod> from its last edit, so search engines come back when a session changes.
+const lastmod = (s) => (s.updatedAt ? `<lastmod>${esc(s.updatedAt.slice(0, 10))}</lastmod>` : '');
 export const sitemapWithSessions = (xml, siteUrl, sessions) =>
-  xml.replace(SESSIONS_MARK, listed(sessions).map((s) => `  <url><loc>${esc(`${siteUrl}/sessions/${s.slug}`)}</loc></url>`).join('\n')).replace(/\n\n+/g, '\n');
+  xml.replace(SESSIONS_MARK, listed(sessions).map((s) => `  <url><loc>${esc(`${siteUrl}/sessions/${s.slug}`)}</loc>${lastmod(s)}</url>`).join('\n')).replace(/\n\n+/g, '\n');
 
 export function llmsWithSessions(txt, siteUrl, sessions) {
   const lines = listed(sessions).filter((s) => s.status === 'scheduled').map((s) => {

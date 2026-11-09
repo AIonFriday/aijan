@@ -108,9 +108,14 @@ test('a real scheduled session gets Event data, the sitemap and llms.txt', async
   assert.equal(event['@type'], 'Event');
   assert.equal(event.startDate, '2027-01-21T15:00:00-06:00');
   assert.equal(event.endDate, '2027-01-21T17:00:00-06:00', 'office hours run two hours');
+  // What Google's Event report asks for: one Event per page (a bare superEvent {"@id"} counts as a second,
+  // empty one) and a validFrom on the offer.
+  assert.equal(ld['@graph'].length, 1);
+  assert.equal(JSON.stringify(ld).match(/"@id"/), null);
+  assert.ok(event.offers.validFrom);
 
   const sitemap = await (await get(env, '/sitemap.xml')).text();
-  assert.match(sitemap, /<loc>https:\/\/joinaijanuary\.com\/sessions\/ai-friday-kickoff<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/joinaijanuary\.com\/sessions\/ai-friday-kickoff<\/loc><lastmod>\d{4}-\d\d-\d\d<\/lastmod>/);
   assert.match(sitemap, /<loc>https:\/\/joinaijanuary\.com\/where<\/loc>/);
   assert.doesNotMatch(sitemap, /<!--/);
   const llms = await (await get(env, '/llms.txt')).text();
