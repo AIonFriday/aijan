@@ -32,6 +32,11 @@ h3,h2.as-h3{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0
 .ask-opts button span,.ask-opts a span{font-weight:400;font-size:14px;color:var(--ink-soft)}
 .ask-opts button:hover,.ask-opts a:hover{background:var(--purple);color:var(--btn-ink)}
 .ask-opts button:hover span,.ask-opts a:hover span{color:var(--purple-soft)}
+.ask-opts button[aria-pressed="true"]{background:var(--purple);color:var(--btn-ink)}
+.ask-opts button[aria-pressed="true"] span{color:var(--purple-soft)}
+.ask-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;min-height:44px}
+.ask-opts .ask-foot .go{display:block;padding:10px 16px;border:0;background:var(--purple);color:var(--btn-ink)}
+.ask-opts .ask-foot .go[hidden]{display:none}
 .ask-opts .all{grid-column:1/-1;justify-self:start;padding:6px 0;border-color:transparent;background:none;text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
 .ask-opts .all:hover{background:none;color:var(--purple)}
 
