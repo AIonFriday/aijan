@@ -405,10 +405,8 @@ textarea{min-height:76px;resize:vertical}
 .suggest .row{display:flex;margin-top:4px}
 /* In the narrow side column the button sits under the title instead of squeezing it. */
 @media(min-width:1000px){
-  .vote .s{grid-template-columns:44px 1fr}
-  .vote .lead{grid-row:span 3}
-  .vote .act{grid-row:auto;grid-column:2;justify-self:start;padding-top:6px}
-  .vote .want{width:44px}.vote .want .d{font-size:19px}
+  .vote .s.idea{grid-template-columns:1fr}
+  .vote .s.idea .act{grid-row:auto;grid-column:1;justify-self:start;padding-top:6px}
 }
 
 /* the privacy page (/privacy) */
