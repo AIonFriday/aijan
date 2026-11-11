@@ -48,19 +48,16 @@
     $('#close').innerHTML = close.length ? close.map(hcard).join('') : '<li class="empty">No ideas waiting right now. <a href="/sessions#suggest">Suggest one</a>.</li>';
   }
 
-  // The faculty strip: everyone's photo and name, sliding slowly sideways, with one "your spot" tile that links
-  // to /guide. The set repeats so the loop never shows a gap; the copies are hidden from screen readers and the
+  // The faculty strip: the photo and name of everyone leading a session, sliding slowly sideways. The set repeats so the loop never shows a gap; the copies are hidden from screen readers and the
   // tab order. Hover or focus pauses it; with reduced motion it's a plain row you can swipe.
   (function facultyStrip() {
     const F = window.AJ.FACULTY;
     const track = $('#fac');
     if (!track) return;
     if (!F.length) { track.closest('.fac').hidden = true; return; }
-    const open = Math.max(0, (window.AJ_DATA.facultyGoal || 25) - F.length);
     const item = (f) => `<li><a class="fac-i" href="/faculty/${f.slug}">${window.AJ.avatar(f)}<span class="fac-n">${esc(f.name)}</span><span class="fac-r">${esc(f.role)}</span></a></li>`;
-    const spot = open ? `<li><a class="fac-i fac-open" href="/guide"><span class="av av-open" aria-hidden="true">+</span><span class="fac-n">Your spot</span><span class="fac-r">${open} spots left. Lead a session</span></a></li>` : '';
-    const one = F.map(item).join('') + spot;
-    const per = F.length + (open ? 1 : 0);
+    const one = F.map(item).join('');
+    const per = F.length;
     const sets = Math.max(1, Math.ceil(12 / per));
     const block = one.repeat(sets);
     const hide = (html) => html.replace(/<li>/g, '<li aria-hidden="true">').replace(/<a /g, '<a tabindex="-1" ');

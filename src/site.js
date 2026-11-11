@@ -9,7 +9,7 @@
 // (see src/worker.js), so tests can call this with files read from disk.
 
 import { listSessions, getSession, clientData } from './sessions.js';
-import { listFaculty, listMembers, withTies, clientFaculty, FACULTY_GOAL } from './faculty.js';
+import { listFaculty, listMembers, withTies, clientFaculty } from './faculty.js';
 import { facultyPage, sessionPage, shareFacts, shareVersion, sitemapWithSessions, llmsWithSessions } from './render.js';
 
 export const SITE_URL = 'https://joinaijanuary.com';
@@ -31,7 +31,7 @@ export async function site(request, env, ctx, { templates, renderSession }) {
 
   if (path === '/assets/sessions.js') {
     const [sessions, faculty, members] = await Promise.all([listSessions(env), listFaculty(env), listMembers(env)]);
-    const data = { ...clientData(sessions), faculty: clientFaculty(faculty, sessions, members), facultyGoal: FACULTY_GOAL };
+    const data = { ...clientData(sessions), faculty: clientFaculty(faculty, sessions, members) };
     const body = `// Sessions and faculty from D1, drawn by src/site.js.\nwindow.AJ_DATA=${JSON.stringify(data)};\n`;
     return new Response(body, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': SHORT } });
   }

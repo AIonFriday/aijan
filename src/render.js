@@ -209,7 +209,7 @@ export function facultyPage(t, siteUrl, f, sessions) {
     const lead = w.scheduled ? `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>` : '<div class="tile w" aria-hidden="true"><div class="m">idea</div><div class="d">?</div></div>';
     return `<li><a class="fs" href="/sessions/${esc(s.slug)}">${lead}<span class="fs-body"><span class="fs-when"><span class="kind k-${esc(s.kind)}">${esc(KINDS[s.kind].name)}</span>${esc(w.scheduled ? `${w.day} · ${w.startClock}` : 'Not scheduled yet')}</span><span class="fs-title">${esc(s.title)}</span>${via ? `<span class="fs-via">With ${esc(via.name)}</span>` : ''}</span></a></li>`;
   };
-  const projectHtml = (p) => `<li class="fproj"><h3>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)} <span aria-hidden="true">↗</span></a>` : esc(p.name)}</h3>${p.about ? `<p>${linkify(p.about)}</p>` : ''}</li>`;
+  const projectHtml = (p) => `<li class="fproj${p.image ? ' has-img' : ''}">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : ''}<div><h3>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)} <span aria-hidden="true">↗</span></a>` : esc(p.name)}</h3>${p.about ? `<p>${linkify(p.about)}</p>` : ''}</div></li>`;
   const people = f.people || [], groups = f.groups || [];
   const personHtml = (p) => `<li><a class="fperson" href="/faculty/${esc(p.slug)}">${avatarHtml(p)}<span class="fc-n">${esc(p.name)}</span><span class="fc-r">${esc(p.role)}</span></a></li>`;
   const groupChip = (g) => `<li><a href="/faculty/${esc(g.slug)}">${avatarHtml(g, 'sm')}${esc(g.name)}</a></li>`;

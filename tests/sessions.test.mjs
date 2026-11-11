@@ -225,12 +225,12 @@ test('guides can link to their website, and links in descriptions are clickable'
   const res = await saveSession(env, {
     slug: 'build-a-game-with-ai',
     description: 'See some of ours at hellogravel.com/play. Questions? Email january@aifri.day or see https://example.com/a?b=1&c=2.',
-    guides: [{ name: 'Hello Gravel Krewe', url: 'hellogravel.com' }, { name: 'Sam' }],
+    guides: [{ name: 'Hello Gravel', url: 'hellogravel.com' }, { name: 'Sam' }],
   });
   assert.equal(res.ok, true);
-  assert.deepEqual(res.session.guides, [{ name: 'Hello Gravel Krewe', url: 'https://hellogravel.com' }, { name: 'Sam' }]);
+  assert.deepEqual(res.session.guides, [{ name: 'Hello Gravel', url: 'https://hellogravel.com' }, { name: 'Sam' }]);
   const html = await (await get(env, '/sessions/build-a-game-with-ai')).text();
-  assert.match(html, /<dd><a href="https:\/\/hellogravel\.com" target="_blank" rel="noopener">Hello Gravel Krewe<\/a>, Sam<\/dd>/);
+  assert.match(html, /<dd><a href="https:\/\/hellogravel\.com" target="_blank" rel="noopener">Hello Gravel<\/a>, Sam<\/dd>/);
   assert.match(html, /<a href="https:\/\/hellogravel\.com\/play" target="_blank" rel="noopener">hellogravel\.com\/play<\/a>\. Questions/);
   assert.match(html, /<a href="https:\/\/example\.com\/a\?b=1&amp;c=2" [^>]*>https:\/\/example\.com\/a\?b=1&amp;c=2<\/a>\./);
   assert.match(html, /Email january@aifri\.day or/, 'email addresses stay plain text');
@@ -257,7 +257,6 @@ test('faculty pages: strip data, a person page with their sessions, and guide li
   const get = (p) => siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() });
   const data = await (await get('/assets/sessions.js')).text();
   assert.match(data, /"slug":"brent-mccrossen"/);
-  assert.match(data, /"facultyGoal":25/);
   const page = await (await get('/faculty/brent-mccrossen')).text();
   assert.match(page, /<h1>Brent McCrossen<\/h1>/);
   assert.match(page, /Map it before you automate it/);
@@ -283,10 +282,22 @@ test('faculty: a person lists their groups and the groups’ sessions; a group l
   const get = async (p) => (await siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() })).text();
   const andrew = await get('/faculty/andrew-dunn');
   assert.match(andrew, /Part of/);
-  assert.match(andrew, /href="\/faculty\/hello-gravel-krewe"/);
+  assert.match(andrew, /href="\/faculty\/hello-gravel"/);
   assert.match(andrew, /Build a game with AI/);
-  assert.match(andrew, /With Hello Gravel Krewe/);
-  const hg = await get('/faculty/hello-gravel-krewe');
-  assert.match(hg, /People at Hello Gravel Krewe/);
+  assert.match(andrew, /With Hello Gravel/);
+  const hg = await get('/faculty/hello-gravel');
+  assert.match(hg, /People at Hello Gravel/);
   assert.match(hg, /href="\/faculty\/andrew-dunn"/);
+});
+
+test('faculty: only people who lead a session themselves are in the strip and on /faculty', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const js = await (await siteFn(new Request('https://x.test/assets/sessions.js'), env, null, { templates: {}, renderSession: () => new Uint8Array() })).text();
+  const shown = JSON.parse(js.match(/AJ_DATA=(.*);\n$/)[1]).faculty.map((f) => f.slug);
+  assert.ok(shown.includes('whitley-rushing') && shown.includes('hello-gravel'));
+  assert.ok(!shown.includes('max-cannon') && !shown.includes('andrew-dunn'));
 });

@@ -2,9 +2,6 @@
 // (migrations/0006_faculty.sql). A faculty row is tied to its sessions by name: a session guide whose name
 // matches faculty.name (ignoring case) is that person. Plain JavaScript with no imports, like src/sessions.js.
 
-// How many New Orleanians Tim's invitation asks to lead a session. The home strip counts the open spots.
-export const FACULTY_GOAL = 25;
-
 const list = (v) => {
   try { const a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
 };
@@ -19,7 +16,7 @@ export function fromRow(r) {
     bio: r.bio || '',
     ...(r.photo ? { photo: r.photo } : {}),
     links: list(r.links).filter((l) => l && l.label && https(l.url)).map((l) => ({ label: String(l.label), url: https(l.url) })),
-    projects: list(r.projects).filter((p) => p && p.name).map((p) => ({ name: String(p.name), about: String(p.about || ''), ...(https(p.url) ? { url: https(p.url) } : {}) })),
+    projects: list(r.projects).filter((p) => p && p.name).map((p) => ({ name: String(p.name), about: String(p.about || ''), ...(https(p.url) ? { url: https(p.url) } : {}), ...(typeof p.image === 'string' && /^(https:\/\/|\/assets\/)/.test(p.image) ? { image: p.image } : {}) })),
   };
 }
 
@@ -82,8 +79,10 @@ export function tint(slug) {
 }
 
 // What the browser gets in window.AJ_DATA.faculty: just enough for the strip and the /faculty grid.
+// Only the faculty who lead a session themselves (named as its guide) show in the home strip and on /faculty.
+// Everyone else, like the rest of a company's team, shows on their group's page and has their own page.
 export const clientFaculty = (faculty, sessions, members = []) =>
-  faculty.map((f) => {
+  faculty.filter((f) => sessionsFor(f, sessions).length).map((f) => {
     const t = withTies(f, faculty, members);
-    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: allSessionsFor(t, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
+    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: sessionsFor(f, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
   });
