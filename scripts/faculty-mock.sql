@@ -30,7 +30,7 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   'Founder of Mortise Advisors, where he works on go-to-market and applied AI. Has spent 20+ years in early-stage startups across tech, entertainment and travel (including co-founding Audiosocket). Leading two hands-on sessions on turning a messy process or a stuck idea into something you can run.',
   NULL,
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brent-mccrossen-4727225/"}]',
-  '[{"name":"Mortise Advisors","about":"Go-to-market and applied AI help for growing companies."},{"name":"Audiosocket","about":"Music licensing company he co-founded."}]',30),
+  '[]',30),
 
  ('whitley-rushing','Whitley Rushing',0,'Director of Operations, Hello Gravel',
   'Runs operations at Hello Gravel and leans on AI across work and home: thinking out loud on the drive, figuring out what her team should do next, planning hard conversations, tracking follow-ups, school reminders and recipes.',
@@ -42,7 +42,7 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   'Strategy and product leader in New Orleans: COO and co-founder of Precon Playbook, COO at Align, and founder of Work in Tech. Built a login-only website for a 31-person leadership class (directory, profiles, session prep, feedback surveys) by describing it to AI.',
   NULL,
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brookbissinger"}]',
-  '[{"name":"Precon Playbook","about":"Co-founder and COO."},{"name":"Leadership class members site","about":"A private site for a 31-person class, built without writing the code by hand."}]',50),
+  '[{"name":"Sipped","about":"Remembers what your people drink, so you always bring the right bottle. Free, in your browser.","url":"https://www.mysipped.com/","image":"/assets/faculty/p-sipped.png"},{"name":"Precon Playbook","about":"Software that helps building owners keep big construction projects on track before ground breaks.","url":"https://www.preconplaybook.com/"},{"name":"Leadership class members site","about":"A private site for a 31-person class, built without writing the code by hand."}]',50),
 
  ('andrew-dunn','Andrew Dunn',0,'AI Builder',
   'Co-hosts AI Friday. Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',
