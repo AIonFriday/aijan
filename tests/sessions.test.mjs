@@ -225,12 +225,12 @@ test('guides can link to their website, and links in descriptions are clickable'
   const res = await saveSession(env, {
     slug: 'build-a-game-with-ai',
     description: 'See some of ours at hellogravel.com/play. Questions? Email january@aifri.day or see https://example.com/a?b=1&c=2.',
-    guides: [{ name: 'Hello Gravel Krewe', url: 'hellogravel.com' }, { name: 'Sam' }],
+    guides: [{ name: 'Hello Gravel', url: 'hellogravel.com' }, { name: 'Sam' }],
   });
   assert.equal(res.ok, true);
-  assert.deepEqual(res.session.guides, [{ name: 'Hello Gravel Krewe', url: 'https://hellogravel.com' }, { name: 'Sam' }]);
+  assert.deepEqual(res.session.guides, [{ name: 'Hello Gravel', url: 'https://hellogravel.com' }, { name: 'Sam' }]);
   const html = await (await get(env, '/sessions/build-a-game-with-ai')).text();
-  assert.match(html, /<dd><a href="https:\/\/hellogravel\.com" target="_blank" rel="noopener">Hello Gravel Krewe<\/a>, Sam<\/dd>/);
+  assert.match(html, /<dd><a href="https:\/\/hellogravel\.com" target="_blank" rel="noopener">Hello Gravel<\/a>, Sam<\/dd>/);
   assert.match(html, /<a href="https:\/\/hellogravel\.com\/play" target="_blank" rel="noopener">hellogravel\.com\/play<\/a>\. Questions/);
   assert.match(html, /<a href="https:\/\/example\.com\/a\?b=1&amp;c=2" [^>]*>https:\/\/example\.com\/a\?b=1&amp;c=2<\/a>\./);
   assert.match(html, /Email january@aifri\.day or/, 'email addresses stay plain text');
@@ -242,4 +242,62 @@ test('guides can link to their website, and links in descriptions are clickable'
   assert.equal(bad.ok, false);
   assert.match(bad.errors.join(), /isn’t a web address/);
   assert.equal((await saveSession(env, { slug: 'build-a-game-with-ai', guides: [{ url: 'https://a.com' }] })).ok, false);
+});
+
+// ---------- faculty (mockup) ----------
+import { readFileSync as readFac } from 'node:fs';
+test('faculty pages: strip data, a person page with their sessions, and guide links to it', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const rd = (p) => readFac(`${r}/${p}`, 'utf8');
+  const templates = { session: rd('site/templates/session.html'), faculty: rd('site/templates/faculty.html'), head: rd('site/partials/head.html'), header: rd('site/partials/header.html'), footer: rd('site/partials/footer.html'), sheet: rd('site/partials/sheet.html') };
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const get = (p) => siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() });
+  const data = await (await get('/assets/sessions.js')).text();
+  assert.match(data, /"slug":"brent-mccrossen"/);
+  const page = await (await get('/faculty/brent-mccrossen')).text();
+  assert.match(page, /<h1>Brent McCrossen<\/h1>/);
+  assert.match(page, /Map it before you automate it/);
+  assert.match(page, /Build the idea you keep putting off/);
+  const s = await (await get('/sessions/map-it-before-you-automate-it')).text();
+  assert.match(s, /href="\/faculty\/brent-mccrossen"/);
+});
+
+test('faculty: a database without the table shows no faculty instead of failing', async () => {
+  const { listFaculty } = await import('../src/faculty.js');
+  const env = { DB: { prepare: () => ({ all: async () => { throw new Error('D1_ERROR: no such table: faculty'); } }) } };
+  assert.deepEqual(await listFaculty(env), []);
+});
+
+test('faculty: a person lists their groups and the groups’ sessions; a group lists its people', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const rd = (p) => readFac(`${r}/${p}`, 'utf8');
+  const templates = { session: rd('site/templates/session.html'), faculty: rd('site/templates/faculty.html'), head: rd('site/partials/head.html'), header: rd('site/partials/header.html'), footer: rd('site/partials/footer.html'), sheet: rd('site/partials/sheet.html') };
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const get = async (p) => (await siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() })).text();
+  const andrew = await get('/faculty/andrew-dunn');
+  assert.match(andrew, /Part of/);
+  assert.match(andrew, /href="\/faculty\/hello-gravel"/);
+  assert.match(andrew, /Build a game with AI/);
+  assert.match(andrew, /With Hello Gravel/);
+  const hg = await get('/faculty/hello-gravel');
+  assert.match(hg, /People at Hello Gravel/);
+  assert.match(hg, /href="\/faculty\/andrew-dunn"/);
+});
+
+test('faculty: only session leaders and featured faculty are in the strip and on /faculty', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const js = await (await siteFn(new Request('https://x.test/assets/sessions.js'), env, null, { templates: {}, renderSession: () => new Uint8Array() })).text();
+  const shown = JSON.parse(js.match(/AJ_DATA=(.*);\n$/)[1]).faculty.map((f) => f.slug);
+  for (const slug of ['whitley-rushing', 'hello-gravel', 'andrew-dunn', 'eli-ackerman', 'tim-williamson']) assert.ok(shown.includes(slug), slug);
+  assert.ok(!shown.includes('max-cannon') && !shown.includes('daniel-crowley'));
 });

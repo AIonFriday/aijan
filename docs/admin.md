@@ -25,6 +25,8 @@ RSVPs only go on scheduled sessions and wants only on ideas, the same rule as th
 
 To add an "AI for…" group to vote on, add an idea titled "AI for …" (like "AI for musicians") with `kind` set to `group`. It shows as a button in the "AI for…" row on /sessions instead of a full card. Keep that row short.
 
+There are no faculty tools yet. Faculty (`/faculty`) are added with SQL for now; see `docs/faculty.md`.
+
 Beignet in Slack can use these tools too, except `add_admin` and `remove_admin`. See `docs/slack.md`.
 
 ## Keys

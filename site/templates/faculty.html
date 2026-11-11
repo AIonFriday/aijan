@@ -1,0 +1,26 @@
+<!-- One faculty member's page, filled in by the Worker from the faculty and sessions tables in D1 (facultyPage in
+     src/render.js) and served at /faculty/<slug>. Values in {{...}} are HTML-escaped unless the name ends in Html. -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="col">
+  <p class="crumb"><a href="/faculty">← All faculty</a></p>
+  <article class="fp">
+    <div class="fp-top">{{avatarHtml}}<div class="fp-who"><span class="kicker">AI January faculty</span><h1>{{name}}</h1><p class="fp-role">{{role}}</p></div></div>
+    {{groupsHtml}}
+    {{bioHtml}}
+    {{linksHtml}}
+  </article>
+  {{peopleHtml}}
+  <section class="fsec" aria-labelledby="leads">
+    <h2 class="as-h3" id="leads">{{sessionsHeading}}</h2>
+    {{sessionsHtml}}
+  </section>
+  {{projectsHtml}}
+  <div class="side">
+    <p>Know a little about AI? <a href="/guide">Lead a session too</a>. No slides, just open your laptop.</p>
+  </div>
+</div></main>
+{{footer}}
+{{sheet}}
+</body>
+</html>

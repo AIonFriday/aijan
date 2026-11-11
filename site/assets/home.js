@@ -48,6 +48,23 @@
     $('#close').innerHTML = close.length ? close.map(hcard).join('') : '<li class="empty">No ideas waiting right now. <a href="/sessions#suggest">Suggest one</a>.</li>';
   }
 
+  // The faculty strip: the photo and name of everyone leading a session, sliding slowly sideways. The set repeats so the loop never shows a gap; the copies are hidden from screen readers and the
+  // tab order. Hover or focus pauses it; with reduced motion it's a plain row you can swipe.
+  (function facultyStrip() {
+    const F = window.AJ.FACULTY;
+    const track = $('#fac');
+    if (!track) return;
+    if (!F.length) { track.closest('.fac').hidden = true; return; }
+    const item = (f) => `<li><a class="fac-i" href="/faculty/${f.slug}">${window.AJ.avatar(f)}<span class="fac-n">${esc(f.name)}</span><span class="fac-r">${esc(f.role)}</span></a></li>`;
+    const one = F.map(item).join('');
+    const per = F.length;
+    const sets = Math.max(1, Math.ceil(12 / per));
+    const block = one.repeat(sets);
+    const hide = (html) => html.replace(/<li>/g, '<li aria-hidden="true">').replace(/<a /g, '<a tabindex="-1" ');
+    track.innerHTML = block + hide(block);
+    track.style.setProperty('--dur', `${per * sets * 4}s`);
+  })();
+
   wireButtons($('.highlights'));
   document.addEventListener('aj:change', render);
   render();

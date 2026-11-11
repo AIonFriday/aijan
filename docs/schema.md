@@ -68,6 +68,10 @@ The offer-to-guide form on `/guide`, not tied to one session. Offers for one ses
 
 `id`, `group_name`, `what`, `size` (`5-10`, `10-20`, `20-40`, `40+`), `user_id`, `status` (`new`, `matched`, `scheduled`), `session_id` (once scheduled), `created_at`. A matched krewe becomes a normal session, with `visible` off when it's private.
 
+## faculty and faculty_members
+
+The people and groups who lead sessions, and who's in which group (`migrations/0006_faculty.sql`). Tied to sessions by name: a `sessions.guides` name that matches `faculty.name` (ignoring case). Columns and rules: [faculty.md](faculty.md).
+
 ## How a session moves
 
 1. Someone suggests an idea. An organizer reviews it and posts it as `proposed`.

@@ -5,6 +5,7 @@
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html" or is a partial.
 
 import { LEVELS, KINDS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
+import { facultyFor, allSessionsFor, initials, tint } from './faculty.js';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
@@ -107,8 +108,13 @@ function sessionEvent(s, siteUrl, location) {
   };
 }
 
-// A guide's name, linked to their website or LinkedIn when they have one. Opens in a new tab, like the footer links.
-const guideHtml = (g) => (g.url ? `<a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.name)}</a>` : esc(g.name));
+// A guide's name, linked to their faculty page when they have one, or else to their website or LinkedIn
+// (in a new tab, like the footer links).
+const guideHtml = (g, faculty = []) => {
+  const f = facultyFor(faculty, g.name);
+  if (f) return `<a href="/faculty/${esc(f.slug)}">${esc(g.name)}</a>`;
+  return g.url ? `<a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.name)}</a>` : esc(g.name);
+};
 
 // Plain text with its web addresses turned into links, escaped. Catches https://… and www.… links and bare
 // addresses like hellogravel.com/play, but not email addresses. A period or comma at the end stays text.
@@ -139,7 +145,7 @@ export function clip(text, max = 160) {
 }
 
 // The whole page for one session. t: { session, head, header, footer, sheet } template strings.
-export function sessionPage(t, siteUrl, s) {
+export function sessionPage(t, siteUrl, s, faculty = []) {
   const w = when(s);
   const location = s.location || DEFAULT_LOCATION;
   let tileHtml, statusLineHtml, buttonsHtml, summary;
@@ -179,11 +185,57 @@ export function sessionPage(t, siteUrl, s) {
     kind: s.kind,
     kindName: KINDS[s.kind].name,
     kindPromise: KINDS[s.kind].promise,
-    guidesHtml: s.guides.length ? s.guides.map(guideHtml).join(', ') : 'Looking for a guide',
+    guidesHtml: s.guides.length ? s.guides.map((g) => guideHtml(g, faculty)).join(', ') : 'Looking for a guide',
     guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
     tileHtml,
     statusLineHtml,
     buttonsHtml,
+  });
+}
+
+// ---------- faculty ----------
+// A round photo (or initials on a soft color when there's no photo yet); groups get a rounded square.
+export function avatarHtml(f, size = '') {
+  const inner = f.photo ? `<img src="${esc(f.photo)}" alt="" loading="lazy">` : esc(initials(f.name));
+  return `<span class="av av-${tint(f.slug)}${f.isGroup ? ' grp' : ''}${size ? ` ${size}` : ''}" aria-hidden="true">${inner}</span>`;
+}
+
+// One faculty member's page: who they are, their links, the sessions they lead, and what they're working on.
+// t: { faculty, head, header, footer, sheet } template strings. sessions: every visible session.
+export function facultyPage(t, siteUrl, f, sessions) {
+  const mine = allSessionsFor(f, sessions);
+  const sessionHtml = ({ s, via }) => {
+    const w = when(s);
+    const lead = w.scheduled ? `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>` : '<div class="tile w" aria-hidden="true"><div class="m">idea</div><div class="d">?</div></div>';
+    return `<li><a class="fs" href="/sessions/${esc(s.slug)}">${lead}<span class="fs-body"><span class="fs-when"><span class="kind k-${esc(s.kind)}">${esc(KINDS[s.kind].name)}</span>${esc(w.scheduled ? `${w.day} · ${w.startClock}` : 'Not scheduled yet')}</span><span class="fs-title">${esc(s.title)}</span>${via ? `<span class="fs-via">With ${esc(via.name)}</span>` : ''}</span></a></li>`;
+  };
+  const projectHtml = (p) => `<li class="fproj${p.image ? ' has-img' : ''}">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : ''}<div><h3>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)} <span aria-hidden="true">↗</span></a>` : esc(p.name)}</h3>${p.about ? `<p>${linkify(p.about)}</p>` : ''}</div></li>`;
+  const people = f.people || [], groups = f.groups || [];
+  const personHtml = (p) => `<li><a class="fperson" href="/faculty/${esc(p.slug)}">${avatarHtml(p)}${p.title ? `<span class="ftitle">${esc(p.title)}</span>` : ''}<span class="fc-n">${esc(p.name)}</span><span class="fc-r">${esc(p.role)}</span></a></li>`;
+  const groupChip = (g) => `<li><a href="/faculty/${esc(g.slug)}">${avatarHtml(g, 'sm')}${esc(g.name)}</a></li>`;
+  const first = f.isGroup ? f.name : f.name.split(/\s+/)[0];
+  const type = f.isGroup ? 'Organization' : 'Person';
+  return fill(t.faculty, {
+    head: head(t, siteUrl, {
+      path: `/faculty/${f.slug}`,
+      title: clip(`${f.name} · AI January faculty`, 60),
+      description: clip(`${f.name}${f.role ? `, ${f.role}` : ''}, leads ${mine.length === 1 ? 'a free AI session' : 'free AI sessions'} at AI January in New Orleans. ${f.bio}`),
+      ogType: f.isGroup ? 'website' : 'profile',
+      jsonLdHtml: graph({ '@type': type, name: f.name, url: `${siteUrl}/faculty/${f.slug}`, ...(f.role ? { [f.isGroup ? 'description' : 'jobTitle']: f.role } : {}), ...(f.links.length ? { sameAs: f.links.map((l) => l.url) } : {}), ...(groups.length ? { memberOf: groups.map((g) => ({ '@type': 'Organization', name: g.name, url: `${siteUrl}/faculty/${g.slug}` })) } : {}), ...(people.length ? { member: people.map((p) => ({ '@type': 'Person', name: p.name, url: `${siteUrl}/faculty/${p.slug}` })) } : {}) }),
+    }),
+    header: header(t),
+    footer: footer(t.footer),
+    sheet: t.sheet,
+    name: f.name,
+    role: f.role,
+    avatarHtml: avatarHtml(f, 'xl'),
+    linksHtml: f.links.length ? `<ul class="flinks">${f.links.map((l) => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} <span aria-hidden="true">↗</span></a></li>`).join('')}</ul>` : '',
+    groupsHtml: groups.length ? `<div class="fpart"><span class="fpart-h">Part of</span><ul>${groups.map(groupChip).join('')}</ul></div>` : '',
+    peopleHtml: people.length ? `<section class="fsec" aria-labelledby="ppl"><h2 class="as-h3" id="ppl">People at ${esc(f.name)}</h2><ul class="fpeople">${people.map(personHtml).join('')}</ul></section>` : '',
+    bioHtml: f.bio ? `<p class="fbio">${linkify(f.bio)}</p>` : '',
+    sessionsHeading: f.isGroup ? 'Sessions they lead' : `Sessions ${first} leads`,
+    sessionsHtml: mine.length ? `<ul class="fsessions">${mine.map(sessionHtml).join('')}</ul>` : '<p class="fnone">Their session isn’t on the calendar yet. Check back soon.</p>',
+    projectsHtml: f.projects.length ? `<section class="fsec" aria-labelledby="wo"><h2 class="as-h3" id="wo">What ${esc(f.isGroup ? 'they’re' : `${first}’s`)} working on</h2><ul class="fprojects">${f.projects.map(projectHtml).join('')}</ul></section>` : '',
   });
 }
 

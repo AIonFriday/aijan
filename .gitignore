@@ -10,3 +10,6 @@ dist/
 .env.*
 !.env.example
 *.p8
+
+# Faculty photos for the local mockup (scripts/preview.mjs downloads them). Not committed until each person OKs theirs.
+site/assets/faculty/

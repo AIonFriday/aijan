@@ -13,6 +13,7 @@ npm install
 npm run build    # node scripts/build.mjs: data + site/ -> dist/
 npm run check    # check dist/ links, h1s, descriptions, structured data (run build first)
 npm test         # the tests in tests/
+npm run preview  # build + serve locally with sample faculty data, no Wrangler (docs/faculty.md)
 npm run dev      # apply D1 migrations locally (this seeds the January lineup), then wrangler dev on http://localhost:8787
 ```
 
@@ -23,6 +24,7 @@ Always run `npm run build && npm run check && npm test` before you finish.
 ## Layout
 
 - Sessions live in D1, in the `sessions` table (`migrations/0002_sessions.sql`; the real lineup is seeded by `0004_real_lineup.sql`). `src/sessions.js` reads and saves them (`listSessions`, `getSession`, `saveSession`, `validate`: slug format, status, level, topics, timezone offset on `startsAt`). The Worker draws everything that shows sessions on request (`src/site.js`): `/sessions/<slug>`, `/og/sessions/<slug>.png`, `/assets/sessions.js` (`window.AJ_DATA`), and the session lines in `/sitemap.xml` and `/llms.txt`. A change in the table shows up right away, with no rebuild. Rows with `example = 1` (made-up mockup sessions) are noindexed and left out of the sitemap, llms.txt and Event structured data; the real lineup has none. Ideas of type `group` (titled "AI for …") show in "Vote for what's next" as one row of buttons; other ideas get a full card.
+- Faculty (the people and groups who lead sessions) live in D1 too: `faculty` and `faculty_members` (`migrations/0006_faculty.sql`, read by `src/faculty.js`). The Worker draws `/faculty/<slug>` (`site/templates/faculty.html`) and adds `faculty` to `window.AJ_DATA` for the home strip (`home.js`) and `/faculty` (`faculty.js`). A guide whose name matches a faculty name links to their page. Who shows where, and the rules for projects and photos: `docs/faculty.md`.
 - `site/pages/*.html`: page sources with `{{head}}`, `{{header}}`, `{{footer}}`, `{{sheet}}` placeholders. Add a new page to `PAGES` in `scripts/build.mjs`.
 - `site/templates/session.html`: the page for one session, filled in by the Worker (`src/render.js`) and served at `/sessions/<slug>`.
 - `src/render.js`: page pieces the build and the Worker share (head, header, structured data, the session page).
@@ -37,7 +39,8 @@ Always run `npm run build && npm run check && npm test` before you finish.
 
 **Product rules (decided, don't change them without an issue):**
 - Light theme only. Muted Mardi Gras purple, green and gold on lavender paper. No dark mode, no dark "hacker" backgrounds.
-- The word is **Guide**, never "host" or "presenter". Guides can be people or groups.
+- The word is **Guide**, never "host" or "presenter". Guides can be people or groups. "Faculty" is the name for them as a group on the faculty pages (`docs/faculty.md`).
+- Faculty pages show only session guides plus anyone marked `featured`; no "spots left". Projects are things people are building, not job titles. Never commit people's photos without their OK.
 - An idea needs **5** "I want this" to get scheduled. Show it as a count ("3 want it", "2 more and we schedule it"), not dots or progress bars.
 - Suggesting an idea never creates a session. Organizers review first.
 - Email first, never "sign in": a tap from someone new asks only for their email and counts right away. Google and Apple are one-tap shortcuts, and the emailed link brings people back to My sessions. Built on Better Auth. See `docs/auth.md`.
@@ -75,4 +78,5 @@ Always run `npm run build && npm run check && npm test` before you finish.
 - `docs/admin.md`: the admin MCP: tools, keys, connecting.
 - `docs/analytics.md`: the analytics events (`AJ.track`) and UTM tags for links we share.
 - `docs/slack.md`: how form submissions and taps reach the organizers in Slack.
+- `docs/faculty.md`: the faculty pages, their data, and the local preview.
 - `docs/roadmap.md`: what's not built yet.
