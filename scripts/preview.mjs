@@ -39,11 +39,6 @@ const PHOTOS = {
   'p-pick-yeah.webp': 'https://dunn.us/_astro/pick-yeah.LLzX7Hq-_Z1EbwwR.webp',
   'p-roux-wars.webp': 'https://dunn.us/_astro/roux-wars.DxycFqRQ_ZkBgb9.webp',
   'p-is-mardi-gras-early.webp': 'https://dunn.us/_astro/is-mardi-gras-early.BsBB_eu4_Z5aubT.webp',
-  'p-flatten-nola.webp': 'https://dunn.us/_astro/flatten-nola.CrwYcud7_15FIF0.webp',
-  'p-markdown-to-pdf.webp': 'https://dunn.us/_astro/markdown-to-pdf.DhXtIjeA_2sxvq8.webp',
-  'p-agent-reading-relay.webp': 'https://dunn.us/_astro/agent-reading-relay.fLHJ_gok_1xwPS0.webp',
-  'p-haunted-windows.webp': 'https://dunn.us/_astro/haunted-windows.D_WBsIod_Z1cUU9x.webp',
-  'p-design-vibes.webp': 'https://dunn.us/_astro/design-vibes.YFNE8VLp_ZQMhbB.webp',
   'p-battlefield.webp': 'https://dunn.us/_astro/battlefield-first-edition.C-Vk4P1w_Z1Cq4xG.webp',
 };
 const photoDir = join(root, 'site/assets/faculty');
