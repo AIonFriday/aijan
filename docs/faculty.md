@@ -54,9 +54,19 @@ The repo is public, so **don't commit people's photos** without their OK. Before
 
 If someone leads as a group (`{ "name": "AI Friday" }`), the group's page lists the session, and so does every member's page ("With AI Friday").
 
-## Adding faculty today
+## Adding and editing faculty
 
-There are no admin tools for faculty yet (see `docs/roadmap.md`). Until then, add rows to `aijan-db` with SQL, like the examples in `scripts/faculty-mock.sql`. Changes show right away, with no deploy.
+Use the admin MCP's faculty tools (`docs/admin.md#faculty`), from Claude or by asking Beignet in Slack: `add_faculty`, `edit_faculty`, `hide_faculty` / `show_faculty`, `set_group_members`, plus `list_faculty` and `get_faculty` to look. Changes show right away, with no deploy. The tools check the rules above where they can (https-only photos and links, length limits, unique names) and their descriptions carry the rest (projects are things people build, every project gets a screenshot, photos only with the person's OK).
+
+The order that usually works:
+
+1. Add the group (`isGroup: true`) and each person with `add_faculty`. Use the exact name from the session's `guides`; the tool warns when no session names them.
+2. Tie people to the group with `set_group_members` (the whole list, in order, with titles like "Host").
+3. Mark someone `featured` only if they should be on the main page without a session of their own.
+
+There's no delete tool. Hide someone instead: slugs never change once shared. Renaming needs `confirmRename: true` and tells you which sessions to fix with `edit_session` so their guide name matches again.
+
+The validation lives in `validate()` in `src/faculty.js`, and `saveFaculty()` / `setMembers()` there do the writes.
 
 ## Local preview
 
@@ -69,4 +79,4 @@ There are no admin tools for faculty yet (see `docs/roadmap.md`). Until then, ad
 
 ## Tests
 
-`tests/sessions.test.mjs` covers: the strip data and pages, a database without the faculty tables (everything still works, with no faculty), group and person ties, and who shows on the main page (session leaders and featured only).
+`tests/mcp.test.mjs` covers the faculty admin tools: round trips, name and slug clashes, renames, group members, hide and show, and validation. `tests/sessions.test.mjs` covers: the strip data and pages, a database without the faculty tables (everything still works, with no faculty), group and person ties, and who shows on the main page (session leaders and featured only).

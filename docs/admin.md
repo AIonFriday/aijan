@@ -1,6 +1,6 @@
 # Admin MCP
 
-Organizers update the site by asking Claude (or any MCP client) to use the admin tools at `https://joinaijanuary.com/mcp`. Each admin has their own key. Changes show on the site right away, because sessions live in D1.
+Organizers update the site by asking Claude (or any MCP client) to use the admin tools at `https://joinaijanuary.com/mcp`. Each admin has their own key. Changes show on the site right away, because sessions and faculty live in D1.
 
 The code is `src/mcp.js`, the keys table is `migrations/0003_admin_keys.sql`, and the tests are `tests/mcp.test.mjs`.
 
@@ -20,14 +20,70 @@ The code is `src/mcp.js`, the keys table is `migrations/0003_admin_keys.sql`, an
 | `whoami` | Which key you're using. Owners also see every admin key |
 | `add_admin` | Make a key for a new admin (shown once). Owner only |
 | `remove_admin` | Turn off someone's key right away. Owner only |
+| Faculty tools | `list_faculty`, `get_faculty`, `add_faculty`, `edit_faculty`, `hide_faculty`, `show_faculty`, `set_group_members`. See [Faculty](#faculty) below |
 
 RSVPs only go on scheduled sessions and wants only on ideas, the same rule as the buttons on the site.
 
 To add an "AI for…" group to vote on, add an idea titled "AI for …" (like "AI for musicians") with `kind` set to `group`. It shows as a button in the "AI for…" row on /sessions instead of a full card. Keep that row short.
 
-There are no faculty tools yet. Faculty (`/faculty`) are added with SQL for now; see `docs/faculty.md`.
+## Faculty
 
-Beignet in Slack can use these tools too, except `add_admin` and `remove_admin`. See `docs/slack.md`.
+The people and groups on `/faculty` and `/faculty/<slug>` (see `docs/faculty.md` for who shows where and the rules). Changes show on the site right away.
+
+| Tool | What it does |
+| --- | --- |
+| `list_faculty` | Everyone, hidden ones too: photo or not, project count, groups and members, how many sessions they lead, and whether they're on the main page (`onMainPage`) |
+| `get_faculty` | One person or group: every field, their groups or people, their sessions (and their groups' sessions), and the page link |
+| `add_faculty` | A new person, or a group with `isGroup: true`. The slug is made from the name and never changes. Warns (but still saves) when no session names them as a guide |
+| `edit_faculty` | Change any field but the slug. `links` and `projects` replace the whole list. A rename needs `confirmRename: true` and lists the sessions that stop linking |
+| `hide_faculty` / `show_faculty` | Take someone off the site (their page 404s) and put them back |
+| `set_group_members` | Set a group's whole list of people, in order, each with an optional `title` like "Host" |
+
+There's no delete: hide someone instead, since their page link may already be shared.
+
+Things the tools check:
+
+- The **name must match the guide name on their sessions** (ignoring case), or the two don't link. Names are unique, ignoring case.
+- `photo`, link `url`s and project `url`s are `https://` only. A photo or project `image` can also be a committed `/assets/…` file. Leave `photo` out or `null` for initials, and only add one with the person's OK.
+- Limits: name 80 characters, role 120, bio 1200; up to 8 links (label 30) and 15 projects (name 60, about 200).
+- Group members must already be faculty and must be people, not groups.
+
+### Examples
+
+Ask in plain words; Claude (or Beignet) picks the tool. What it sends looks like this.
+
+Add a person:
+
+```json
+{ "name": "add_faculty", "arguments": {
+  "name": "Whitley Rushing",
+  "role": "Director of Operations, Hello Gravel",
+  "bio": "Runs operations at Hello Gravel and leans on AI across work and home.",
+  "links": [{ "label": "LinkedIn", "url": "https://www.linkedin.com/in/whitley-rushing/" }]
+} }
+```
+
+Make a group:
+
+```json
+{ "name": "add_faculty", "arguments": {
+  "name": "Hello Gravel", "isGroup": true,
+  "role": "Online gravel delivery, from New Orleans",
+  "links": [{ "label": "Website", "url": "https://hellogravel.com" }],
+  "projects": [{ "name": "Measure the Driveway", "about": "Trace your driveway on a map and see how much gravel to order.", "url": "https://measurethedriveway.com/", "image": "https://example.com/driveway.png" }]
+} }
+```
+
+Set its people (the whole list, in the order to show them):
+
+```json
+{ "name": "set_group_members", "arguments": {
+  "group": "hello-gravel",
+  "members": [{ "slug": "daniel-crowley", "title": "Co-founder and CEO" }, { "slug": "whitley-rushing", "title": "Director of Operations" }]
+} }
+```
+
+Beignet in Slack can use all of these tools too, faculty ones included, except `add_admin` and `remove_admin`. See `docs/slack.md`.
 
 ## Keys
 

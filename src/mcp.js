@@ -1,14 +1,15 @@
-// ABOUTME: The admin MCP server at /mcp: lets organizers add, edit and hide sessions and manage who's in them.
+// ABOUTME: The admin MCP server at /mcp: lets organizers add, edit and hide sessions and faculty, and manage who's in them.
 // ABOUTME: Plain JSON-RPC over HTTP POST (MCP "Streamable HTTP", answered as JSON), with one key per admin.
 //
 // Each admin sends their own key as `Authorization: Bearer aj_…`. Only its SHA-256 hash is stored, in
 // admin_keys (migrations/0003). Revoking a key turns it off on the next call. See docs/admin.md.
 //
-// Sessions are read and saved with src/sessions.js, so a change shows on the site right away. The only thing
+// Sessions are read and saved with src/sessions.js, and faculty with src/faculty.js, so a change shows on the site right away. The only thing
 // passed in is how to make an account for a new email (Better Auth, in the Worker), so the tests can run this
 // on Node with tests/d1.mjs standing in for D1.
 
-import { fromRow, saveSession, LEVELS as LEVEL_NAMES, TOPICS as TOPIC_NAMES } from './sessions.js';
+import { fromRow, saveSession, listSessions, LEVELS as LEVEL_NAMES, TOPICS as TOPIC_NAMES } from './sessions.js';
+import { adminRow, getFacultyRow, saveFaculty, setMembers, listMembers, withTies, sessionsFor, allSessionsFor, LIMITS } from './faculty.js';
 
 const PROTOCOLS = ['2025-11-25', '2025-06-18', '2025-03-26'];
 const SERVER = { name: 'aijan-admin', title: 'AI January admin', version: '1.0.0' };
@@ -16,7 +17,8 @@ export const INSTRUCTIONS =
   'Admin tools for joinaijanuary.com (AI January, free AI sessions in New Orleans, Jan 8–29, 2027). ' +
   'All times are New Orleans time: give startsAt with an offset, like 2027-01-12T08:00:00-06:00. ' +
   'Slugs never change once a session exists. Changes show on the site right away, so check with the admin before writing. ' +
-  'Use plain, friendly words in titles and descriptions; the people reading them are often new to AI.';
+  'Use plain, friendly words in titles and descriptions; the people reading them are often new to AI. ' +
+  'Session guide names must match faculty names exactly (ignoring case) for the guide to link to their faculty page.';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -143,6 +145,34 @@ const SESSION_FIELDS = {
   tags: { type: 'array', items: { type: 'string' }, description: 'Free words. Add "ai-for" to an idea titled "AI for …" (like "AI for teachers") to show it as a button in the "AI for…" row on /sessions.' },
   kind: { type: 'string', enum: ['talk', 'office-hours', 'hands-on', 'group'], description: 'Session type, shown as a tag: talk (Talks and demos: keynotes, panels, AI Friday), office-hours (drop in with questions), hands-on (make something with a Guide; the default), group (For your group: "AI for …" sessions, shown as buttons when not scheduled yet).' },
   officeHours: { type: 'boolean', description: 'Old flag for office hours; set kind to office-hours instead.' },
+};
+
+const FACULTY_RULES =
+  'Projects are things they are building (an app, a site, a game), never a job title or an employer; leave projects empty rather than pad it, and give each one a screenshot as image. ' +
+  'Photos: https links only, and only with the person’s OK; leave photo empty to show their initials. No "spots left" or faculty goals anywhere.';
+const FACULTY_FIELDS = {
+  name: { type: 'string', description: `Their name, or the group’s real name (like "Hello Gravel"), exactly as it appears in session guides. At most ${LIMITS.name} characters.` },
+  isGroup: { type: 'boolean', description: 'true for a company or group (square badge, lists its people). Default false.' },
+  role: { type: 'string', description: `One short line under the name, like "Director of Operations, Hello Gravel". At most ${LIMITS.role} characters.` },
+  bio: { type: 'string', description: `A few plain sentences, ideally their own words. At most ${LIMITS.bio} characters.` },
+  photo: { type: ['string', 'null'], description: 'An https:// image link (or a committed /assets/ file). null or empty shows their initials.' },
+  links: {
+    type: 'array',
+    items: obj({ label: { type: 'string', description: `Like LinkedIn, Website, Instagram. At most ${LIMITS.linkLabel} characters.` }, url: { type: 'string', description: 'https:// only.' } }, ['label', 'url']),
+    description: `Up to ${LIMITS.links}. Give the whole list: it replaces the old one.`,
+  },
+  projects: {
+    type: 'array',
+    items: obj({
+      name: { type: 'string', description: `At most ${LIMITS.projectName} characters.` },
+      about: { type: 'string', description: `One plain line on what it is. At most ${LIMITS.projectAbout} characters.` },
+      url: { type: 'string', description: 'Optional https:// link.' },
+      image: { type: 'string', description: 'A screenshot: an https:// link or a committed /assets/ file.' },
+    }, ['name', 'about']),
+    description: `Things they are building, up to ${LIMITS.projects}. Give the whole list: it replaces the old one.`,
+  },
+  featured: { type: 'boolean', description: 'true puts them on the home strip and /faculty even without a session of their own. Use sparingly.' },
+  sort: { type: 'integer', description: 'Lower shows first. Default 100.' },
 };
 
 export const TOOLS = [
@@ -333,6 +363,139 @@ export const TOOLS = [
       return { slug: s.slug, count: list.length, csv: rows.map((r) => r.map(csvCell).join(',')).join('\n') };
     },
   },
+
+  // --- Faculty (docs/faculty.md) ----------------------------------------------------------------------------
+  {
+    name: 'list_faculty',
+    title: 'List faculty',
+    description: 'Every faculty member (people and groups), hidden ones too: whether they have a photo, how many projects, their groups or people, how many sessions they lead themselves, and whether they show on the home strip and /faculty (only session guides and featured faculty do).',
+    inputSchema: obj({}),
+    readOnly: true,
+    async run(env) {
+      const [rows, members, sessions] = await Promise.all([allFaculty(env), listMembers(env), listSessions(env)]);
+      return {
+        faculty: rows.map((f) => {
+          const leads = sessionsFor(f, sessions).length;
+          return {
+            slug: f.slug, name: f.name, isGroup: f.isGroup, role: f.role, featured: f.featured, visible: f.visible, sort: f.sort,
+            hasPhoto: !!f.photo, projects: f.projects.length,
+            groups: members.filter((m) => m.person === f.slug).map((m) => m.group),
+            members: members.filter((m) => m.group === f.slug).map((m) => m.person),
+            leads, onMainPage: f.visible && (f.featured || leads > 0),
+          };
+        }),
+      };
+    },
+  },
+  {
+    name: 'get_faculty',
+    title: 'Get one faculty member',
+    description: 'One faculty member with every field, their groups (for a person) or people (for a group), their sessions and their groups’ sessions, and their page link.',
+    inputSchema: obj({ slug: { type: 'string' } }, ['slug']),
+    readOnly: true,
+    async run(env, admin, args) {
+      const f = await mustFaculty(env, facSlug(args.slug));
+      const [rows, members, sessions] = await Promise.all([allFaculty(env), listMembers(env), listSessions(env)]);
+      const t = withTies(f, rows, members);
+      const brief = (x) => ({ slug: x.slug, name: x.name, ...(x.title !== undefined ? { title: x.title } : {}), visible: x.visible });
+      return {
+        faculty: f,
+        ...(f.isGroup ? { people: t.people.map(brief) } : { groups: t.groups.map(brief) }),
+        sessions: allSessionsFor(t, sessions).map(({ s, via }) => ({ slug: s.slug, title: s.title, status: s.status, startsAt: s.startsAt || null, ...(via ? { via: via.name } : {}) })),
+        page: `/faculty/${f.slug}`,
+      };
+    },
+  },
+  {
+    name: 'add_faculty',
+    title: 'Add a faculty member',
+    description: 'Adds a person or a group (isGroup: true) to the faculty pages. The name must match the guide name on their sessions exactly (ignoring case), or the two won’t link. The slug is made from the name and never changes. It shows on the site right away, but the home strip and /faculty only list session guides and featured faculty; everyone else shows on their group’s page. ' + FACULTY_RULES,
+    inputSchema: obj({ ...FACULTY_FIELDS, slug: { type: 'string', description: 'Optional. Made from the name if left out, like whitley-rushing.' } }, ['name']),
+    async run(env, admin, args) {
+      const name = str(args.name, 'name', 200);
+      const s = args.slug ? facSlug(args.slug) : slugify(name);
+      if (!s) fail('Give a name with some letters or numbers in it.');
+      if (await getFacultyRow(env, s)) fail(`The slug "${s}" is taken. Use edit_faculty to change that one, or give a different slug.`);
+      const res = await saveFaculty(env, { ...pickFaculty(args), name, slug: s });
+      if (!res.ok) fail(res.errors.join('. ') + '.');
+      const guided = await guideSessions(env, name);
+      return {
+        ok: true, slug: s, page: `/faculty/${s}`, faculty: res.faculty,
+        ...(guided.length ? { sessions: guided } : { warning: `No session lists "${name}" as a guide yet, so they won’t link to a session and only show on the main page if featured. Session guide names must match the faculty name exactly (ignoring case).` }),
+      };
+    },
+  },
+  {
+    name: 'edit_faculty',
+    title: 'Edit a faculty member',
+    description: 'Changes a faculty member’s name, role, bio, photo, links, projects, sort, featured or isGroup. Leave out what stays the same. links and projects replace the whole list, so give every item. The slug can’t change. Renaming breaks the tie to sessions that list the old name as a guide, so it needs confirmRename: true; then fix those sessions’ guides with edit_session. ' + FACULTY_RULES,
+    inputSchema: obj({ slug: { type: 'string' }, ...FACULTY_FIELDS, confirmRename: { type: 'boolean', description: 'Needed to change the name. Ask the admin first.' } }, ['slug']),
+    async run(env, admin, args) {
+      const f = await mustFaculty(env, facSlug(args.slug));
+      const changes = pickFaculty(args);
+      if (!Object.keys(changes).length) fail('Nothing to change. Give at least one field.');
+      const renamed = typeof changes.name === 'string' && changes.name.trim().toLowerCase() !== f.name.toLowerCase();
+      const oldSessions = renamed ? await guideSessions(env, f.name) : [];
+      if (renamed && args.confirmRename !== true) {
+        fail(`Renaming "${f.name}" breaks the link from ${oldSessions.length ? oldSessions.map((s) => s.slug).join(', ') : 'any session that names them as a guide'}. Ask the admin, then send confirmRename: true and update those sessions’ guides with edit_session.`);
+      }
+      const res = await saveFaculty(env, { ...changes, slug: f.slug });
+      if (!res.ok) fail(res.errors.join('. ') + '.');
+      return {
+        ok: true, slug: f.slug, changed: Object.keys(changes), faculty: res.faculty, page: `/faculty/${f.slug}`,
+        ...(renamed ? { sessionsNoLongerLinked: oldSessions, note: oldSessions.length ? `These sessions still name "${f.name}" as a guide. Change their guides to "${res.faculty.name}" with edit_session to link them again.` : 'No session named the old name as a guide.' } : {}),
+      };
+    },
+  },
+  {
+    name: 'hide_faculty',
+    title: 'Hide a faculty member',
+    description: 'Takes a faculty member off the site: the strip, /faculty, their page (it 404s) and their group pages. Their sessions stay. show_faculty puts them back.',
+    inputSchema: obj({ slug: { type: 'string' } }, ['slug']),
+    async run(env, admin, args) {
+      return setFacultyVisible(env, args, false);
+    },
+  },
+  {
+    name: 'show_faculty',
+    title: 'Show a hidden faculty member',
+    description: 'Puts a hidden faculty member back on the site.',
+    inputSchema: obj({ slug: { type: 'string' } }, ['slug']),
+    async run(env, admin, args) {
+      return setFacultyVisible(env, args, true);
+    },
+  },
+  {
+    name: 'set_group_members',
+    title: 'Set a group’s people',
+    description: 'Sets who is part of a group (isGroup: true), like the people at Hello Gravel. Give the whole list in the order to show it: it replaces the old one, and an empty list removes everyone. Each person must already be a faculty member (add them with add_faculty first). title is their part in the group, like "Host" or "Co-founder and CEO". A person can be in several groups and keeps their own page.',
+    inputSchema: obj({
+      group: { type: 'string', description: 'The group’s slug, like hello-gravel.' },
+      members: { type: 'array', items: obj({ slug: { type: 'string', description: 'The person’s faculty slug.' }, title: { type: 'string', description: 'Optional, short, like "Host".' } }, ['slug']) },
+    }, ['group', 'members']),
+    async run(env, admin, args) {
+      const g = await mustFaculty(env, facSlug(args.group));
+      if (!g.isGroup) fail(`${g.name} is a person, not a group. Set isGroup: true with edit_faculty if it’s really a group.`);
+      if (!Array.isArray(args.members)) fail('members must be a list of { slug, title? }.');
+      const seen = new Set();
+      const members = [];
+      for (const m of args.members) {
+        if (!m || typeof m !== 'object' || typeof m.slug !== 'string') fail('Each member needs a slug.');
+        const p = await getFacultyRow(env, facSlug(m.slug));
+        if (!p) fail(`No faculty member with the slug "${m.slug}". Add them with add_faculty first.`);
+        if (p.slug === g.slug) fail('A group can’t be its own member.');
+        if (p.isGroup) fail(`${p.name} is a group. Members must be people.`);
+        if (seen.has(p.slug)) fail(`${p.name} is in the list twice.`);
+        if (m.title !== undefined && typeof m.title !== 'string') fail(`The title for ${p.name} must be text.`);
+        const title = (m.title || '').trim();
+        if (title.length > 60) fail(`The title for ${p.name} must be 60 characters or fewer.`);
+        seen.add(p.slug);
+        members.push({ slug: p.slug, title });
+      }
+      await setMembers(env, g.slug, members);
+      return { ok: true, group: g.slug, members, page: `/faculty/${g.slug}` };
+    },
+  },
 ];
 
 function pick(args) {
@@ -347,6 +510,47 @@ async function setVisible(env, deps, args, visible) {
   const res = await saveSession(env, { slug: s.slug, visible });
   if (!res.ok) fail(res.errors.join(' '));
   return { ok: true, slug: s.slug, visible };
+}
+
+// --- Faculty helpers ------------------------------------------------------------------------------------------
+
+function pickFaculty(args) {
+  const out = {};
+  for (const k of Object.keys(FACULTY_FIELDS)) if (k in args) out[k] = args[k];
+  return out;
+}
+
+const facSlug = (v) => {
+  const s = String(v || '').trim();
+  if (!SLUG.test(s)) fail('Give the faculty slug, like whitley-rushing. list_faculty shows them all.');
+  return s;
+};
+
+async function mustFaculty(env, s) {
+  const f = await getFacultyRow(env, s);
+  if (!f) fail(`No faculty member with the slug "${s}". Use list_faculty to find it.`);
+  return f;
+}
+
+// Every faculty row, hidden ones too, in the site's order.
+async function allFaculty(env) {
+  const { results } = await env.DB.prepare('SELECT * FROM faculty ORDER BY sort, name').all();
+  return results.map(adminRow);
+}
+
+// Sessions (any status, hidden ones too) that list this name as a guide, ignoring case.
+async function guideSessions(env, name) {
+  const { results } = await env.DB.prepare('SELECT * FROM sessions ORDER BY (starts_at IS NULL), starts_at, title').all();
+  const n = String(name).trim().toLowerCase();
+  return results.map(fromRow).filter((s) => s.guides.some((g) => g.name.toLowerCase() === n)).map((s) => ({ slug: s.slug, title: s.title, status: s.status }));
+}
+
+async function setFacultyVisible(env, args, visible) {
+  const f = await mustFaculty(env, facSlug(args.slug));
+  if (f.visible === visible) return { ok: true, slug: f.slug, visible, note: visible ? 'They were already showing.' : 'They were already hidden.' };
+  const res = await saveFaculty(env, { slug: f.slug, visible });
+  if (!res.ok) fail(res.errors.join('. ') + '.');
+  return { ok: true, slug: f.slug, visible, page: `/faculty/${f.slug}` };
 }
 
 const BY_NAME = new Map(TOOLS.map((t) => [t.name, t]));

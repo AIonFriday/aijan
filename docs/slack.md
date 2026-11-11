@@ -25,7 +25,7 @@ The code is in `src/slack.js`, with tests in `tests/slack.test.mjs`.
 
 ## Ask Beignet
 
-In one channel, anyone can @mention Beignet and get an answer in the thread. Beignet calls a model through OpenRouter and can use the organizer tools from the admin MCP (`docs/admin.md`): list sessions and people, add and edit sessions, hide and show them, add and remove people, export a door list. It asks first before it cancels or hides a session or takes someone off one, and a "yes" in the thread confirms.
+In one channel, anyone can @mention Beignet and get an answer in the thread. Beignet calls a model through OpenRouter and can use the organizer tools from the admin MCP (`docs/admin.md`): list sessions and people, add and edit sessions, hide and show them, add and remove people, export a door list, and add and edit faculty (people, groups and who's in them). It asks first before it cancels or hides a session, takes someone off one, or hides or renames a faculty member, and a "yes" in the thread confirms.
 
 - The channel is `SLACK_ADMIN_CHANNEL` under `vars` in `wrangler.jsonc`. Right now that's the same private `#ai-january-inbox` channel, so its emails stay private. Mentions anywhere else are ignored.
 - Beignet acts as an organizer, never an owner, so it can't make or remove admin keys (a new key would be posted for the whole channel to read). Tool calls are logged with `via: "slack"` and the Slack user's id.
