@@ -37,8 +37,8 @@ export async function listFaculty(env) {
 // Who's part of which group, as [{ group, person }] slugs. Empty until 0006 is applied.
 export async function listMembers(env) {
   try {
-    const { results } = await env.DB.prepare('SELECT group_slug, person_slug FROM faculty_members ORDER BY sort, person_slug').all();
-    return results.map((r) => ({ group: r.group_slug, person: r.person_slug }));
+    const { results } = await env.DB.prepare('SELECT group_slug, person_slug, title FROM faculty_members ORDER BY sort, person_slug').all();
+    return results.map((r) => ({ group: r.group_slug, person: r.person_slug, title: r.title || '' }));
   } catch (e) {
     if (noTable(e)) return [];
     throw e;
@@ -50,7 +50,7 @@ export function withTies(f, faculty, members) {
   const bySlug = (slug) => faculty.find((x) => x.slug === slug);
   return {
     ...f,
-    people: members.filter((m) => m.group === f.slug).map((m) => bySlug(m.person)).filter(Boolean),
+    people: members.filter((m) => m.group === f.slug && bySlug(m.person)).map((m) => ({ ...bySlug(m.person), title: m.title })),
     groups: members.filter((m) => m.person === f.slug).map((m) => bySlug(m.group)).filter(Boolean),
   };
 }

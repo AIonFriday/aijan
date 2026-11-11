@@ -211,7 +211,7 @@ export function facultyPage(t, siteUrl, f, sessions) {
   };
   const projectHtml = (p) => `<li class="fproj${p.image ? ' has-img' : ''}">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : ''}<div><h3>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)} <span aria-hidden="true">↗</span></a>` : esc(p.name)}</h3>${p.about ? `<p>${linkify(p.about)}</p>` : ''}</div></li>`;
   const people = f.people || [], groups = f.groups || [];
-  const personHtml = (p) => `<li><a class="fperson" href="/faculty/${esc(p.slug)}">${avatarHtml(p)}<span class="fc-n">${esc(p.name)}</span><span class="fc-r">${esc(p.role)}</span></a></li>`;
+  const personHtml = (p) => `<li><a class="fperson" href="/faculty/${esc(p.slug)}">${avatarHtml(p)}${p.title ? `<span class="ftitle">${esc(p.title)}</span>` : ''}<span class="fc-n">${esc(p.name)}</span><span class="fc-r">${esc(p.role)}</span></a></li>`;
   const groupChip = (g) => `<li><a href="/faculty/${esc(g.slug)}">${avatarHtml(g, 'sm')}${esc(g.name)}</a></li>`;
   const first = f.isGroup ? f.name : f.name.split(/\s+/)[0];
   const type = f.isGroup ? 'Organization' : 'Person';

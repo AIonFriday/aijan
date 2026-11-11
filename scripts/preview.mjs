@@ -21,6 +21,10 @@ const PORT = Number(process.env.PORT || 8787);
 // Public pictures for the mockup: the person's own site, their company's site, or a screenshot of the project.
 const PHOTOS = {
   'andrew-dunn.jpg': 'https://dunn.us/andrew.jpg',
+  // AI Friday recap photos (people mid-talk, not headshots); swap for real headshots when we have them.
+  'eli-ackerman.jpg': 'https://aifri.day/images/meetings/1-eli.jpg',
+  'laura-williams.jpg': 'https://aifri.day/images/meetings/2-laura.jpg',
+  'max-materne.jpg': 'https://aifri.day/images/meetings/3-max.jpg',
   'hello-gravel.png': 'https://hellogravel.com/images/ChuckImage.png',
   'p-ai-friday.webp': 'https://dunn.us/_astro/ai-friday.MOa9-2fR_ZzM52i.webp',
   'p-hallucinating-splines.webp': 'https://dunn.us/_astro/hallucinating-splines.BMfT5lYv_Z2hKAJc.webp',

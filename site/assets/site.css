@@ -607,3 +607,4 @@ textarea{min-height:76px;resize:vertical}
 .fproj img{width:120px;aspect-ratio:16/10;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;background:var(--paper)}
 @media(max-width:479px){.fproj.has-img{grid-template-columns:1fr}.fproj img{width:100%}}
 .av img[src$=".png"]{object-fit:contain;background:var(--card)}
+.ftitle{font:600 11px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--gold-soft);color:var(--gold-ink);border-radius:999px;padding:4px 8px;margin-bottom:4px}

@@ -14,7 +14,7 @@ UPDATE sessions SET guides = '[{"name":"Hello Gravel","url":"https://hellogravel
 
 INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
  ('ai-friday','AI Friday',1,'Free monthly AI meetup in New Orleans',
-  'A free monthly morning meetup for people figuring out what they can do with AI. Beginners welcome, and you don’t need to be a developer. Come curious, leave with something to try. AI Friday kicks off AI January and runs its office hours.',
+  'Hosted by Andrew Dunn and Eli Ackerman. A free monthly morning meetup for people figuring out what they can do with AI. Beginners welcome, and you don’t need to be a developer. Come curious, leave with something to try. AI Friday kicks off AI January and runs its office hours.',
   '/assets/ai-friday-crawd.png',
   '[{"label":"Website","url":"https://aifri.day/"}]',
   '[{"name":"AI Friday meetups","about":"Demos, decks and recaps from every meeting are online.","url":"https://aifri.day/","image":"/assets/faculty/p-ai-friday.webp"}]',10),
@@ -44,7 +44,7 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"name":"Precon Playbook","about":"Co-founder and COO."},{"name":"Leadership class members site","about":"A private site for a 31-person class, built without writing the code by hand."}]',50),
 
  ('andrew-dunn','Andrew Dunn',0,'Building with AI at Hello Gravel · Organizer, AI Friday',
-  'Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',
+  'Co-hosts AI Friday. Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',
   '/assets/faculty/andrew-dunn.jpg',
   '[{"label":"Website","url":"https://dunn.us/"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/andrewdunn"},{"label":"GitHub","url":"https://github.com/andrewedunn"},{"label":"X","url":"https://x.com/DunnWithAI"}]',
   '[{"name":"Hallucinating Splines","about":"Micropolis (the open-source SimCity) as an API and MCP server, so AI agents can build and run public cities.","url":"https://hallucinatingsplines.com/","image":"/assets/faculty/p-hallucinating-splines.webp"},{"name":"See Dat","about":"Every public record about a New Orleans property on one page: permits, inspections, code enforcement, short-term rentals and zoning.","url":"https://seedat.dunn.us/","image":"/assets/faculty/p-seedat.webp"},{"name":"NOLA Art","about":"Every mural, sculpture and monument in New Orleans on one map.","url":"https://nolaart.dunn.us/","image":"/assets/faculty/p-nola-art.webp"},{"name":"Mardi Gras FYI","about":"The parade calendar, with times, routes and local advice.","url":"https://mardigras.fyi/","image":"/assets/faculty/p-mardi-gras-fyi.webp"}]',60),
@@ -67,8 +67,30 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/maxcannoniv"}]',
   '[]',90);
 
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
+ ('eli-ackerman','Eli Ackerman',0,'Head of Operations and Partnerships, RentCheck',
+  'Co-hosts AI Friday. Runs operations and partnerships at RentCheck, the New Orleans property-inspection software company. Columbia SIPA grad.',
+  '/assets/faculty/eli-ackerman.jpg',
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/eliackerman"}]',
+  '[]',100),
+ ('laura-williams','Laura Williams',0,'[Role, Company]',
+  '[Short bio in Laura’s own words.] Part of the AI Friday crew.',
+  '/assets/faculty/laura-williams.jpg',
+  '[]','[]',110),
+ ('max-materne','Max Materne',0,'COO, RAVEN PMG',
+  'Founded and ran New Orleans’ BMW, Ducati, Triumph and Vespa dealership with his family for 17 years. Now COO at RAVEN PMG and a co-host of The Dealer Lab podcast, about what dealers are learning from real experiments.',
+  '/assets/faculty/max-materne.jpg',
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/max-materne"},{"label":"The Dealer Lab","url":"https://open.spotify.com/show/3diYz9Jpb00RFRbfYNBpA3"}]',
+  '[{"name":"The Dealer Lab","about":"A podcast about the experiments and hard-earned lessons coming out of real dealerships.","url":"https://open.spotify.com/show/3diYz9Jpb00RFRbfYNBpA3"}]',120);
+
+INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
+ ('ai-friday','andrew-dunn','Host',1),
+ ('ai-friday','eli-ackerman','Host',2),
+ ('ai-friday','laura-williams','',3),
+ ('ai-friday','max-materne','',4),
+ ('ai-friday','brook-davis','',5);
+
 INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, sort) VALUES
- ('ai-friday','andrew-dunn',1),
  ('hello-gravel','daniel-crowley',1),
  ('hello-gravel','andrew-dunn',2),
  ('hello-gravel','michael-brubaker',3),

@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS faculty (
 CREATE TABLE IF NOT EXISTS faculty_members (
   group_slug TEXT NOT NULL REFERENCES faculty (slug) ON DELETE CASCADE,
   person_slug TEXT NOT NULL REFERENCES faculty (slug) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT '',             -- their part in the group, shown on the group page, like "Host"
   sort INTEGER NOT NULL DEFAULT 100,
   PRIMARY KEY (group_slug, person_slug)
 );
