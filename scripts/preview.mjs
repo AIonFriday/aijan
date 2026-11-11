@@ -3,13 +3,10 @@
 // (src/site.js), over the in-memory D1 stand-in from tests/d1.mjs with every migration and scripts/faculty-mock.sql.
 // Sign-in and taps are stubbed (nothing is saved). Used for the faculty mockup.
 //
-//   npm run preview        builds, fetches the mockup photos once, then serves http://localhost:8787
-//
-// Photos go to site/assets/faculty/ (gitignored) and are copied into dist/. One that can't be downloaded falls
-// back to initials (or no picture, for a project).
+//   npm run preview        builds, then serves http://localhost:8787
 
 import http from 'node:http';
-import { readFileSync, existsSync, statSync, mkdirSync, writeFileSync, copyFileSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fakeD1 } from '../tests/d1.mjs';
@@ -18,44 +15,9 @@ import { site } from '../src/site.js';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 8787);
 
-// Public pictures for the mockup: the person's own site, their company's site, or a screenshot of the project.
-const PHOTOS = {
-  'andrew-dunn.jpg': 'https://dunn.us/andrew.jpg',
-  // AI Friday recap photos (people mid-talk, not headshots); swap for real headshots when we have them.
-  'eli-ackerman.jpg': 'https://aifri.day/images/meetings/1-eli.jpg',
-  'laura-williams.jpg': 'https://aifri.day/images/meetings/2-laura.jpg',
-  'max-materne.jpg': 'https://aifri.day/images/meetings/3-max.jpg',
-  'hello-gravel.png': 'https://hellogravel.com/images/hello-gravel-logo.png',
-  'p-ai-friday.webp': 'https://dunn.us/_astro/ai-friday.MOa9-2fR_ZzM52i.webp',
-  'p-hallucinating-splines.webp': 'https://dunn.us/_astro/hallucinating-splines.BMfT5lYv_Z2hKAJc.webp',
-  'p-seedat.webp': 'https://dunn.us/_astro/seedat.Co3zxanl_Z1484UG.webp',
-  'p-nola-art.webp': 'https://dunn.us/_astro/nola-art.CXbt2h37_vc61A.webp',
-  'p-mardi-gras-fyi.webp': 'https://dunn.us/_astro/mardi-gras-fyi.JXgRVzS9_4TUzu.webp',
-  'p-hello-gravel-site.png': 'https://hellogravel.com/images/hello-gravel-og.png',
-  'p-hello-gravel-games.png': 'https://storage.googleapis.com/firecrawl-scrape-media/screenshot-32263336-bda1-49f8-80c0-b996d9516504.png?GoogleAccessId=scrape-bucket-accessor%40firecrawl.iam.gserviceaccount.com&Expires=1795024358&Signature=EArNePc%2FLgHxJoi7q4yXRB3MO7YFWEJ4RgNB%2B1ZfQTqmCYz%2Fuf3PgjB9lCBlRppDH3zTRhTmR62NqaftpMm91RNc51vYwoQtckHHD6vlIBOqtFl%2FdBP70j1kB86lYa03uYXdCbAztUtyWEZT1eeqAxGRpGNI%2FzrODuUwJQgRwe8bVolcGzwZCDNima4s8ypZbjrd7S%2ByVlkvN5WVZ%2BtwcccwElIXc2MV4%2FQf5%2FvxezCdjUTELogSWkdqtr2x9120VogWDxUOLOqTktJETtB0nxAtonLa9MfoEfGoOvPUbEJSI9kHivauP%2BFgTkn%2BK74IBjqaD7v2AGA93o3RDvU6FA%3D%3D',
-  'tim-williamson.jpg': 'https://resconnola.com/wp-content/uploads/2017/03/Tim-W.jpg',
-  'p-cfb-homecoming.webp': 'https://dunn.us/_astro/cfb-homecoming.D3Iuq-Zo_26XdiP.webp',
-  'p-pick-yeah.webp': 'https://dunn.us/_astro/pick-yeah.LLzX7Hq-_Z1EbwwR.webp',
-  'p-roux-wars.webp': 'https://dunn.us/_astro/roux-wars.DxycFqRQ_ZkBgb9.webp',
-  'p-is-mardi-gras-early.webp': 'https://dunn.us/_astro/is-mardi-gras-early.BsBB_eu4_Z5aubT.webp',
-  'p-battlefield.webp': 'https://dunn.us/_astro/battlefield-first-edition.C-Vk4P1w_Z1Cq4xG.webp',
-};
+// Faculty photos and project screenshots are committed in site/assets/faculty/ (everyone OK'd theirs) and the build
+// copies them into dist/. A file named after a slug (like whitley-rushing.jpg) wins over the photo in the mock row.
 const photoDir = join(root, 'site/assets/faculty');
-mkdirSync(photoDir, { recursive: true });
-for (const [file, url] of Object.entries(PHOTOS)) {
-  if (existsSync(join(photoDir, file))) continue;
-  try {
-    const r = await fetch(url, { headers: { 'User-Agent': 'aijan-preview' } });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    writeFileSync(join(photoDir, file), Buffer.from(await r.arrayBuffer()));
-    console.log(`photo: ${file}`);
-  } catch (e) {
-    console.log(`photo: couldn't get ${file} (${e.message}); it falls back to initials`);
-  }
-}
-// A photo saved by slug (like whitley-rushing.jpg) wins over the one in the mock rows.
-mkdirSync(join(root, 'dist/assets/faculty'), { recursive: true });
-for (const f of readdirSync(photoDir)) copyFileSync(join(photoDir, f), join(root, 'dist/assets/faculty', f));
 
 const DB = fakeD1();
 DB.raw.exec(readFileSync(join(root, 'scripts/faculty-mock.sql'), 'utf8'));
