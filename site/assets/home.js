@@ -1,8 +1,9 @@
-// Home page: the hero's topic tiles (pick one or more, then open /sessions by topic) and two short highlights:
-// "Coming up" (the next three sessions) and "What should we do next?" (the three most-wanted ideas).
+// Home page: the hero's topic tiles (pick one or more, then open /sessions by topic), then three parts:
+// "It starts Friday, Jan 8" (the kickoff big, then the next four), "What do you want to learn?" (top ideas, the AI for…
+// buttons, and a box to suggest one), and "Could you lead one?" (the faculty row with "You?" first).
 // Everything else lives on /sessions. Session data comes from /assets/sessions.js (window.AJ_DATA).
 (() => {
-  const { $, esc, countFor, wantText, NEEDED, TOPICS, fmt, wantLine, guideLine, byTime, byWant, me, wireButtons, kindTag } = window.AJ;
+  const { $, esc, say, act, countFor, wantText, NEEDED, TOPICS, fmt, wantLine, guideLine, byTime, byWant, me, wireButtons, kindTag } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   // Pick as many topics as you like, then "Show me sessions" opens /sessions with all of them.
@@ -23,49 +24,72 @@
     }
   });
 
-  // A short card: when (or how close it is), the title, who guides it, and one button.
-  function hcard(s) {
-    const sched = s.status === 'scheduled';
+  const day = (s) => { const d = fmt(s.startsAt); return { ...d, label: `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d}` }; };
+  const rsvp = (s) => { const on = me.going.has(s.slug); return `<button class="go" type="button" data-act="rsvp" aria-pressed="${on}">${on ? 'Going ✓' : 'RSVP'}</button>`; };
+  const going = (s) => (countFor(s) ? ` · ${countFor(s)} going` : '');
+
+  // The first session, big: right now that's the AI Friday kickoff.
+  const kick = (s) => `<div class="kick" data-slug="${s.slug}"><div class="when2">${kindTag(s)}${day(s).label} · ${day(s).t}</div>
+    <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}${going(s)}</p><div class="act">${rsvp(s)}</div></div>`;
+  // The next few, as list rows like /sessions.
+  const row = (s) => { const d = day(s); return `<li class="s" data-slug="${s.slug}"><div class="lead"><div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div></div>
+    <div class="body"><div class="when2">${kindTag(s)}${d.w} · ${d.t}${going(s)}</div><a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}</p></div>
+    <div class="act">${rsvp(s)}</div></li>`; };
+
+  // An idea: what it is, who'd guide it, how many want it, and "I want this".
+  function idea(s) {
     const n = countFor(s);
-    const mine = sched ? me.going.has(s.slug) : me.want.has(s.slug);
-    const d = sched && fmt(s.startsAt);
+    const on = me.want.has(s.slug);
     const lvl = s.level === 'all' ? '' : ` · ${LEVELS[s.level]}`;
-    const btn = sched
-      ? `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`
-      : `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
-    return `<li class="hc${sched ? '' : ' idea'}" data-slug="${s.slug}">
-      <div class="when2">${kindTag(s)}${sched ? `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d} · ${d.t}` : n >= NEEDED ? wantLine(n) : ''}</div>
+    return `<li class="hc idea" data-slug="${s.slug}">
+      <div class="when2">${kindTag(s)}${n >= NEEDED ? wantLine(n) : ''}</div>
       <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
       <p class="meta">${guideLine(s)}${lvl}</p>
-      <div class="hc-row"><span class="meta">${sched ? (n ? `${n} going` : '') : wantText(n)}</span><span class="act">${btn}</span></div></li>`;
+      <div class="hc-row"><span class="meta">${wantText(n)}</span><span class="act"><button class="go in" type="button" data-act="want" aria-pressed="${on}">${on ? 'Want it ✓' : 'I want this'}</button></span></div></li>`;
   }
+  // "AI for teachers" and the like: one row of buttons, same as /sessions.
+  const groupName = (s) => { const w = s.title.replace(/^AI for (your )?/i, ''); return w.charAt(0).toUpperCase() + w.slice(1); };
+  const pill = (s) => { const n = countFor(s); const on = me.want.has(s.slug);
+    return `<li data-slug="${s.slug}"><button type="button" class="pill" data-act="want" aria-pressed="${on}" aria-label="${esc(s.title)}${n ? `: ${wantText(n)}` : ''}">${on ? '✓ ' : ''}${esc(groupName(s))}${n ? ` <small>${wantText(n)}</small>` : ''}</button></li>`; };
 
   function render() {
     const now = new Date().toISOString();
-    const next = S.filter((s) => s.status === 'scheduled' && new Date(s.startsAt).toISOString() >= now).sort(byTime).slice(0, 3);
-    const close = S.filter((s) => s.status === 'proposed').sort(byWant).slice(0, 3);
-    $('#next').innerHTML = next.length ? next.map(hcard).join('') : '<li class="empty">That’s a wrap for this January. Thanks for coming.</li>';
-    $('#close').innerHTML = close.length ? close.map(hcard).join('') : '<li class="empty">No ideas waiting right now. <a href="/sessions#suggest">Suggest one</a>.</li>';
+    const next = S.filter((s) => s.status === 'scheduled' && new Date(s.startsAt).toISOString() >= now).sort(byTime);
+    const all = S.filter((s) => s.status === 'scheduled').length;
+    $('#first').innerHTML = next.length
+      ? kick(next[0]) + (next.length > 1 ? `<ul class="list">${next.slice(1, 5).map(row).join('')}</ul>` : '')
+      : '<p class="empty">That’s a wrap for this January. Thanks for coming.</p>';
+    $('#more').textContent = all > 5 ? `See all ${all} on the calendar →` : 'See the full calendar →';
+    const ideas = S.filter((s) => s.status === 'proposed' && s.kind !== 'group').sort(byWant);
+    const groups = S.filter((s) => s.status === 'proposed' && s.kind === 'group').sort(byWant);
+    $('#close').innerHTML = ideas.length ? ideas.slice(0, 3).map(idea).join('') : '';
+    $('#ai-for').hidden = !groups.length;
+    $('#list-for').innerHTML = groups.map(pill).join('');
   }
 
-  // The faculty strip: the photo and name of everyone leading a session, sliding slowly sideways. The set repeats so the loop never shows a gap; the copies are hidden from screen readers and the
-  // tab order. Hover or focus pauses it; with reduced motion it's a plain row you can swipe.
-  (function facultyStrip() {
+  // Ideas never create a session. Organizers review every one first.
+  $('#post').addEventListener('click', () => {
+    const text = $('#idea').value.trim();
+    if (!text) { say('Type your idea first.'); $('#idea').focus(); return; }
+    act({ type: 'suggest', text });
+  });
+
+  // The faculty row: "You?" first (we're looking for more), then everyone leading a session. Swipe on phones, wraps on wide screens.
+  (function facultyRow() {
     const F = window.AJ.FACULTY;
-    const track = $('#fac');
-    if (!track) return;
-    if (!F.length) { track.closest('.fac').hidden = true; return; }
+    const you = '<li><a class="fac-i fac-open" href="/guide"><span class="av av-open" aria-hidden="true">+</span><span class="fac-n">You?</span><span class="fac-r">Lead a session</span></a></li>';
     const item = (f) => `<li><a class="fac-i" href="/faculty/${f.slug}">${window.AJ.avatar(f)}<span class="fac-n">${esc(f.name)}</span><span class="fac-r">${esc(f.role)}</span></a></li>`;
-    const one = F.map(item).join('');
-    const per = F.length;
-    const sets = Math.max(1, Math.ceil(12 / per));
-    const block = one.repeat(sets);
-    const hide = (html) => html.replace(/<li>/g, '<li aria-hidden="true">').replace(/<a /g, '<a tabindex="-1" ');
-    track.innerHTML = block + hide(block);
-    track.style.setProperty('--dur', `${per * sets * 4}s`);
+    $('#fac').innerHTML = you + F.map(item).join('');
+    $('#fac-head').hidden = !F.length;
   })();
 
-  wireButtons($('.highlights'));
-  document.addEventListener('aj:change', render);
+  wireButtons($('main'));
+  document.addEventListener('aj:change', (e) => {
+    render();
+    if (e.detail.tap?.type === 'suggest') {
+      $('#propose-box').innerHTML = '<div class="thanks"><b>Thanks, got it.</b> We review every idea. If it’s a fit, we’ll post it with you as the first one in and email you.</div>';
+      if (e.detail.afterSignIn) $('#propose-box').scrollIntoView({ block: 'center' });
+    }
+  });
   render();
 })();

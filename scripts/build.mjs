@@ -47,7 +47,7 @@ const MONTH_EVENT = {
   url: `${SITE_URL}/`,
   image: `${SITE_URL}/og/home.png`,
   startDate: '2027-01-08',
-  endDate: '2027-01-29',
+  endDate: '2027-01-28',
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   isAccessibleForFree: true,
@@ -67,7 +67,7 @@ const head = (o) => headFor(t, SITE_URL, o);
 const header = (current) => headerFor(t, current);
 
 const PAGES = {
-  'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–29, 2027. Beginners welcome.' },
+  'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–28, 2027. Beginners welcome.' },
   'sessions.html': { path: '/sessions', title: 'Sessions · AI January', description: 'Every free AI session in New Orleans this January, on a calendar or by topic. Vote for the ideas you want next.', current: 'sessions' },
   'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
   'faculty.html': { path: '/faculty', title: 'Faculty · AI January', description: 'Meet the New Orleanians leading free AI sessions at AI January: what they’ll teach, where to find them, and what they’re working on.' },
@@ -105,7 +105,7 @@ writeFileSync(join(dist, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /api
 const pageLine = (file, label) => `- [${label}](${SITE_URL}${PAGES[file].path}): ${PAGES[file].description}`;
 writeFileSync(join(dist, 'llms.txt'), `# AI January
 
-> Free AI sessions for everyone in New Orleans, Jan 8–29, 2027. Three weeks of workshops, office hours, and conversations, most at The Nieux, 2040 St. Charles Ave. Beginners welcome. Presented by Nieux Society and AI Friday.
+> Free AI sessions for everyone in New Orleans, Jan 8–28, 2027. Three weeks of workshops, office hours, and conversations, most at The Nieux, 2040 St. Charles Ave. Beginners welcome. Presented by Nieux Society and AI Friday.
 
 - Every session is free. No AI experience needed.
 - Sessions are 90 minutes, on weekdays, grouped by topic: My job, Home and family, Making things, Just curious.

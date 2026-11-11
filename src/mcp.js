@@ -13,7 +13,7 @@ import { fromRow, saveSession, LEVELS as LEVEL_NAMES, TOPICS as TOPIC_NAMES } fr
 const PROTOCOLS = ['2025-11-25', '2025-06-18', '2025-03-26'];
 const SERVER = { name: 'aijan-admin', title: 'AI January admin', version: '1.0.0' };
 export const INSTRUCTIONS =
-  'Admin tools for joinaijanuary.com (AI January, free AI sessions in New Orleans, Jan 8–29, 2027). ' +
+  'Admin tools for joinaijanuary.com (AI January, free AI sessions in New Orleans, Jan 8–28, 2027). ' +
   'All times are New Orleans time: give startsAt with an offset, like 2027-01-12T08:00:00-06:00. ' +
   'Slugs never change once a session exists. Changes show on the site right away, so check with the admin before writing. ' +
   'Use plain, friendly words in titles and descriptions; the people reading them are often new to AI.';

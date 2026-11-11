@@ -4,7 +4,7 @@
 
 What visitors see:
 
-- **Home page strip** (`site/pages/index.html` `section.fac`, drawn by `facultyStrip()` in `site/assets/home.js`): photos and names sliding slowly sideways under the hero, with "See everyone →" to `/faculty`. It hides itself when there's no faculty. Hover or focus pauses it; with `prefers-reduced-motion` it's a plain row you can swipe.
+- **Home page row** (`site/pages/index.html` `#fac`, drawn by `facultyRow()` in `site/assets/home.js`): under "Could you lead one?" near the bottom of the page. A dashed "You? Lead a session" spot comes first (we're asking for more faculty, not showing off a lineup), then everyone's photo and name, with "Meet everyone →" to `/faculty`. Swipe sideways on phones; it wraps on wide screens. With no faculty it shows only "You?".
 - **`/faculty`** (`site/pages/faculty.html` + `site/assets/faculty.js`): a card per person, then a card per organization. Each card says what they lead ("Leads 2 sessions", "5 sessions with AI Friday"), and a group's size ("2 people"). Someone with no session yet gets no session line at all. With no faculty it says "We're adding the faculty now."
 - **`/faculty/<slug>`** (`site/templates/faculty.html`, filled by `facultyPage()` in `src/render.js`, served by `src/site.js`): photo, name, role, the groups they're part of, bio, links, their sessions (plus their groups' sessions, marked "With AI Friday"), the people in a group, and "What they're working on". Person or Organization JSON-LD with `memberOf` / `member`.
 - **Session pages and cards**: a guide whose name matches a faculty member (ignoring case) links to their faculty page instead of their website.
@@ -26,7 +26,7 @@ Two D1 tables, from `migrations/0006_faculty.sql`. Read with `src/faculty.js`.
 | `links` | JSON `[{ label, url }]`: LinkedIn, Website, Instagram, … |
 | `projects` | JSON `[{ name, about, url?, image? }]`. See the rules below. `image` must start with `https://` or `/assets/`. |
 | `sort` | Lower shows first. |
-| `featured` | 1 shows them in the strip and on `/faculty` even without a session of their own. |
+| `featured` | 1 shows them in the home row and on `/faculty` even without a session of their own. |
 | `visible` | 0 takes them off the site (their page 404s). |
 
 ### faculty_members
@@ -35,7 +35,7 @@ Ties people to groups: `group_slug`, `person_slug`, `title` (their part in the g
 
 ## Rules (Andrew, Nov 11 2026)
 
-- **Who's on the strip and `/faculty`:** only people and groups **named as a session's guide**, plus anyone with `featured = 1`. Everyone else shows only on their group's page. Example: Whitley leads a session, so she's on the main page. Daniel, Michael and Max Cannon are on Hello Gravel's page only.
+- **Who’s on the home row and `/faculty`:** only people and groups **named as a session's guide**, plus anyone with `featured = 1`. Everyone else shows only on their group's page. Example: Whitley leads a session, so she's on the main page. Daniel, Michael and Max Cannon are on Hello Gravel's page only.
 - **No "spots left"** or any countdown to a faculty goal.
 - **Session counts are honest.** A card counts the person's own sessions. Someone who only leads through a group says "5 sessions with AI Friday", not "Leads 5 sessions".
 - **Projects are things the person is building**, almost never a job title or an employer. Brook's are Sipped and Precon Playbook, not "COO". Leave `projects` empty rather than pad it.
