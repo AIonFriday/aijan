@@ -1,5 +1,5 @@
 // ABOUTME: A small stand-in for Cloudflare D1 over Node's built-in SQLite, with every migration applied.
-// ABOUTME: Only the calls the Worker uses: prepare().bind().all() / first() / run().
+// ABOUTME: Only the calls the Worker uses: prepare().bind().all() / first() / run(), and batch() as one transaction.
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -16,5 +16,17 @@ export function fakeD1() {
     first: async () => db.prepare(sql).get(...params) ?? null,
     run: async () => ({ meta: { changes: Number(db.prepare(sql).run(...params).changes) } }),
   });
-  return { prepare: (sql) => stmt(sql), raw: db };
+  const batch = async (stmts) => {
+    db.exec('BEGIN');
+    try {
+      const out = [];
+      for (const s of stmts) out.push(await s.run());
+      db.exec('COMMIT');
+      return out;
+    } catch (e) {
+      db.exec('ROLLBACK');
+      throw e;
+    }
+  };
+  return { prepare: (sql) => stmt(sql), batch, raw: db };
 }
