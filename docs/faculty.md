@@ -5,7 +5,7 @@
 What visitors see:
 
 - **Home page strip** (`site/pages/index.html` `section.fac`, drawn by `facultyStrip()` in `site/assets/home.js`): photos and names sliding slowly sideways under the hero, with "See everyone →" to `/faculty`. It hides itself when there's no faculty. Hover or focus pauses it; with `prefers-reduced-motion` it's a plain row you can swipe.
-- **`/faculty`** (`site/pages/faculty.html` + `site/assets/faculty.js`): a card per person, then a card per organization. Each card says what they lead ("Leads 2 sessions", "5 sessions with AI Friday", or "Session coming soon"). With no faculty it says "We're adding the faculty now."
+- **`/faculty`** (`site/pages/faculty.html` + `site/assets/faculty.js`): a card per person, then a card per organization. Each card says what they lead ("Leads 2 sessions", "5 sessions with AI Friday"), and a group's size ("2 people"). Someone with no session yet gets no session line at all. With no faculty it says "We're adding the faculty now."
 - **`/faculty/<slug>`** (`site/templates/faculty.html`, filled by `facultyPage()` in `src/render.js`, served by `src/site.js`): photo, name, role, the groups they're part of, bio, links, their sessions (plus their groups' sessions, marked "With AI Friday"), the people in a group, and "What they're working on". Person or Organization JSON-LD with `memberOf` / `member`.
 - **Session pages and cards**: a guide whose name matches a faculty member (ignoring case) links to their faculty page instead of their website.
 
