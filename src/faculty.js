@@ -12,6 +12,7 @@ export function fromRow(r) {
     slug: r.slug,
     name: r.name,
     isGroup: !!r.is_group,
+    featured: !!r.featured,
     role: r.role || '',
     bio: r.bio || '',
     ...(r.photo ? { photo: r.photo } : {}),
@@ -79,10 +80,10 @@ export function tint(slug) {
 }
 
 // What the browser gets in window.AJ_DATA.faculty: just enough for the strip and the /faculty grid.
-// Only the faculty who lead a session themselves (named as its guide) show in the home strip and on /faculty.
-// Everyone else, like the rest of a company's team, shows on their group's page and has their own page.
+// The home strip and /faculty show the faculty who lead a session themselves (named as its guide), plus anyone
+// marked featured. Everyone else, like the rest of a company's team, shows on their group's page and has their own page.
 export const clientFaculty = (faculty, sessions, members = []) =>
-  faculty.filter((f) => sessionsFor(f, sessions).length).map((f) => {
+  faculty.filter((f) => f.featured || sessionsFor(f, sessions).length).map((f) => {
     const t = withTies(f, faculty, members);
-    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: sessionsFor(f, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
+    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: allSessionsFor(t, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
   });

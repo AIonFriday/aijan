@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS faculty (
   links TEXT NOT NULL DEFAULT '[]',           -- JSON [{ label, url }]: LinkedIn, Website, Instagram, ...
   projects TEXT NOT NULL DEFAULT '[]',        -- JSON [{ name, about, url? }]: what they're working on
   sort INTEGER NOT NULL DEFAULT 100,          -- lower shows first in the strip and on /faculty
+  featured INTEGER NOT NULL DEFAULT 0,        -- 1 = in the home strip and on /faculty even without a session of their own
   visible INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))

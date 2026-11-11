@@ -290,7 +290,7 @@ test('faculty: a person lists their groups and the groups’ sessions; a group l
   assert.match(hg, /href="\/faculty\/andrew-dunn"/);
 });
 
-test('faculty: only people who lead a session themselves are in the strip and on /faculty', async () => {
+test('faculty: only session leaders and featured faculty are in the strip and on /faculty', async () => {
   const { fakeD1: fresh, root: r } = await import('./d1.mjs');
   const { site: siteFn } = await import('../src/site.js');
   const DB = fresh();
@@ -298,6 +298,6 @@ test('faculty: only people who lead a session themselves are in the strip and on
   const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
   const js = await (await siteFn(new Request('https://x.test/assets/sessions.js'), env, null, { templates: {}, renderSession: () => new Uint8Array() })).text();
   const shown = JSON.parse(js.match(/AJ_DATA=(.*);\n$/)[1]).faculty.map((f) => f.slug);
-  assert.ok(shown.includes('whitley-rushing') && shown.includes('hello-gravel'));
-  assert.ok(!shown.includes('max-cannon') && !shown.includes('andrew-dunn'));
+  for (const slug of ['whitley-rushing', 'hello-gravel', 'andrew-dunn', 'eli-ackerman', 'tim-williamson']) assert.ok(shown.includes(slug), slug);
+  assert.ok(!shown.includes('max-cannon') && !shown.includes('daniel-crowley'));
 });

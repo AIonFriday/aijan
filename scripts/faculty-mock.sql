@@ -47,7 +47,7 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   'Co-hosts AI Friday. Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',
   '/assets/faculty/andrew-dunn.jpg',
   '[{"label":"Website","url":"https://dunn.us/"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/andrewdunn"},{"label":"GitHub","url":"https://github.com/andrewedunn"},{"label":"X","url":"https://x.com/DunnWithAI"}]',
-  '[{"name":"Hallucinating Splines","about":"Micropolis (the open-source SimCity) as an API and MCP server, so AI agents can build and run public cities.","url":"https://hallucinatingsplines.com/","image":"/assets/faculty/p-hallucinating-splines.webp"},{"name":"See Dat","about":"Every public record about a New Orleans property on one page: permits, inspections, code enforcement, short-term rentals and zoning.","url":"https://seedat.dunn.us/","image":"/assets/faculty/p-seedat.webp"},{"name":"NOLA Art","about":"Every mural, sculpture and monument in New Orleans on one map.","url":"https://nolaart.dunn.us/","image":"/assets/faculty/p-nola-art.webp"},{"name":"Mardi Gras FYI","about":"The parade calendar, with times, routes and local advice.","url":"https://mardigras.fyi/","image":"/assets/faculty/p-mardi-gras-fyi.webp"}]',60),
+  '[{"name": "AI January", "about": "Three weeks of free AI sessions across New Orleans. You’re looking at it.", "url": "https://joinaijanuary.com/"}, {"name": "Hallucinating Splines", "about": "Micropolis (the open-source SimCity) as an API and MCP server, so AI agents can build and run public cities.", "url": "https://hallucinatingsplines.com/", "image": "/assets/faculty/p-hallucinating-splines.webp"}, {"name": "See Dat", "about": "Every public record about a New Orleans property on one page: permits, inspections, code enforcement, short-term rentals and zoning.", "url": "https://seedat.dunn.us/", "image": "/assets/faculty/p-seedat.webp"}, {"name": "NOLA Art", "about": "Every mural, sculpture and monument in New Orleans on one map, with walks and stories.", "url": "https://nolaart.dunn.us/", "image": "/assets/faculty/p-nola-art.webp"}, {"name": "Mardi Gras FYI", "about": "The New Orleans parade calendar, with times, routes and practical local advice.", "url": "https://mardigras.fyi/", "image": "/assets/faculty/p-mardi-gras-fyi.webp"}, {"name": "CFB Homecoming", "about": "Maps and team histories showing where college football rosters come from, and how far from home they’ve moved since 1986.", "url": "https://cfbhomecoming.com/", "image": "/assets/faculty/p-cfb-homecoming.webp"}, {"name": "Pick Yeah", "about": "Sports pick’em with friends. One group for every sport, with standings that keep going all year.", "url": "https://pickyeah.com/", "image": "/assets/faculty/p-pick-yeah.webp"}, {"name": "Roux Wars", "about": "A browser game: cook three roux to the color on the card. Don’t burn it.", "url": "https://roux.dunn.us/", "image": "/assets/faculty/p-roux-wars.webp"}, {"name": "Is Mardi Gras early?", "about": "A tiny site that answers an important New Orleans question.", "url": "https://ismardigrasearly.com/", "image": "/assets/faculty/p-is-mardi-gras-early.webp"}, {"name": "Flatten NOLA", "about": "The flattest walking or biking route between any two places in New Orleans.", "url": "https://andrewedunn.github.io/flattenola/", "image": "/assets/faculty/p-flatten-nola.webp"}, {"name": "Markdown to PDF", "about": "A markdown-to-PDF converter in a single HTML file. No install, no server.", "url": "https://md.dunn.us/", "image": "/assets/faculty/p-markdown-to-pdf.webp"}, {"name": "Agent Reading Relay", "about": "Lets AI agents publish sourced research summaries and reading briefs to Instapaper and Kobo.", "url": "https://github.com/andrewedunn/agent-reading-relay", "image": "/assets/faculty/p-agent-reading-relay.webp"}, {"name": "Haunted Windows", "about": "Projects three Halloween scenes onto the windows of a house, with corner calibration for each window.", "url": "https://dunn.us/haunted-windows", "image": "/assets/faculty/p-haunted-windows.webp"}, {"name": "1,000 Design Vibes", "about": "Asked Claude for 20 design ideas for a project. Things got out of hand.", "url": "https://andrewedunn.github.io/1000-design-vibes/", "image": "/assets/faculty/p-design-vibes.webp"}, {"name": "Battlefield First Edition", "about": "A game a 9-year-old designed and vibe coded with Claude, with Andrew coaching how to talk to it.", "url": "https://andrewedunn.github.io/battlefield-first-edition/", "image": "/assets/faculty/p-battlefield.webp"}]',60),
 
  ('daniel-crowley','Daniel Crowley',0,'Co-founder and CEO, Hello Gravel',
   'Co-founded Hello Gravel in 2023 after years sourcing and hauling aggregates at Crowley Holdings, a government contracting company he started in 2016. Tulane grad who stayed in New Orleans.',
@@ -83,7 +83,25 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/max-materne"},{"label":"The Dealer Lab","url":"https://open.spotify.com/show/3diYz9Jpb00RFRbfYNBpA3"}]',
   '[{"name":"The Dealer Lab","about":"A podcast about the experiments and hard-earned lessons coming out of real dealerships.","url":"https://open.spotify.com/show/3diYz9Jpb00RFRbfYNBpA3"}]',120);
 
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
+ ('chris-andrews','Chris Andrews',0,'Senior Engineer, Hello Gravel',
+  'Software development leader. Joined Hello Gravel as a senior engineer in 2026, after building software at Selected and elsewhere.',
+  NULL,
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/christopher-andrews-2229068"}]',
+  '[]',95),
+ ('tim-williamson','Tim Williamson',0,'Founder, Nieux Society · Founder, The Idea Village',
+  'New Orleans native who has spent 25 years building the city’s startup scene. Founded The Idea Village in 2000 (and with it New Orleans Entrepreneur Week), led NOLA Media Group (The Times-Picayune and NOLA.com), and founded 504GOOD. Co-founded NieuxCo, the venture studio behind Nieux Society, and opened The Nieux to the city for AI January.',
+  '/assets/faculty/tim-williamson.jpg',
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/timhwilliamson"},{"label":"The Nieux","url":"https://thenieux.com/"},{"label":"Nieux Society","url":"https://www.nieuxsociety.com/"}]',
+  '[{"name":"Nieux Society","about":"A New Orleans collective for people curious about what’s next: events, a weekly email and a community.","url":"https://www.nieuxsociety.com/"},{"name":"The Idea Village","about":"The nonprofit Tim founded in 2000 to grow entrepreneurship in New Orleans.","url":"https://www.ideavillage.org/"},{"name":"504GOOD","about":"A nonprofit driving innovation in New Orleans. Tim is founder and chairman."}]',3),
+ ('the-nieux','The Nieux',1,'Home of AI January · 2040 St. Charles Ave',
+  'Nieux Society’s space in the Eiffel Tower building on St. Charles Avenue. Most AI January sessions happen here, all month, for free.',
+  '/assets/nieux-crown.png',
+  '[{"label":"Nieux Society","url":"https://www.nieuxsociety.com/"}]',
+  '[]',4);
+
 INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
+ ('the-nieux','tim-williamson','Founder',1),
  ('ai-friday','andrew-dunn','Host',1),
  ('ai-friday','eli-ackerman','Host',2),
  ('ai-friday','laura-williams','',3),
@@ -95,4 +113,8 @@ INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, sort) VALUES
  ('hello-gravel','andrew-dunn',2),
  ('hello-gravel','michael-brubaker',3),
  ('hello-gravel','whitley-rushing',4),
- ('hello-gravel','max-cannon',5);
+ ('hello-gravel','chris-andrews',5),
+ ('hello-gravel','max-cannon',6);
+
+-- On the home strip and /faculty without a session of their own (Andrew's call).
+UPDATE faculty SET featured = 1 WHERE slug IN ('andrew-dunn', 'eli-ackerman', 'tim-williamson', 'the-nieux');

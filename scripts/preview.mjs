@@ -25,7 +25,7 @@ const PHOTOS = {
   'eli-ackerman.jpg': 'https://aifri.day/images/meetings/1-eli.jpg',
   'laura-williams.jpg': 'https://aifri.day/images/meetings/2-laura.jpg',
   'max-materne.jpg': 'https://aifri.day/images/meetings/3-max.jpg',
-  'hello-gravel.png': 'https://hellogravel.com/images/ChuckImage.png',
+  'hello-gravel.png': 'https://hellogravel.com/images/hello-gravel-logo.png',
   'p-ai-friday.webp': 'https://dunn.us/_astro/ai-friday.MOa9-2fR_ZzM52i.webp',
   'p-hallucinating-splines.webp': 'https://dunn.us/_astro/hallucinating-splines.BMfT5lYv_Z2hKAJc.webp',
   'p-seedat.webp': 'https://dunn.us/_astro/seedat.Co3zxanl_Z1484UG.webp',
@@ -33,6 +33,17 @@ const PHOTOS = {
   'p-mardi-gras-fyi.webp': 'https://dunn.us/_astro/mardi-gras-fyi.JXgRVzS9_4TUzu.webp',
   'p-hello-gravel-site.png': 'https://hellogravel.com/images/hello-gravel-og.png',
   'p-hello-gravel-games.png': 'https://storage.googleapis.com/firecrawl-scrape-media/screenshot-32263336-bda1-49f8-80c0-b996d9516504.png?GoogleAccessId=scrape-bucket-accessor%40firecrawl.iam.gserviceaccount.com&Expires=1795024358&Signature=EArNePc%2FLgHxJoi7q4yXRB3MO7YFWEJ4RgNB%2B1ZfQTqmCYz%2Fuf3PgjB9lCBlRppDH3zTRhTmR62NqaftpMm91RNc51vYwoQtckHHD6vlIBOqtFl%2FdBP70j1kB86lYa03uYXdCbAztUtyWEZT1eeqAxGRpGNI%2FzrODuUwJQgRwe8bVolcGzwZCDNima4s8ypZbjrd7S%2ByVlkvN5WVZ%2BtwcccwElIXc2MV4%2FQf5%2FvxezCdjUTELogSWkdqtr2x9120VogWDxUOLOqTktJETtB0nxAtonLa9MfoEfGoOvPUbEJSI9kHivauP%2BFgTkn%2BK74IBjqaD7v2AGA93o3RDvU6FA%3D%3D',
+  'tim-williamson.jpg': 'https://resconnola.com/wp-content/uploads/2017/03/Tim-W.jpg',
+  'p-cfb-homecoming.webp': 'https://dunn.us/_astro/cfb-homecoming.D3Iuq-Zo_26XdiP.webp',
+  'p-pick-yeah.webp': 'https://dunn.us/_astro/pick-yeah.LLzX7Hq-_Z1EbwwR.webp',
+  'p-roux-wars.webp': 'https://dunn.us/_astro/roux-wars.DxycFqRQ_ZkBgb9.webp',
+  'p-is-mardi-gras-early.webp': 'https://dunn.us/_astro/is-mardi-gras-early.BsBB_eu4_Z5aubT.webp',
+  'p-flatten-nola.webp': 'https://dunn.us/_astro/flatten-nola.CrwYcud7_15FIF0.webp',
+  'p-markdown-to-pdf.webp': 'https://dunn.us/_astro/markdown-to-pdf.DhXtIjeA_2sxvq8.webp',
+  'p-agent-reading-relay.webp': 'https://dunn.us/_astro/agent-reading-relay.fLHJ_gok_1xwPS0.webp',
+  'p-haunted-windows.webp': 'https://dunn.us/_astro/haunted-windows.D_WBsIod_Z1cUU9x.webp',
+  'p-design-vibes.webp': 'https://dunn.us/_astro/design-vibes.YFNE8VLp_ZQMhbB.webp',
+  'p-battlefield.webp': 'https://dunn.us/_astro/battlefield-first-edition.C-Vk4P1w_Z1Cq4xG.webp',
   'p-revelry.png': 'https://revelry.co/assets/img/logo-mark.png',
 };
 const photoDir = join(root, 'site/assets/faculty');
@@ -48,7 +59,7 @@ for (const [file, url] of Object.entries(PHOTOS)) {
     console.log(`photo: couldn't get ${file} (${e.message}); it falls back to initials`);
   }
 }
-// Any photo you drop in by hand (like whitley-rushing.jpg) is used too, by slug.
+// A photo saved by slug (like whitley-rushing.jpg) wins over the one in the mock rows.
 mkdirSync(join(root, 'dist/assets/faculty'), { recursive: true });
 for (const f of readdirSync(photoDir)) copyFileSync(join(photoDir, f), join(root, 'dist/assets/faculty', f));
 
@@ -57,7 +68,7 @@ DB.raw.exec(readFileSync(join(root, 'scripts/faculty-mock.sql'), 'utf8'));
 const have = (p) => p && (!p.startsWith('/assets/') || existsSync(join(root, 'dist', p)));
 for (const row of DB.raw.prepare('SELECT slug, photo, projects FROM faculty').all()) {
   const own = readdirSync(photoDir).find((f) => f.startsWith(`${row.slug}.`));
-  const photo = have(row.photo) ? row.photo : own ? `/assets/faculty/${own}` : null;
+  const photo = own ? `/assets/faculty/${own}` : have(row.photo) ? row.photo : null;
   const projects = JSON.parse(row.projects).map((p) => (have(p.image) ? p : { ...p, image: undefined }));
   DB.raw.prepare('UPDATE faculty SET photo = ?, projects = ? WHERE slug = ?').run(photo, JSON.stringify(projects), row.slug);
 }
