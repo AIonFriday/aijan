@@ -12,4 +12,7 @@
   $('#forgs').innerHTML = orgs.map(card).join('');
   $('#fpeople').innerHTML = people.map(card).join('');
   $('#forgs-sec').hidden = !orgs.length;
+  // No faculty yet (a fresh database): say so plainly instead of showing an empty grid.
+  $('#fpeople-sec').hidden = !people.length;
+  $('#fnone').hidden = !!F.length;
 })();

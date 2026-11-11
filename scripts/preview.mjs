@@ -31,8 +31,6 @@ const PHOTOS = {
   'p-seedat.webp': 'https://dunn.us/_astro/seedat.Co3zxanl_Z1484UG.webp',
   'p-nola-art.webp': 'https://dunn.us/_astro/nola-art.CXbt2h37_vc61A.webp',
   'p-mardi-gras-fyi.webp': 'https://dunn.us/_astro/mardi-gras-fyi.JXgRVzS9_4TUzu.webp',
-  'p-measure-the-driveway.png': 'https://measurethedriveway.com/og-default.png',
-  'p-sipped.png': 'https://www.mysipped.com/wordmark-og.png',
   'p-hello-gravel-site.png': 'https://hellogravel.com/images/hello-gravel-og.png',
   'p-hello-gravel-games.png': 'https://storage.googleapis.com/firecrawl-scrape-media/screenshot-32263336-bda1-49f8-80c0-b996d9516504.png?GoogleAccessId=scrape-bucket-accessor%40firecrawl.iam.gserviceaccount.com&Expires=1795024358&Signature=EArNePc%2FLgHxJoi7q4yXRB3MO7YFWEJ4RgNB%2B1ZfQTqmCYz%2Fuf3PgjB9lCBlRppDH3zTRhTmR62NqaftpMm91RNc51vYwoQtckHHD6vlIBOqtFl%2FdBP70j1kB86lYa03uYXdCbAztUtyWEZT1eeqAxGRpGNI%2FzrODuUwJQgRwe8bVolcGzwZCDNima4s8ypZbjrd7S%2ByVlkvN5WVZ%2BtwcccwElIXc2MV4%2FQf5%2FvxezCdjUTELogSWkdqtr2x9120VogWDxUOLOqTktJETtB0nxAtonLa9MfoEfGoOvPUbEJSI9kHivauP%2BFgTkn%2BK74IBjqaD7v2AGA93o3RDvU6FA%3D%3D',
   'tim-williamson.jpg': 'https://resconnola.com/wp-content/uploads/2017/03/Tim-W.jpg',
