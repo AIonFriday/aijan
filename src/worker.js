@@ -19,6 +19,7 @@ import { site } from './site.js';
 import { useFiles, renderSession } from '../scripts/og.mjs';
 // Text and font files, bundled into the Worker by the "rules" in wrangler.jsonc.
 import session from '../site/templates/session.html';
+import faculty from '../site/templates/faculty.html';
 import head from '../site/partials/head.html';
 import header from '../site/partials/header.html';
 import footer from '../site/partials/footer.html';
@@ -40,7 +41,7 @@ useFiles({
   points,
   logoSvg,
 });
-const pages = { templates: { session, head, header, footer, sheet }, renderSession };
+const pages = { templates: { session, faculty, head, header, footer, sheet }, renderSession };
 
 // What the admin tools need from the Worker: a new email gets a Better Auth account, the same kind a tap on the site makes.
 const adminDeps = (env, origin) => ({

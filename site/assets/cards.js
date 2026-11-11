@@ -31,7 +31,14 @@
 
   // The line under an idea: how many want it, or nothing yet. We don't count down to five out loud.
   const wantLine = (n) => (n >= NEEDED ? 'Enough people · scheduling soon' : wantText(n));
-  const guideLine = (s) => (s.guides.length ? `Guided by ${esc(s.guides.map((g) => g.name).join(', '))}` : 'Looking for a guide');
+  // Faculty from D1 (window.AJ_DATA.faculty). A guide with a faculty page gets a link to it.
+  const FACULTY = window.AJ_DATA.faculty || [];
+  const facultyFor = (name) => FACULTY.find((f) => f.name.toLowerCase() === String(name).toLowerCase());
+  const guideName = (g) => { const f = facultyFor(g.name); return f ? `<a class="glink" href="/faculty/${f.slug}">${esc(g.name)}</a>` : esc(g.name); };
+  const guideLine = (s) => (s.guides.length ? `Guided by ${s.guides.map(guideName).join(', ')}` : 'Looking for a guide');
+  // A faculty member's photo, or their initials on a soft color. Groups get a rounded square. Same as avatarHtml in src/render.js.
+  const avatar = (f, size = '') =>
+    `<span class="av av-${f.tint}${f.isGroup ? ' grp' : ''}${size ? ` ${size}` : ''}" aria-hidden="true">${f.photo ? `<img src="${esc(f.photo)}" alt="" loading="lazy">` : esc(f.initials)}</span>`;
   const byTime = (a, b) => (a.startsAt > b.startsAt ? 1 : -1);
   const byWant = (a, b) => countFor(b) - countFor(a);
 
@@ -68,5 +75,5 @@
     });
   }
 
-  Object.assign(window.AJ, { TOPICS, fmt, card, kindTag, wantLine, guideLine, byTime, byWant, wireButtons });
+  Object.assign(window.AJ, { FACULTY, avatar, TOPICS, fmt, card, kindTag, wantLine, guideLine, byTime, byWant, wireButtons });
 })();

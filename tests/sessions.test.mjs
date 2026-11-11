@@ -243,3 +243,31 @@ test('guides can link to their website, and links in descriptions are clickable'
   assert.match(bad.errors.join(), /isn’t a web address/);
   assert.equal((await saveSession(env, { slug: 'build-a-game-with-ai', guides: [{ url: 'https://a.com' }] })).ok, false);
 });
+
+// ---------- faculty (mockup) ----------
+import { readFileSync as readFac } from 'node:fs';
+test('faculty pages: strip data, a person page with their sessions, and guide links to it', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const rd = (p) => readFac(`${r}/${p}`, 'utf8');
+  const templates = { session: rd('site/templates/session.html'), faculty: rd('site/templates/faculty.html'), head: rd('site/partials/head.html'), header: rd('site/partials/header.html'), footer: rd('site/partials/footer.html'), sheet: rd('site/partials/sheet.html') };
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const get = (p) => siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() });
+  const data = await (await get('/assets/sessions.js')).text();
+  assert.match(data, /"slug":"brent-mccrossen"/);
+  assert.match(data, /"facultyGoal":25/);
+  const page = await (await get('/faculty/brent-mccrossen')).text();
+  assert.match(page, /<h1>Brent McCrossen<\/h1>/);
+  assert.match(page, /Map it before you automate it/);
+  assert.match(page, /Build the idea you keep putting off/);
+  const s = await (await get('/sessions/map-it-before-you-automate-it')).text();
+  assert.match(s, /href="\/faculty\/brent-mccrossen"/);
+});
+
+test('faculty: a database without the table shows no faculty instead of failing', async () => {
+  const { listFaculty } = await import('../src/faculty.js');
+  const env = { DB: { prepare: () => ({ all: async () => { throw new Error('D1_ERROR: no such table: faculty'); } }) } };
+  assert.deepEqual(await listFaculty(env), []);
+});

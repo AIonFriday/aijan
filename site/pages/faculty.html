@@ -1,0 +1,19 @@
+<!-- Faculty: everyone leading a session. Built into dist/faculty.html; the grid is drawn from window.AJ_DATA.faculty
+     (/assets/sessions.js, from D1) by faculty.js. Each person's own page is /faculty/<slug> (src/render.js). -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="col">
+<section class="faculty-page" aria-labelledby="fh">
+  <span class="kicker">Faculty</span>
+  <h1 class="as-h2" id="fh">The people leading AI January</h1>
+  <p class="lede">New Orleanians who use AI in their work every day. Each one leads a free session at The Nieux this January. Tap anyone to see what they’re leading and what they’re working on.</p>
+  <ul class="fgrid" id="fgrid"></ul>
+</section>
+</div></main>
+{{footer}}
+{{sheet}}
+<script src="/assets/sessions.js"></script>
+<script src="/assets/cards.js"></script>
+<script src="/assets/faculty.js"></script>
+</body>
+</html>

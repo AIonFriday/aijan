@@ -3,15 +3,17 @@
 //   GET /assets/sessions.js          window.AJ_DATA for the home page, /sessions, /guide and My sessions
 //   GET /sessions/:slug              one session's page
 //   GET /og/sessions/:slug.png       its share image (cached; the page links it with ?v=<hash of what it shows>)
+//   GET /faculty/:slug               one faculty member's page (src/faculty.js)
 //   GET /sitemap.xml, /llms.txt      the built files, with the sessions filled in
 // Everything else is the built site in dist/ (env.ASSETS). Templates and the share-image drawer are passed in
 // (see src/worker.js), so tests can call this with files read from disk.
 
 import { listSessions, getSession, clientData } from './sessions.js';
-import { sessionPage, shareFacts, shareVersion, sitemapWithSessions, llmsWithSessions } from './render.js';
+import { listFaculty, getFaculty, clientFaculty, FACULTY_GOAL } from './faculty.js';
+import { facultyPage, sessionPage, shareFacts, shareVersion, sitemapWithSessions, llmsWithSessions } from './render.js';
 
 export const SITE_URL = 'https://joinaijanuary.com';
-export const ROUTES = ['/assets/sessions.js', '/sessions/*', '/og/sessions/*', '/sitemap.xml', '/llms.txt'];
+export const ROUTES = ['/assets/sessions.js', '/sessions/*', '/faculty/*', '/og/sessions/*', '/sitemap.xml', '/llms.txt'];
 
 const SHORT = 'public, max-age=60';
 const asset = (env, request, path) => env.ASSETS.fetch(new Request(new URL(path, request.url), request));
@@ -28,7 +30,9 @@ export async function site(request, env, ctx, { templates, renderSession }) {
   const siteUrl = env.SITE_URL || SITE_URL;
 
   if (path === '/assets/sessions.js') {
-    const body = `// Sessions from D1, drawn by src/site.js.\nwindow.AJ_DATA=${JSON.stringify(clientData(await listSessions(env)))};\n`;
+    const [sessions, faculty] = await Promise.all([listSessions(env), listFaculty(env)]);
+    const data = { ...clientData(sessions), faculty: clientFaculty(faculty, sessions), facultyGoal: FACULTY_GOAL };
+    const body = `// Sessions and faculty from D1, drawn by src/site.js.\nwindow.AJ_DATA=${JSON.stringify(data)};\n`;
     return new Response(body, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': SHORT } });
   }
 
@@ -43,9 +47,17 @@ export async function site(request, env, ctx, { templates, renderSession }) {
   let m = path.match(/^\/sessions\/([a-z0-9-]+)(\.html|\/)?$/);
   if (m) {
     if (m[2]) return Response.redirect(new URL(`/sessions/${m[1]}${url.search}`, url), 301);
-    const s = await getSession(env, m[1]);
+    const [s, faculty] = await Promise.all([getSession(env, m[1]), listFaculty(env)]);
     if (!s) return notFound(env, request);
-    return new Response(sessionPage(templates, siteUrl, s), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': SHORT } });
+    return new Response(sessionPage(templates, siteUrl, s, faculty), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': SHORT } });
+  }
+
+  m = path.match(/^\/faculty\/([a-z0-9-]+)(\/)?$/);
+  if (m) {
+    if (m[2]) return Response.redirect(new URL(`/faculty/${m[1]}${url.search}`, url), 301);
+    const [f, sessions] = await Promise.all([getFaculty(env, m[1]), listSessions(env)]);
+    if (!f) return notFound(env, request);
+    return new Response(facultyPage(templates, siteUrl, f, sessions), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': SHORT } });
   }
 
   m = path.match(/^\/og\/sessions\/([a-z0-9-]+)\.png$/);
