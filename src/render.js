@@ -48,7 +48,7 @@ export const head = (t, siteUrl, o) =>
     ogTitle: o.ogTitle || o.title,
     // Each session has its own share image (title and date over the map); other pages share the home one.
     ogImage: `${siteUrl}${o.ogImage || '/og/home.png'}`,
-    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–29, 2027.',
+    ogImageAlt: o.ogImageAlt || 'AI January: You’re invited to learn AI. Free AI sessions in New Orleans, Jan 8–28, 2027.',
   });
 
 const here = ' aria-current="page"';
