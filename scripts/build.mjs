@@ -77,10 +77,11 @@ const PAGES = {
   'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
   'privacy.html': { path: '/privacy', title: 'Privacy · AI January', description: 'What AI January keeps when you use the site, who sees it, and how to have it deleted.' },
   'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked: the ones you’re going to, the ones you want, and the ones you offered to guide.', current: 'me', noindex: true },
-  // MOCKUP ONLY: front page options for Andrew to compare. Delete these three (and site/assets/mock.*) once he picks.
+  // MOCKUP ONLY: front page options for Andrew to compare. Delete these (and site/assets/mock.*) once he picks.
   'mock-a.html': { path: '/mock-a', title: 'Mockup A · AI January', description: 'Front page mockup A: how it works.', noindex: true },
   'mock-b.html': { path: '/mock-b', title: 'Mockup B · AI January', description: 'Front page mockup B: the calendar is filling up.', noindex: true },
   'mock-c.html': { path: '/mock-c', title: 'Mockup C · AI January', description: 'Front page mockup C: three ways in.', noindex: true },
+  'mock-d.html': { path: '/mock-d', title: 'Mockup D · AI January', description: 'Front page mockup D: learn first, faculty below.', noindex: true },
   '404.html': { path: '/404', title: 'Not found · AI January', description: 'That page isn’t here.', noindex: true },
 };
 for (const file of readdirSync(join(root, 'site/pages'))) {

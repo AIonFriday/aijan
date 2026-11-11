@@ -98,3 +98,20 @@
 .kick .title{font-size:24px}
 .kick .act{grid-column:2;grid-row:1 / span 3}
 .legend .gs{flex:none}
+
+/* D: learn first, faculty below */
+.learn{padding-top:40px}
+.learn h2{margin-top:6px}
+.t3 .big{white-space:nowrap}
+.m-suggest{margin-top:22px;padding:16px 18px;border-radius:16px;background:var(--green-soft)}
+.m-suggest label{display:block;margin-bottom:8px}
+.m-sug-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.m-sug-row textarea{flex:1 1 16rem;min-height:52px;border:1.5px solid var(--green);border-radius:12px;padding:10px 12px;font:inherit;background:var(--card);color:var(--ink);resize:vertical}
+.m-sug-row .btn-big{background:var(--green);align-self:center}
+.m-suggest .gnote{margin:10px 0 0}
+.m-suggest .gnote a{color:var(--green);font-weight:700}
+.fac-so-far{margin:22px 0 0;font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px}
+.fac-so-far a{font:700 15px var(--f-body);letter-spacing:0;text-transform:none;color:var(--purple)}
+.you-first .fac-i:not(.fac-open) .av{width:64px;height:64px}
+.you-first .fac-i:not(.fac-open){width:112px}
+.you-first .fac-open .av{width:84px;height:84px}

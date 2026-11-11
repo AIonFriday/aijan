@@ -50,7 +50,7 @@
     if ($('#m-grid')) {
       // B: the 16 weekdays, Jan 8 to 29. Filled days list their sessions; open days say so.
       const days = [];
-      for (let d = 4; d <= 29; d++) { const dt = new Date(Date.UTC(2027, 0, d, 18)); const wd = dt.getUTCDay(); if (wd === 0 || wd === 6) continue; days.push(d); }
+      for (let d = 4; d <= 28; d++)  // Jan 29 is off: parades start { const dt = new Date(Date.UTC(2027, 0, d, 18)); const wd = dt.getUTCDay(); if (wd === 0 || wd === 6) continue; days.push(d); }
       $('#m-grid').innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((w) => `<li class="gh" aria-hidden="true">${w}</li>`).join('') + days.map((d) => {
         if (d < 8) return '<li class="gd pre" aria-hidden="true"></li>';
         const list = sched.filter((s) => fmt(s.startsAt).key === `2027-01-${String(d).padStart(2, '0')}`);
@@ -70,7 +70,11 @@
     }
     if ($('#m-ideas')) $('#m-ideas').innerHTML = ideas.slice(0, 3).map(idea).join('');
     if ($('#m-for')) $('#m-for').innerHTML = groups.map(pill).join('');
-    if ($('#m-fac')) $('#m-fac').innerHTML = faces(F) + `<li><a class="fac-i fac-open" href="/guide"><span class="av av-open" aria-hidden="true">+</span><span class="fac-n">You?</span><span class="fac-r">Lead a session</span></a></li>`;
+    if ($('#m-fac')) {
+      const you = `<li class="you"><a class="fac-i fac-open" href="/guide"><span class="av av-open" aria-hidden="true">+</span><span class="fac-n">You?</span><span class="fac-r">Lead a session</span></a></li>`;
+      // D puts "You?" first, ahead of the people already signed up.
+      $('#m-fac').innerHTML = $('#m-fac').classList.contains('you-first') ? you + faces(F) : faces(F) + you;
+    }
     if ($('#m-stack')) $('#m-stack').innerHTML = F.filter((f) => f.photo).slice(0, 5).map((f) => avatar(f, 'sm')).join('');
   }
   document.querySelectorAll('.mock-wire').forEach(wireButtons);
