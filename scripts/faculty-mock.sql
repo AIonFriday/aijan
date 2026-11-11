@@ -1,7 +1,7 @@
 -- MOCKUP ONLY. Faculty rows for a local run of the faculty pages (scripts/preview.mjs). Never apply to aijan-db.
 -- Facts come from public pages: LinkedIn titles, hellogravel.com/about, dunn.us, revelry.co, Tulane's Hello Gravel
 -- interview, and the session descriptions. Bios are drafts for each person to rewrite in their own words.
--- Photos live in site/assets/faculty/ (gitignored); scripts/preview.mjs downloads them. No photo = initials.
+-- Photos and project screenshots are committed in site/assets/faculty/ (everyone OK'd theirs). No photo = initials.
 
 -- Sessions added in production since 0004, so the local lineup matches the live one.
 INSERT OR IGNORE INTO sessions (id, slug, title, description, status, starts_at, length_min, level, topics, guides, kind) VALUES

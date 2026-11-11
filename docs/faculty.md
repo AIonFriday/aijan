@@ -44,7 +44,13 @@ Ties people to groups: `group_slug`, `person_slug`, `title` (their part in the g
 
 ## Photos
 
-The repo is public, so **don't commit people's photos** without their OK. Before a photo goes live, it needs a proper home (an `https://` URL we control, or a file under `site/assets/` once the person agrees) and ideally the person's go-ahead. LinkedIn photos are for the local mockup only.
+Everyone on the faculty OK'd their photo on Nov 11, 2026, so headshots and project screenshots are committed in `site/assets/faculty/` and served at `/assets/faculty/<file>`. The repo is public: **don't commit a new person's photo without their OK.**
+
+- **Headshots:** `<slug>.jpg`, square, about 400px. Most came from LinkedIn (with the person's OK); Eli's is from AI Friday and Laura's is from hosette.net.
+- **Group logos:** `hello-gravel.png` here; AI Friday and The Nieux use `/assets/ai-friday-crawd.png` and `/assets/nieux-crown.png`.
+- **Project screenshots:** `p-<project>.webp` (or `.png`), at most 1200px wide. A real screenshot of the project's page, not its share card (`measurethedriveway.com`'s share card is a blank color, for example).
+- Keep files small: resize before committing. The build copies `site/assets/` into `dist/`, so a committed file is live on the next deploy.
+- In `aijan-db`, `faculty.photo` and each project's `image` point at these paths, like `/assets/faculty/whitley-rushing.jpg`.
 
 ## Linking a session to a faculty member
 
@@ -63,9 +69,8 @@ There are no admin tools for faculty yet (see `docs/roadmap.md`). Until then, ad
 `npm run preview` (`scripts/preview.mjs`, Node 22.13+, no Wrangler) builds the site and serves it with the Worker's own routes on `http://localhost:8787` (set `PORT` to change it), using a local stand-in for D1 (`tests/d1.mjs`) loaded with every migration plus `scripts/faculty-mock.sql`.
 
 - `scripts/faculty-mock.sql` is **sample data for local use only. Never apply it to `aijan-db`.** It holds the real lineup's faculty with draft bios.
-- Photos and project screenshots are listed in `PHOTOS` at the top of `scripts/preview.mjs`. They download once into `site/assets/faculty/` (gitignored) and are copied into `dist/` on each run. A file named `<slug>.jpg|png|webp` there wins over the row's `photo`, so you can drop in a better headshot by hand. Project images that aren't there are left off. Screenshots taken by hand (most of the project images in the sample data) aren't in `PHOTOS`; save them into `site/assets/faculty/` under the name the row uses.
+- Photos come from `site/assets/faculty/`. A file named `<slug>.jpg|png|webp` there wins over the row's `photo`, so you can try a new headshot by dropping it in. Project images that aren't there are left off.
 - `/api/*` is stubbed, so taps and sign-in don't work in the preview.
-- Some image hosts block cloud machines; run the preview on a laptop if photos don't download.
 
 ## Tests
 
