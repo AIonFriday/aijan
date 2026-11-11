@@ -9,7 +9,7 @@
 // (see src/worker.js), so tests can call this with files read from disk.
 
 import { listSessions, getSession, clientData } from './sessions.js';
-import { listFaculty, getFaculty, clientFaculty, FACULTY_GOAL } from './faculty.js';
+import { listFaculty, listMembers, withTies, clientFaculty, FACULTY_GOAL } from './faculty.js';
 import { facultyPage, sessionPage, shareFacts, shareVersion, sitemapWithSessions, llmsWithSessions } from './render.js';
 
 export const SITE_URL = 'https://joinaijanuary.com';
@@ -30,8 +30,8 @@ export async function site(request, env, ctx, { templates, renderSession }) {
   const siteUrl = env.SITE_URL || SITE_URL;
 
   if (path === '/assets/sessions.js') {
-    const [sessions, faculty] = await Promise.all([listSessions(env), listFaculty(env)]);
-    const data = { ...clientData(sessions), faculty: clientFaculty(faculty, sessions), facultyGoal: FACULTY_GOAL };
+    const [sessions, faculty, members] = await Promise.all([listSessions(env), listFaculty(env), listMembers(env)]);
+    const data = { ...clientData(sessions), faculty: clientFaculty(faculty, sessions, members), facultyGoal: FACULTY_GOAL };
     const body = `// Sessions and faculty from D1, drawn by src/site.js.\nwindow.AJ_DATA=${JSON.stringify(data)};\n`;
     return new Response(body, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': SHORT } });
   }
@@ -55,9 +55,10 @@ export async function site(request, env, ctx, { templates, renderSession }) {
   m = path.match(/^\/faculty\/([a-z0-9-]+)(\/)?$/);
   if (m) {
     if (m[2]) return Response.redirect(new URL(`/faculty/${m[1]}${url.search}`, url), 301);
-    const [f, sessions] = await Promise.all([getFaculty(env, m[1]), listSessions(env)]);
+    const [faculty, members, sessions] = await Promise.all([listFaculty(env), listMembers(env), listSessions(env)]);
+    const f = faculty.find((x) => x.slug === m[1]);
     if (!f) return notFound(env, request);
-    return new Response(facultyPage(templates, siteUrl, f, sessions), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': SHORT } });
+    return new Response(facultyPage(templates, siteUrl, withTies(f, faculty, members), sessions), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': SHORT } });
   }
 
   m = path.match(/^\/og\/sessions\/([a-z0-9-]+)\.png$/);

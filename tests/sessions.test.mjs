@@ -271,3 +271,22 @@ test('faculty: a database without the table shows no faculty instead of failing'
   const env = { DB: { prepare: () => ({ all: async () => { throw new Error('D1_ERROR: no such table: faculty'); } }) } };
   assert.deepEqual(await listFaculty(env), []);
 });
+
+test('faculty: a person lists their groups and the groups’ sessions; a group lists its people', async () => {
+  const { fakeD1: fresh, root: r } = await import('./d1.mjs');
+  const { site: siteFn } = await import('../src/site.js');
+  const DB = fresh();
+  DB.raw.exec(readFac(`${r}/scripts/faculty-mock.sql`, 'utf8'));
+  const rd = (p) => readFac(`${r}/${p}`, 'utf8');
+  const templates = { session: rd('site/templates/session.html'), faculty: rd('site/templates/faculty.html'), head: rd('site/partials/head.html'), header: rd('site/partials/header.html'), footer: rd('site/partials/footer.html'), sheet: rd('site/partials/sheet.html') };
+  const env = { DB, ASSETS: { fetch: async () => new Response('', { status: 404 }) } };
+  const get = async (p) => (await siteFn(new Request(`https://x.test${p}`), env, null, { templates, renderSession: () => new Uint8Array() })).text();
+  const andrew = await get('/faculty/andrew-dunn');
+  assert.match(andrew, /Part of/);
+  assert.match(andrew, /href="\/faculty\/hello-gravel-krewe"/);
+  assert.match(andrew, /Build a game with AI/);
+  assert.match(andrew, /With Hello Gravel Krewe/);
+  const hg = await get('/faculty/hello-gravel-krewe');
+  assert.match(hg, /People at Hello Gravel Krewe/);
+  assert.match(hg, /href="\/faculty\/andrew-dunn"/);
+});

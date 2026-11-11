@@ -18,3 +18,13 @@ CREATE TABLE IF NOT EXISTS faculty (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
+
+-- Who's part of which group: a person can be listed on their own and under one or more groups (Andrew is his own
+-- faculty member and part of Hello Gravel Krewe and AI Friday). Group pages show their people; person pages show
+-- their groups and the groups' sessions.
+CREATE TABLE IF NOT EXISTS faculty_members (
+  group_slug TEXT NOT NULL REFERENCES faculty (slug) ON DELETE CASCADE,
+  person_slug TEXT NOT NULL REFERENCES faculty (slug) ON DELETE CASCADE,
+  sort INTEGER NOT NULL DEFAULT 100,
+  PRIMARY KEY (group_slug, person_slug)
+);

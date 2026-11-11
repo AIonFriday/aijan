@@ -36,21 +36,40 @@ export async function listFaculty(env) {
   }
 }
 
-export async function getFaculty(env, slug) {
+
+// Who's part of which group, as [{ group, person }] slugs. Empty until 0006 is applied.
+export async function listMembers(env) {
   try {
-    const r = await env.DB.prepare('SELECT * FROM faculty WHERE slug = ? AND visible = 1').bind(slug).first();
-    return r ? fromRow(r) : null;
+    const { results } = await env.DB.prepare('SELECT group_slug, person_slug FROM faculty_members ORDER BY sort, person_slug').all();
+    return results.map((r) => ({ group: r.group_slug, person: r.person_slug }));
   } catch (e) {
-    if (noTable(e)) return null;
+    if (noTable(e)) return [];
     throw e;
   }
+}
+
+// A faculty member with their ties filled in: a group's people, or the groups a person is part of.
+export function withTies(f, faculty, members) {
+  const bySlug = (slug) => faculty.find((x) => x.slug === slug);
+  return {
+    ...f,
+    people: members.filter((m) => m.group === f.slug).map((m) => bySlug(m.person)).filter(Boolean),
+    groups: members.filter((m) => m.person === f.slug).map((m) => bySlug(m.group)).filter(Boolean),
+  };
 }
 
 // The faculty row for a session guide, by name, or undefined.
 export const facultyFor = (faculty, name) => faculty.find((f) => f.name.toLowerCase() === String(name).trim().toLowerCase());
 
-// A person's sessions: the visible ones that list them as a guide, soonest first.
+// A faculty member's own sessions: the visible ones that list them as a guide, soonest first.
 export const sessionsFor = (f, sessions) => sessions.filter((s) => s.guides.some((g) => g.name.toLowerCase() === f.name.toLowerCase()));
+// A person's own sessions plus their groups' sessions, soonest first. Each gets `via`: the group, when it's theirs.
+export function allSessionsFor(f, sessions) {
+  const own = sessionsFor(f, sessions).map((s) => ({ s }));
+  const seen = new Set(own.map((x) => x.s.slug));
+  const viaGroups = (f.groups || []).flatMap((g) => sessionsFor(g, sessions).filter((s) => !seen.has(s.slug) && seen.add(s.slug)).map((s) => ({ s, via: g })));
+  return [...own, ...viaGroups].sort((a, b) => (a.s.startsAt || '9') > (b.s.startsAt || '9') ? 1 : -1);
+}
 
 // "Brent McCrossen" -> "BM", "AI Friday" -> "AF". Shown when there's no photo.
 export const initials = (name) => String(name).split(/\s+/).filter((w) => /^[A-Za-z0-9]/.test(w)).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
@@ -63,5 +82,8 @@ export function tint(slug) {
 }
 
 // What the browser gets in window.AJ_DATA.faculty: just enough for the strip and the /faculty grid.
-export const clientFaculty = (faculty, sessions) =>
-  faculty.map((f) => ({ slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: sessionsFor(f, sessions).length }));
+export const clientFaculty = (faculty, sessions, members = []) =>
+  faculty.map((f) => {
+    const t = withTies(f, faculty, members);
+    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: allSessionsFor(t, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
+  });

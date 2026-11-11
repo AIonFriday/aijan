@@ -28,4 +28,12 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, links, projects,
  ('brook-davis','Brook Davis',0,'[Role, Company]',
   'Built a login-only website for a 31-person leadership class (member directory, profiles, session prep and feedback surveys) without writing the code by hand.',
   '[]',
-  '[{"name":"Leadership class members site","about":"A private site for a 31-person class, built by describing it to AI."}]',50);
+  '[{"name":"Leadership class members site","about":"A private site for a 31-person class, built by describing it to AI."}]',50),
+ ('andrew-dunn','Andrew Dunn',0,'Leading AI January',
+  '[Short bio in Andrew’s own words.] Runs AI Friday and builds games with the Hello Gravel krewe.',
+  '[{"label":"AI Friday","url":"https://aifri.day/"}]',
+  '[{"name":"AI January","about":"Three weeks of free AI sessions across New Orleans. You’re looking at it."}]',5);
+
+INSERT OR IGNORE INTO faculty_members (group_slug, person_slug) VALUES
+ ('ai-friday','andrew-dunn'),
+ ('hello-gravel-krewe','andrew-dunn');

@@ -5,7 +5,7 @@
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html" or is a partial.
 
 import { LEVELS, KINDS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
-import { facultyFor, sessionsFor, initials, tint } from './faculty.js';
+import { facultyFor, allSessionsFor, initials, tint } from './faculty.js';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
@@ -203,13 +203,16 @@ export function avatarHtml(f, size = '') {
 // One faculty member's page: who they are, their links, the sessions they lead, and what they're working on.
 // t: { faculty, head, header, footer, sheet } template strings. sessions: every visible session.
 export function facultyPage(t, siteUrl, f, sessions) {
-  const mine = sessionsFor(f, sessions);
-  const sessionHtml = (s) => {
+  const mine = allSessionsFor(f, sessions);
+  const sessionHtml = ({ s, via }) => {
     const w = when(s);
     const lead = w.scheduled ? `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>` : '<div class="tile w" aria-hidden="true"><div class="m">idea</div><div class="d">?</div></div>';
-    return `<li><a class="fs" href="/sessions/${esc(s.slug)}">${lead}<span class="fs-body"><span class="fs-when"><span class="kind k-${esc(s.kind)}">${esc(KINDS[s.kind].name)}</span>${esc(w.scheduled ? `${w.day} · ${w.startClock}` : 'Not scheduled yet')}</span><span class="fs-title">${esc(s.title)}</span></span></a></li>`;
+    return `<li><a class="fs" href="/sessions/${esc(s.slug)}">${lead}<span class="fs-body"><span class="fs-when"><span class="kind k-${esc(s.kind)}">${esc(KINDS[s.kind].name)}</span>${esc(w.scheduled ? `${w.day} · ${w.startClock}` : 'Not scheduled yet')}</span><span class="fs-title">${esc(s.title)}</span>${via ? `<span class="fs-via">With ${esc(via.name)}</span>` : ''}</span></a></li>`;
   };
   const projectHtml = (p) => `<li class="fproj"><h3>${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)} <span aria-hidden="true">↗</span></a>` : esc(p.name)}</h3>${p.about ? `<p>${linkify(p.about)}</p>` : ''}</li>`;
+  const people = f.people || [], groups = f.groups || [];
+  const personHtml = (p) => `<li><a class="fperson" href="/faculty/${esc(p.slug)}">${avatarHtml(p)}<span class="fc-n">${esc(p.name)}</span><span class="fc-r">${esc(p.role)}</span></a></li>`;
+  const groupChip = (g) => `<li><a href="/faculty/${esc(g.slug)}">${avatarHtml(g, 'sm')}${esc(g.name)}</a></li>`;
   const first = f.isGroup ? f.name : f.name.split(/\s+/)[0];
   const type = f.isGroup ? 'Organization' : 'Person';
   return fill(t.faculty, {
@@ -218,7 +221,7 @@ export function facultyPage(t, siteUrl, f, sessions) {
       title: clip(`${f.name} · AI January faculty`, 60),
       description: clip(`${f.name}${f.role ? `, ${f.role}` : ''}, leads ${mine.length === 1 ? 'a free AI session' : 'free AI sessions'} at AI January in New Orleans. ${f.bio}`),
       ogType: f.isGroup ? 'website' : 'profile',
-      jsonLdHtml: graph({ '@type': type, name: f.name, url: `${siteUrl}/faculty/${f.slug}`, ...(f.role ? { [f.isGroup ? 'description' : 'jobTitle']: f.role } : {}), ...(f.links.length ? { sameAs: f.links.map((l) => l.url) } : {}) }),
+      jsonLdHtml: graph({ '@type': type, name: f.name, url: `${siteUrl}/faculty/${f.slug}`, ...(f.role ? { [f.isGroup ? 'description' : 'jobTitle']: f.role } : {}), ...(f.links.length ? { sameAs: f.links.map((l) => l.url) } : {}), ...(groups.length ? { memberOf: groups.map((g) => ({ '@type': 'Organization', name: g.name, url: `${siteUrl}/faculty/${g.slug}` })) } : {}), ...(people.length ? { member: people.map((p) => ({ '@type': 'Person', name: p.name, url: `${siteUrl}/faculty/${p.slug}` })) } : {}) }),
     }),
     header: header(t),
     footer: footer(t.footer),
@@ -227,6 +230,8 @@ export function facultyPage(t, siteUrl, f, sessions) {
     role: f.role,
     avatarHtml: avatarHtml(f, 'xl'),
     linksHtml: f.links.length ? `<ul class="flinks">${f.links.map((l) => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} <span aria-hidden="true">↗</span></a></li>`).join('')}</ul>` : '',
+    groupsHtml: groups.length ? `<div class="fpart"><span class="fpart-h">Part of</span><ul>${groups.map(groupChip).join('')}</ul></div>` : '',
+    peopleHtml: people.length ? `<section class="fsec" aria-labelledby="ppl"><h2 class="as-h3" id="ppl">People at ${esc(f.name)}</h2><ul class="fpeople">${people.map(personHtml).join('')}</ul></section>` : '',
     bioHtml: f.bio ? `<p class="fbio">${linkify(f.bio)}</p>` : '',
     sessionsHeading: f.isGroup ? 'Sessions they lead' : `Sessions ${first} leads`,
     sessionsHtml: mine.length ? `<ul class="fsessions">${mine.map(sessionHtml).join('')}</ul>` : '<p class="fnone">Their session isn’t on the calendar yet. Check back soon.</p>',

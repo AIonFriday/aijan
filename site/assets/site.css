@@ -588,3 +588,18 @@ textarea{min-height:76px;resize:vertical}
 .fproj h3{font-size:18px}
 .fproj h3 a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:4px}
 .fproj p{margin:4px 0 0;color:var(--ink-soft);font-size:16px}
+/* groups and their people: "Part of" chips on a person, "People at" cards on a group */
+.av.sm{width:28px;height:28px;font-size:12px;box-shadow:none;border-radius:50%}
+.av.sm.grp{border-radius:8px}
+.fpart{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:16px}
+.fpart-h{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.fpart ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.fpart a{display:inline-flex;align-items:center;gap:8px;padding:3px 12px 3px 3px;border-radius:12px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:15px;text-decoration:none}
+.fpart a:hover{border-color:var(--purple)}
+.fpeople{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:700px){.fpeople{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fperson{display:grid;justify-items:center;text-align:center;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 10px 14px;color:var(--ink);text-decoration:none;height:100%;box-sizing:border-box}
+.fperson .av{margin-bottom:8px;width:72px;height:72px;font-size:24px}
+.fperson:hover{border-color:var(--purple)}
+.fs-via{font-size:14px;color:var(--purple);font-weight:700}
+.fc-g{font-size:13px;color:var(--purple);font-weight:700;line-height:1.3}
