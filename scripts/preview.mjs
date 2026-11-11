@@ -44,7 +44,6 @@ const PHOTOS = {
   'p-haunted-windows.webp': 'https://dunn.us/_astro/haunted-windows.D_WBsIod_Z1cUU9x.webp',
   'p-design-vibes.webp': 'https://dunn.us/_astro/design-vibes.YFNE8VLp_ZQMhbB.webp',
   'p-battlefield.webp': 'https://dunn.us/_astro/battlefield-first-edition.C-Vk4P1w_Z1Cq4xG.webp',
-  'p-revelry.png': 'https://revelry.co/assets/img/logo-mark.png',
 };
 const photoDir = join(root, 'site/assets/faculty');
 mkdirSync(photoDir, { recursive: true });

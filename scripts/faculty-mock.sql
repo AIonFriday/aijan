@@ -8,7 +8,8 @@ INSERT OR IGNORE INTO sessions (id, slug, title, description, status, starts_at,
  ('map-it-before-you-automate-it','map-it-before-you-automate-it','Map it before you automate it','Bring one process that eats your week. We break it into steps, find where AI actually earns its keep, and map out a first version you can run yourself.','scheduled','2027-01-13T09:00:00-06:00',90,'all','["work"]','[{"name":"Brent McCrossen","url":"https://www.linkedin.com/in/brent-mccrossen-4727225/"}]','hands-on'),
  ('build-the-idea-you-keep-putting-off','build-the-idea-you-keep-putting-off','Build the idea you keep putting off','Bring the idea that''s been sitting in your notes (or in your head) for too long. We use AI to pressure-test it and sketch the idea, the customer, the value and the right words to test it with real people.','scheduled','2027-01-15T14:00:00-06:00',90,'all','["work","make"]','[{"name":"Brent McCrossen","url":"https://www.linkedin.com/in/brent-mccrossen-4727225/"}]','hands-on'),
  ('members-only-build-your-group-a-website-with-ai','members-only-build-your-group-a-website-with-ai','Members Only: Build Your Group a Website with AI','I’ll show you how I used AI to build a private website for my group, then help you start one for yours.','scheduled','2027-01-21T09:00:00-06:00',90,'sometimes','["make","work"]','[{"name":"Brook Davis"}]','hands-on'),
- ('my-brain-is-at-capacity-ai-for-work-life-and-everyday-chaos','my-brain-is-at-capacity-ai-for-work-life-and-everyday-chaos','My brain is at capacity: AI for everyday chaos','Too much going on? Same. Whitley shows the real ways she uses AI across work and home.','scheduled','2027-01-21T16:00:00-06:00',90,'all','["work","life"]','[{"name":"Whitley Rushing","url":"https://www.linkedin.com/in/whitley-rushing/"}]','talk');
+ ('my-brain-is-at-capacity-ai-for-work-life-and-everyday-chaos','my-brain-is-at-capacity-ai-for-work-life-and-everyday-chaos','My brain is at capacity: AI for everyday chaos','Too much going on? Same. Whitley shows the real ways she uses AI across work and home.','scheduled','2027-01-21T16:00:00-06:00',90,'all','["work","life"]','[{"name":"Whitley Rushing","url":"https://www.linkedin.com/in/whitley-rushing/"}]','talk'),
+ ('grind-to-market','grind-to-market','Grind to Market: AI killed the MVP. Now what?','Building with AI is cheap now, so the hard part is finding customers. Rob Gaudet of Startup Grind New Orleans makes the case for spending 65% of your time on selling and 35% on building. After a short talk, you''ll map where your customers already gather and leave with one simple test to run there that week.','scheduled','2027-01-14T11:30:00-06:00',90,'all','["work"]','[{"name":"Rob Gaudet","url":"https://www.linkedin.com/in/robgaudet/"}]','hands-on');
 -- The faculty name is "Hello Gravel" now (production still says "Hello Gravel Krewe" on the session).
 UPDATE sessions SET guides = '[{"name":"Hello Gravel","url":"https://hellogravel.com"}]' WHERE slug = 'build-a-game-with-ai';
 
@@ -25,11 +26,11 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"label":"Website","url":"https://hellogravel.com"},{"label":"Instagram","url":"https://www.instagram.com/hellogravelofficial/"}]',
   '[{"name":"Hello Gravel games","about":"Yardmatch, The Delivery Game, Gravelyard Shift and more: free browser games that hand out discount codes.","url":"https://hellogravel.com/play/","image":"/assets/faculty/p-hello-gravel-games.png"},{"name":"HelloGravel.com","about":"Online ordering for bulk landscape materials, with delivered pricing by ZIP code.","url":"https://hellogravel.com","image":"/assets/faculty/p-hello-gravel-site.png"}]',20),
 
- ('brent-mccrossen','Brent McCrossen',0,'Chief Growth Officer, Revelry',
-  'Leads revenue and product innovation at Revelry, the New Orleans software and AI studio, and has spent 20+ years in early-stage startups across tech, entertainment and travel (including co-founding Audiosocket). Leading two hands-on sessions on turning a messy process or a stuck idea into something you can run.',
+ ('brent-mccrossen','Brent McCrossen',0,'Founder, Mortise Advisors',
+  'Founder of Mortise Advisors, where he works on go-to-market and applied AI. Has spent 20+ years in early-stage startups across tech, entertainment and travel (including co-founding Audiosocket). Leading two hands-on sessions on turning a messy process or a stuck idea into something you can run.',
   NULL,
-  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brent-mccrossen-4727225/"},{"label":"Revelry","url":"https://revelry.co/"}]',
-  '[{"name":"Revelry","about":"Custom software strategy, design and development, based in New Orleans since 2012.","url":"https://revelry.co/","image":"/assets/faculty/p-revelry.png"}]',30),
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brent-mccrossen-4727225/"}]',
+  '[{"name":"Mortise Advisors","about":"Go-to-market and applied AI help for growing companies."},{"name":"Audiosocket","about":"Music licensing company he co-founded."}]',30),
 
  ('whitley-rushing','Whitley Rushing',0,'Director of Operations, Hello Gravel',
   'Runs operations at Hello Gravel and leans on AI across work and home: thinking out loud on the drive, figuring out what her team should do next, planning hard conversations, tracking follow-ups, school reminders and recipes.',
@@ -37,13 +38,13 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/whitley-rushing/"}]',
   '[]',40),
 
- ('brook-davis','Brook Davis',0,'COO and co-founder, Precon Playbook',
+ ('brook-davis','Brook Davis',0,'COO, Precon Playbook',
   'Strategy and product leader in New Orleans: COO and co-founder of Precon Playbook, COO at Align, and founder of Work in Tech. Built a login-only website for a 31-person leadership class (directory, profiles, session prep, feedback surveys) by describing it to AI.',
   NULL,
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brookbissinger"}]',
   '[{"name":"Precon Playbook","about":"Co-founder and COO."},{"name":"Leadership class members site","about":"A private site for a 31-person class, built without writing the code by hand."}]',50),
 
- ('andrew-dunn','Andrew Dunn',0,'Building with AI at Hello Gravel · Organizer, AI Friday',
+ ('andrew-dunn','Andrew Dunn',0,'AI Builder',
   'Co-hosts AI Friday. Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',
   '/assets/faculty/andrew-dunn.jpg',
   '[{"label":"Website","url":"https://dunn.us/"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/andrewdunn"},{"label":"GitHub","url":"https://github.com/andrewedunn"},{"label":"X","url":"https://x.com/DunnWithAI"}]',
@@ -73,10 +74,11 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '/assets/faculty/eli-ackerman.jpg',
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/eliackerman"}]',
   '[]',100),
- ('laura-williams','Laura Williams',0,'[Role, Company]',
-  '[Short bio in Laura’s own words.] Part of the AI Friday crew.',
+ ('laura-williams','Laura Williams',0,'Product builder',
+  'Writes the spec, designs it and ships the build. Makes small, useful, sometimes weird products, from sprint tools to a periodic table of Taylor Swift songs. Part of the AI Friday crew.',
   '/assets/faculty/laura-williams.jpg',
-  '[]','[]',110),
+  '[{"label":"Website","url":"https://hosette.net/"}]',
+  '[{"name":"SPF","about":"A sprint planner that shows this sprint and next side by side.","url":"https://spf.hosette.net/"},{"name":"Celine AI","about":"An experiment: a lien-rights chat for suppliers that shows the law next to your account.","url":"https://hosette.net/projects/celine"},{"name":"Periodic Table of Taylor Swift","about":"283 songs, mapped like elements by era and feeling.","url":"https://ts.hosette.net/"},{"name":"[g]host in the transcripts","about":"A portrait of Lenny Rachitsky built from 298 of his own transcripts.","url":"https://hosette.net/projects/ghost-in-the-transcripts"},{"name":"Jazz Hands","about":"Play jazz-ish chords with your hands and face through your webcam.","url":"https://hosette.net/projects/jazz-hands"},{"name":"Pixted","about":"A craft tool for her young nephew, named in his words.","url":"https://hosette.net/projects/pixted"},{"name":"Omunikorudo","about":"A browser version of the Suzuki Omnichord.","url":"https://hosette.net/projects/omnichord"},{"name":"Pocketbook","about":"An archive her grandmother can rummage through.","url":"https://hosette.net/projects/pocketbook"},{"name":"Guestbook for AI agents","about":"A sign-in page for AI agents: an invitation, not a CAPTCHA.","url":"https://hosette.net/projects/guestbook"},{"name":"Office Hours","about":"A dashboard for friends across time zones.","url":"https://hosette.net/projects/oh"},{"name":"GardenIQ","about":"A garden planner that explains why, not just what.","url":"https://hosette.net/projects/gardeniq"},{"name":"More on hosette.net","about":"Sixteen projects and counting.","url":"https://hosette.net/#projects"}]',110),
  ('max-materne','Max Materne',0,'COO, RAVEN PMG',
   'Founded and ran New Orleans’ BMW, Ducati, Triumph and Vespa dealership with his family for 17 years. Now COO at RAVEN PMG and a co-host of The Dealer Lab podcast, about what dealers are learning from real experiments.',
   '/assets/faculty/max-materne.jpg',
@@ -84,12 +86,17 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"name":"The Dealer Lab","about":"A podcast about the experiments and hard-earned lessons coming out of real dealerships.","url":"https://open.spotify.com/show/3diYz9Jpb00RFRbfYNBpA3"}]',120);
 
 INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
- ('chris-andrews','Chris Andrews',0,'Senior Engineer, Hello Gravel',
+ ('chris-andrews','Chris Andrews',0,'Software development leader, Hello Gravel',
   'Software development leader. Joined Hello Gravel as a senior engineer in 2026, after building software at Selected and elsewhere.',
   NULL,
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/christopher-andrews-2229068"}]',
   '[]',95),
- ('tim-williamson','Tim Williamson',0,'Founder, Nieux Society · Founder, The Idea Village',
+ ('rob-gaudet','Rob Gaudet',0,'Startup Grind New Orleans',
+  'Runs Startup Grind New Orleans. Thinks the hard part of building with AI is now finding customers, not writing code.',
+  NULL,
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/robgaudet/"}]',
+  '[{"name":"Startup Grind New Orleans","about":"The New Orleans chapter of the global founder community."}]',35),
+ ('tim-williamson','Tim Williamson',0,'Co-founder, NieuxCo · Founder, The Idea Village',
   'New Orleans native who has spent 25 years building the city’s startup scene. Founded The Idea Village in 2000 (and with it New Orleans Entrepreneur Week), led NOLA Media Group (The Times-Picayune and NOLA.com), and founded 504GOOD. Co-founded NieuxCo, the venture studio behind Nieux Society, and opened The Nieux to the city for AI January.',
   '/assets/faculty/tim-williamson.jpg',
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/timhwilliamson"},{"label":"The Nieux","url":"https://thenieux.com/"},{"label":"Nieux Society","url":"https://www.nieuxsociety.com/"}]',

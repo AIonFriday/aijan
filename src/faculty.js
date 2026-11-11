@@ -85,5 +85,5 @@ export function tint(slug) {
 export const clientFaculty = (faculty, sessions, members = []) =>
   faculty.filter((f) => f.featured || sessionsFor(f, sessions).length).map((f) => {
     const t = withTies(f, faculty, members);
-    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: allSessionsFor(t, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
+    return { slug: f.slug, name: f.name, role: f.role, isGroup: f.isGroup, ...(f.photo ? { photo: f.photo } : {}), initials: initials(f.name), tint: tint(f.slug), sessions: allSessionsFor(t, sessions).length, leads: sessionsFor(f, sessions).length, ...(t.groups.length ? { groups: t.groups.map((g) => g.name) } : {}), ...(t.people.length ? { people: t.people.length } : {}) };
   });
