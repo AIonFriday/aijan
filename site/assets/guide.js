@@ -38,7 +38,7 @@
     if (!topics.length && !what) { $('#g-err').hidden = false; return; }
     $('#g-err').hidden = true;
     const groupName = pickedValues('g-as')[0] === 'group' ? $('#g-group').value.trim() : '';
-    act({ type: 'guideOffer', topics: pickedValues('g-topic'), what, level: pickedValues('g-level')[0] || '', times: pickedValues('g-time'), guideAs: groupName });
+    act({ type: 'guideOffer', topics: pickedValues('g-topic'), what, guideAs: groupName });
   });
 
   document.addEventListener('aj:change', (e) => {
@@ -46,7 +46,7 @@
     if (e.detail.tap?.type !== 'guideOffer') return;
     const who = e.detail.tap.guideAs ? esc(e.detail.tap.guideAs) : 'you';
     $('#gform-wrap').innerHTML = `<div class="done" tabindex="-1"><span class="kicker">Offer sent</span><h2 class="as-h3">Thanks for offering to guide.</h2>
-      <p>An organizer will look it over and email you within a few days. Once you’re approved, sessions you guide will say “Guided by ${who}.”</p></div>`;
+      <p>An organizer will look it over and email you within a few days to pick a day and time. Once you’re approved, sessions you guide will say “Guided by ${who}.”</p></div>`;
     $('#gform-wrap .done').focus();
   });
 })();
