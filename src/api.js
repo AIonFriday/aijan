@@ -63,7 +63,7 @@ export async function suggest(env, user, body) {
   return json({ ok: true });
 }
 
-// POST /api/guide-offers  { topics: [], what, level, times: [], guideAs }
+// POST /api/guide-offers  { topics: [], what, guideAs }. level and times are optional (the form stopped asking Nov 2026; an organizer sets the time).
 export async function offerToGuide(env, user, body) {
   const topics = Array.isArray(body.topics) ? body.topics.map((t) => text(t, 60)).filter(Boolean).slice(0, 10) : [];
   const what = text(body.what, 500);

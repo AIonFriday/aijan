@@ -61,7 +61,7 @@
   // ---------- taps ----------
   // A tap is a plain object so it can wait in localStorage during a trip to Google or Apple.
   //   { type: 'rsvp' | 'want' | 'guide', slug, on }  { type: 'suggest', text }
-  //   { type: 'guideOffer', topics, what, level, times, guideAs }  { type: 'krewe', groupName, what, size }
+  //   { type: 'guideOffer', topics, what, guideAs }  { type: 'krewe', groupName, what, size }
   const PENDING = 'aj-pending';
   const savePending = (tap) => { try { localStorage.setItem(PENDING, JSON.stringify({ tap, at: Date.now() })); } catch {} };
   function takePending() {

@@ -7,7 +7,7 @@ import { join, extname } from 'node:path';
 import { fakeD1, root } from './d1.mjs';
 import { listSessions, getSession, validate, fromRow, saveSession } from '../src/sessions.js';
 import { site } from '../src/site.js';
-import { toggle, mine } from '../src/api.js';
+import { toggle, mine, offerToGuide } from '../src/api.js';
 import { renderSession } from '../scripts/og-files.mjs';
 
 const read = (p) => readFileSync(join(root, p), 'utf8');
@@ -93,6 +93,7 @@ test('an example session page is drawn from D1 and kept out of search', async ()
   assert.deepEqual(searchBasics(html), []);
   assert.match(html, /<h1>A made-up demo<\/h1>/);
   assert.match(html, /<meta name="robots" content="noindex">/);
+  assert.match(html, /<a href="\/sessions">← All sessions<\/a>/);
   assert.match(html, /og\/sessions\/made-up-demo\.png\?v=\w+/);
   const sitemap = await (await get(env, '/sitemap.xml')).text();
   assert.doesNotMatch(sitemap, /made-up-demo/);
@@ -171,6 +172,18 @@ test('taps check the session in D1', async () => {
   assert.deepEqual((await mine(env, 'u1')).want, ['first-hour-with-ai']);
   env.DB.raw.exec("UPDATE sessions SET visible = 0 WHERE slug = 'first-hour-with-ai'");
   assert.deepEqual((await mine(env, 'u1')).want, [], 'hidden sessions drop out of My sessions');
+});
+
+test('an offer to guide saves without times or level', async () => {
+  const env = setup();
+  env.DB.raw.exec(`INSERT INTO "user" (id, name, email, createdAt, updatedAt) VALUES ('u1', 'Dana', 'dana@example.com', '2026-11-05', '2026-11-05')`);
+  const res = await offerToGuide(env, { id: 'u1' }, { topics: ['work'], what: 'Spreadsheets', guideAs: '' });
+  assert.equal(res.status, 200);
+  const row = env.DB.raw.prepare('SELECT topics, what, guide_as, details FROM guide_offers').get();
+  assert.deepEqual(JSON.parse(row.topics), ['work']);
+  assert.equal(row.guide_as, null);
+  assert.deepEqual(JSON.parse(row.details), { level: null, times: [] });
+  assert.equal((await offerToGuide(env, { id: 'u1' }, {})).status, 400, 'still needs a topic or a sentence');
 });
 
 test('validate catches what the build used to', () => {
