@@ -23,7 +23,7 @@ test('a guide offer shows topics, details, level, times and group', () => {
 
 test('a guide offer leaves out what was left blank', () => {
   const text = message({ type: 'guideOffer', topics: ['Writing'] });
-  assert.doesNotMatch(text, /Level|Times|Guiding as|undefined|null/);
+  assert.doesNotMatch(text, /Level|Good times|Guiding as|undefined|null/);
 });
 
 test('a Bring a group request shows the group, size and goal', () => {

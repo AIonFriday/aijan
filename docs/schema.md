@@ -62,7 +62,7 @@ Ideas people send in. Never shown until an organizer turns one into a `proposed`
 
 The offer-to-guide form on `/guide`, not tied to one session. Offers for one session are `attendance` rows with `kind = guide`.
 
-`id`, `user_id`, `topics` (JSON list: `work`, `life`, `make`, `curious`), `what`, `guide_as` (group name, if any), `details` (JSON: `level`, `times`), `status` (`new`, `approved`, `declined`), `created_at`.
+`id`, `user_id`, `topics` (JSON list: `work`, `life`, `make`, `curious`), `what`, `guide_as` (group name, if any), `details` (JSON: `level`, `times`; both empty for offers since the form stopped asking), `status` (`new`, `approved`, `declined`), `created_at`.
 
 ## krewe_requests
 
