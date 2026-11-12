@@ -1,7 +1,8 @@
-// Home page: the hero's topic tiles (pick one or more, then open /sessions by topic), then three parts:
+// Home page: the hero's "First up" card (the next session and its RSVP) and topic tiles (pick one or more, then open
+// /sessions by topic), then three parts:
 // "It starts Friday, Jan 8" (the kickoff big, then the next four), "What do you want to learn?" (top ideas, the AI for…
 // buttons, and a box to suggest one), and "Could you lead one?" (the faculty row with "You?" first).
-// Everything else lives on /sessions. Session data comes from /assets/sessions.js (window.AJ_DATA).
+// The page ends with "Ready to come?": RSVP to the same next session, or the calendar. Everything else lives on /sessions. Session data comes from /assets/sessions.js (window.AJ_DATA).
 (() => {
   const { $, esc, say, act, countFor, wantText, NEEDED, TOPICS, fmt, wantLine, guideLine, byTime, byWant, me, wireButtons, kindTag } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
@@ -59,6 +60,15 @@
     $('#first').innerHTML = next.length
       ? kick(next[0]) + (next.length > 1 ? `<ul class="list">${next.slice(1, 5).map(row).join('')}</ul>` : '')
       : '<p class="empty">That’s a wrap for this January. Thanks for coming.</p>';
+    const f = next[0];
+    if (f) {
+      const fu = $('#firstup'); fu.hidden = false; fu.dataset.slug = f.slug;
+      fu.innerHTML = `<span class="fu-l">First up</span><a class="fu-t" href="/sessions/${f.slug}">${esc(f.title)}</a><span class="fu-w">${day(f).label} · ${day(f).t}</span>${rsvp(f)}`;
+    }
+    // The closing "Ready to come?" box: RSVP to the same next session, then the calendar.
+    const end = $('#end-row');
+    end.dataset.slug = f ? f.slug : '';
+    end.innerHTML = (f ? `<button class="btn-big" type="button" data-act="rsvp" aria-pressed="${me.going.has(f.slug)}">${me.going.has(f.slug) ? 'Going ✓' : `RSVP to ${esc(f.title.replace(/^AI Friday: /, ''))}`}</button>` : '') + '<a class="end-link" href="/sessions">See the calendar →</a>';
     $('#more').textContent = all > 5 ? `See all ${all} on the calendar →` : 'See the full calendar →';
     const ideas = S.filter((s) => s.status === 'proposed' && s.kind !== 'group').sort(byWant);
     const groups = S.filter((s) => s.status === 'proposed' && s.kind === 'group').sort(byWant);
@@ -84,6 +94,8 @@
   })();
 
   wireButtons($('main'));
+  wireButtons($('#firstup'));
+  wireButtons($('.end-cta'));
   document.addEventListener('aj:change', (e) => {
     render();
     if (e.detail.tap?.type === 'suggest') {

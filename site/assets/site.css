@@ -634,3 +634,24 @@ h2.fgroup-h{margin:36px 0 14px}
 #forgs-sec h2.fgroup-h{margin:48px 0 6px}
 .fgroup-note{margin:0 0 16px;color:var(--ink-soft);font-size:15px}
 @media(min-width:700px){.fprojects{grid-template-columns:repeat(2,minmax(0,1fr))}.fproj.has-img{grid-template-columns:1fr}.fproj img{width:100%}}
+
+/* The hero’s "First up" card: the next session and its RSVP, on the first screen even on phones. */
+.first-up{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;margin:18px 0 6px;padding:12px 14px;background:color-mix(in srgb,var(--card) 88%,transparent);border:1.5px solid var(--purple);border-radius:14px;max-width:30rem}
+.first-up[hidden]{display:none}
+.first-up .fu-l{grid-column:1;font:600 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--purple)}
+.first-up .fu-t{grid-column:1;font-weight:800;font-size:18px;color:var(--ink);text-decoration:none}
+.first-up .fu-w{grid-column:1;font-size:14px;color:var(--ink-soft)}
+.first-up .go{grid-column:2;grid-row:1 / span 3;margin:0}
+.first-up .go[aria-pressed="true"]{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
+@media (max-width:719px){.words{margin-top:110px}.hero{min-height:0}}
+/* RSVP and "I want this" in lists are solid; once tapped they turn into an outline with a check, like the session page. */
+.act .go{background:var(--purple);color:var(--btn-ink);box-shadow:0 2px 0 var(--ink)}
+.act .go.in{background:var(--green);color:var(--btn-ink)}
+.act .go[aria-pressed="true"],.act .go.in[aria-pressed="true"]{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
+/* Session page on phones: the buttons right under the title, before the description. */
+@media (max-width:600px){.sp{display:flex;flex-direction:column}.sp .top{order:0}.sp .sp-kind{order:1}.sp h1{order:2}.sp .cta{order:3;margin:14px 0 4px}.sp .desc{order:4}.sp .facts{order:5}}
+/* "Ready to come?" at the end of the home page. */
+.end-cta{margin:40px 0 8px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.end-cta h2{margin:0 0 6px}
+.end-link{font-weight:700;color:var(--purple)}
+.end-cta .btn-big[aria-pressed="true"]{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}

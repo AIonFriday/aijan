@@ -9,7 +9,7 @@ export const TOPICS = { work: 'My job', life: 'Home and family', make: 'Making t
 export const KINDS = {
   talk: { name: 'Talks and demos', promise: 'Sit back and watch. Demos, talks or a panel, then time to ask questions.' },
   'office-hours': { name: 'Office hours', promise: 'Drop in with your questions. Come and go whenever you like.' },
-  'hands-on': { name: 'Hands-on', promise: 'Make something real, with a Guide at your table.' },
+  'hands-on': { name: 'Hands-on', promise: 'Make something real, with a Guide to help.' },
   group: { name: 'For your group', promise: 'Made for one kind of person, with examples from your world.' },
 };
 export const STATUSES = ['proposed', 'scheduled', 'cancelled'];

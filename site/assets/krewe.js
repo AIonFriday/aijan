@@ -1,4 +1,5 @@
-// Bring your krewe: three questions only (group name, what you want to learn, how many people).
+// Bring your krewe: easy questions first (how many people, what to learn as tap-to-pick topics), then an optional
+// sentence and the group name. The topics and the sentence are sent together as `what`.
 // Organizers match the group with a guide and a time, then email them.
 (() => {
   const { $, esc, act, wirePills, pickedValues } = window.AJ;
@@ -6,7 +7,8 @@
   $('#kform').addEventListener('submit', (e) => {
     e.preventDefault();
     const groupName = $('#k-name').value.trim();
-    const what = $('#k-what').value.trim();
+    const topics = pickedValues('k-topic');
+    const what = [topics.join(', '), $('#k-what').value.trim()].filter(Boolean).join('. ');
     if (!groupName || !what) { $('#k-err').hidden = false; return; }
     $('#k-err').hidden = true;
     act({ type: 'krewe', groupName, what, size: pickedValues('k-size')[0] || '' });

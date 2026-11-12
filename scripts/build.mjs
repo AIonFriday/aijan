@@ -69,7 +69,7 @@ const header = (current) => headerFor(t, current);
 const PAGES = {
   'index.html': { path: '/', title: 'AI January · Free AI sessions in New Orleans', ogTitle: 'You’re invited to learn AI.', description: 'Three weeks of free AI workshops, office hours, and conversations in New Orleans, Jan 8–28, 2027. Beginners welcome.' },
   'sessions.html': { path: '/sessions', title: 'Sessions · AI January', description: 'Every free AI session in New Orleans this January, on a calendar or by topic. Vote for the ideas you want next.', current: 'sessions' },
-  'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just help the people at your table.', current: 'guide' },
+  'guide.html': { path: '/guide', title: 'Guide a session · AI January', description: 'Guide a free AI session in New Orleans this January. No slides, just show what you do and help people try it.', current: 'guide' },
   'faculty.html': { path: '/faculty', title: 'Faculty · AI January', description: 'Meet the New Orleanians leading free AI sessions at AI January: what they’ll teach, where to find them, and what they’re working on.' },
   'krewe.html': { path: '/krewe', title: 'Bring your krewe · AI January', description: 'Bring your team, congregation, class, or block to a free AI session this January. We’ll match you with a guide.', current: 'krewe' },
   'where.html': { path: '/where', title: 'Where it is · AI January', description: 'Most AI January sessions are at The Nieux, 2040 St. Charles Ave, in the Eiffel Tower building. Address, parking, streetcar, and the rooms.', current: 'where' },
@@ -111,7 +111,7 @@ writeFileSync(join(dist, 'llms.txt'), `# AI January
 - Sessions are 90 minutes, on weekdays, grouped by topic: My job, Home and family, Making things, Just curious.
 - The month starts with AI Friday: the kickoff, Friday Jan 8, 2027, 9 AM.
 - Anyone can suggest a session. Once five people want it and a guide signs up, it goes on the calendar.
-- Volunteers who lead sessions are called guides. No slides: they open a laptop and help the people at their table.
+- Volunteers who lead sessions are called guides. No slides: they open a laptop, show what they do, and help people try it.
 - Groups (an office, congregation, class, or block) can ask for their own session.
 - All times are New Orleans time (Central).
 - Contact: january@aifri.day
