@@ -125,3 +125,22 @@ INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, sort) VALUES
 
 -- On the home strip and /faculty without a session of their own (Andrew's call).
 UPDATE faculty SET featured = 1 WHERE slug IN ('andrew-dunn', 'eli-ackerman', 'tim-williamson', 'the-nieux');
+
+-- Mastra and Grayson Hicks (added Nov 12) and their session.
+INSERT OR IGNORE INTO sessions (id, slug, title, description, status, starts_at, length_min, level, topics, guides, kind) VALUES
+ ('agentic-systems-101','agentic-systems-101','Agentic systems 101: Building production AI agents with Mastra','An AI agent is software that can plan, use tools and take steps on its own, not just answer a question. Grayson Hicks, a customer engineer at Mastra who lives outside New Orleans, introduces agentic systems and shows how teams build real ones with Mastra, the open-source TypeScript framework from the team behind Gatsby (Y Combinator, Winter 2025). Curious beginners are welcome, and developers will see real code.','scheduled','2027-01-14T17:00:00-06:00',60,'all','["make","work"]','[{"name":"Mastra","url":"https://mastra.ai"},{"name":"Grayson Hicks","url":"https://graysonhicks.com"}]','talk');
+
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
+ ('mastra','Mastra',1,'Open-source TypeScript framework for AI agents · YC W25',
+  'Mastra makes an open-source framework for building AI agents in TypeScript, one of the main languages of the web. It was started in 2024 by Sam Bhagwat, Abhi Aiyer and Shane Thomas, the team behind Gatsby, and went through Y Combinator in Winter 2025. Teams use it to build agents that remember, use tools and run multi-step workflows.',
+  '/assets/faculty/mastra.png',
+  '[{"label":"Website","url":"https://mastra.ai"},{"label":"GitHub","url":"https://github.com/mastra-ai"},{"label":"X","url":"https://x.com/mastra_ai"}]',
+  '[{"name":"Mastra","about":"The open-source TypeScript framework for agents, workflows, memory and tools, with 29,000+ stars on GitHub.","url":"https://github.com/mastra-ai/mastra","image":"/assets/faculty/p-mastra.webp"}]',36),
+ ('grayson-hicks','Grayson Hicks',0,'Customer engineer, Mastra',
+  'Full-stack developer who lives outside New Orleans. He helps businesses build with Mastra''s AI agent framework, after years building for the web at Gatsby, Netlify and Manufactured. He writes and gives talks about software, lately about splitting work into small steps that AI agents can do well.',
+  '/assets/faculty/grayson-hicks.jpg',
+  '[{"label":"Website","url":"https://graysonhicks.com/"},{"label":"GitHub","url":"https://github.com/graysonhicks"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/graysonhicks/"}]',
+  '[{"name":"Parkary","about":"Find, explore and review parks in your city, with filters for what each park has.","url":"https://parkary.app/","image":"/assets/faculty/p-parkary.webp"},{"name":"SwatchSmith","about":"Pick a color and get a matching palette with real names, ready to drop into your code.","url":"https://swatchsmith.com/","image":"/assets/faculty/p-swatchsmith.webp"}]',37);
+
+INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
+ ('mastra','grayson-hicks','Customer engineer',1);
