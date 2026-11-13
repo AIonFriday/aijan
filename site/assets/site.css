@@ -663,8 +663,9 @@ h2.fgroup-h{margin:36px 0 14px}
 .act .go{background:var(--purple);color:var(--btn-ink);box-shadow:0 2px 0 var(--ink)}
 .act .go.in{background:var(--green);color:var(--btn-ink)}
 .act .go[aria-pressed="true"],.act .go.in[aria-pressed="true"]{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
-/* Session page on phones: the buttons right under the title, before the description. */
-@media (max-width:600px){.sp{display:flex;flex-direction:column}.sp .top{order:0}.sp .sp-kind{order:1}.sp h1{order:2}.sp .cta{order:3;margin:14px 0 4px}.sp .desc{order:4}.sp .facts{order:5}}
+/* Session page: the buttons sit right under the title, before the description, at every width. */
+.sp .cta{margin:14px 0 4px}
+.sp .facts{margin-bottom:0}
 /* "Ready to come?" at the end of the home page. */
 .end-cta{margin:40px 0 8px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:18px}
 .end-cta h2{margin:0 0 6px}
