@@ -219,7 +219,7 @@ export function facultyPage(t, siteUrl, f, sessions) {
     head: head(t, siteUrl, {
       path: `/faculty/${f.slug}`,
       title: clip(`${f.name} · AI January faculty`, 60),
-      description: clip(`${f.name}${f.role ? `, ${f.role}` : ''}, leads ${mine.length === 1 ? 'a free AI session' : 'free AI sessions'} at AI January in New Orleans. ${f.bio}`),
+      description: clip(`${f.name}${f.role ? `, ${f.role}` : ''}, ${mine.length ? `leads ${mine.length === 1 ? 'a free AI session' : 'free AI sessions'} at` : 'is on the faculty of'} AI January in New Orleans. ${f.bio}`),
       ogType: f.isGroup ? 'website' : 'profile',
       jsonLdHtml: graph({ '@type': type, name: f.name, url: `${siteUrl}/faculty/${f.slug}`, ...(f.role ? { [f.isGroup ? 'description' : 'jobTitle']: f.role } : {}), ...(f.links.length ? { sameAs: f.links.map((l) => l.url) } : {}), ...(groups.length ? { memberOf: groups.map((g) => ({ '@type': 'Organization', name: g.name, url: `${siteUrl}/faculty/${g.slug}` })) } : {}), ...(people.length ? { member: people.map((p) => ({ '@type': 'Person', name: p.name, url: `${siteUrl}/faculty/${p.slug}` })) } : {}) }),
     }),
@@ -233,8 +233,8 @@ export function facultyPage(t, siteUrl, f, sessions) {
     groupsHtml: groups.length ? `<div class="fpart"><span class="fpart-h">Part of</span><ul>${groups.map(groupChip).join('')}</ul></div>` : '',
     peopleHtml: people.length ? `<section class="fsec" aria-labelledby="ppl"><h2 class="as-h3" id="ppl">People at ${esc(f.name)}</h2><ul class="fpeople">${people.map(personHtml).join('')}</ul></section>` : '',
     bioHtml: f.bio ? `<p class="fbio">${linkify(f.bio)}</p>` : '',
-    sessionsHeading: f.isGroup ? 'Sessions they lead' : `Sessions ${first} leads`,
-    sessionsHtml: mine.length ? `<ul class="fsessions">${mine.map(sessionHtml).join('')}</ul>` : '<p class="fnone">Their session isn’t on the calendar yet. Check back soon.</p>',
+    // No session yet: leave the section out entirely (no "coming soon").
+    sessionsHtml: mine.length ? `<section class="fsec" aria-labelledby="leads"><h2 class="as-h3" id="leads">${f.isGroup ? 'Sessions they lead' : `Sessions ${esc(first)} leads`}</h2><ul class="fsessions">${mine.map(sessionHtml).join('')}</ul></section>` : '',
     projectsHtml: f.projects.length ? `<section class="fsec" aria-labelledby="wo"><h2 class="as-h3" id="wo">What ${esc(f.isGroup ? 'they’re' : `${first}’s`)} working on</h2><ul class="fprojects">${f.projects.map(projectHtml).join('')}</ul></section>` : '',
   });
 }

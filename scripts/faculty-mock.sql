@@ -144,3 +144,14 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
 
 INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
  ('mastra','grayson-hicks','Customer engineer',1);
+
+-- RentCheck (added Nov 13): Eli's company. Featured, so it shows on /faculty without a session.
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort, featured) VALUES
+ ('rentcheck','RentCheck',1,'Rental property inspections, from New Orleans',
+  'RentCheck makes rental inspections easier. Instead of sending someone out to a property, a property manager sends the tenant a step-by-step inspection on their phone, with photos of each room. More than 1,000 property management companies use it, and it''s built here in New Orleans.',
+  '/assets/faculty/rentcheck.png',
+  '[{"label":"Website","url":"https://www.getrentcheck.com/"},{"label":"LinkedIn","url":"https://www.linkedin.com/company/getrentcheck/"},{"label":"Instagram","url":"https://www.instagram.com/rentcheck/"}]',
+  '[{"name":"RentCheck","about":"Tenant-guided inspections for rental homes, with AI that spots damage in the photos so nothing important gets missed.","url":"https://www.getrentcheck.com/","image":"/assets/faculty/p-rentcheck.webp"}]',38,1);
+
+INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
+ ('rentcheck','eli-ackerman','',1);

@@ -288,6 +288,10 @@ test('faculty: a person lists their groups and the groups’ sessions; a group l
   const hg = await get('/faculty/hello-gravel');
   assert.match(hg, /People at Hello Gravel/);
   assert.match(hg, /href="\/faculty\/andrew-dunn"/);
+  // Featured with no session yet: no sessions section and no "coming soon".
+  const rc = await get('/faculty/rentcheck');
+  assert.match(rc, /People at RentCheck/);
+  assert.doesNotMatch(rc, /Sessions they lead|on the calendar yet/);
 });
 
 test('faculty: only session leaders and featured faculty are in the strip and on /faculty', async () => {
