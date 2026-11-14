@@ -38,11 +38,11 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/whitley-rushing/"}]',
   '[]',40),
 
- ('brook-davis','Brook Davis',0,'COO, Precon Playbook',
-  'Strategy and product leader in New Orleans: COO and co-founder of Precon Playbook, COO at Align, and founder of Work in Tech. Built a login-only website for a 31-person leadership class (directory, profiles, session prep, feedback surveys) by describing it to AI.',
+ ('brook-davis','Brook Davis',0,'COO, Align',
+  'Strategy and product leader in New Orleans: COO at Align and founder of Work in Tech. Built a login-only website for a 31-person leadership class (directory, profiles, session prep, feedback surveys) by describing it to AI.',
   NULL,
   '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/brookbissinger"}]',
-  '[{"name": "Sipped", "about": "Remembers what your people drink, so you always bring the right bottle. Free, in your browser.", "url": "https://www.mysipped.com/", "image": "/assets/faculty/p-sipped.png"}, {"name": "Precon Playbook", "about": "Software that helps building owners keep big construction projects on track before ground breaks.", "url": "https://www.preconplaybook.com/", "image": "/assets/faculty/p-precon-playbook.webp"}]',50),
+  '[{"name": "Sipped", "about": "Remembers what your people drink, so you always bring the right bottle. Free, in your browser.", "url": "https://www.mysipped.com/", "image": "/assets/faculty/p-sipped.png"}, {"name": "Align", "about": "Software that helps growing companies turn their yearly plan into weekly goals, numbers and meetings the whole team can see.", "url": "https://aligntoday.com/", "image": "/assets/faculty/p-align.webp"}]',50),
 
  ('andrew-dunn','Andrew Dunn',0,'AI Builder',
   'Co-hosts AI Friday. Lives in New Orleans and sells rocks on the internet at Hello Gravel. Nearly 20 years at New Orleans tech startups. These days: building with AI, and helping other people learn to build with it.',

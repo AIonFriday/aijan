@@ -38,7 +38,7 @@ Ties people to groups: `group_slug`, `person_slug`, `title` (their part in the g
 - **Who’s on the home row and `/faculty`:** only people and groups **named as a session's guide**, plus anyone with `featured = 1`. Everyone else shows only on their group's page. Example: Whitley leads a session, so she's on the main page. Daniel, Michael and Max Cannon are on Hello Gravel's page only.
 - **No "spots left"** or any countdown to a faculty goal.
 - **Session counts are honest.** A card counts the person's own sessions. Someone who only leads through a group says "5 sessions with AI Friday", not "Leads 5 sessions".
-- **Projects are things the person is building**, almost never a job title or an employer. Brook's are Sipped and Precon Playbook, not "COO". Leave `projects` empty rather than pad it.
+- **Projects are things the person is building**, almost never a job title or an employer. Brook's are Sipped and Align, not "COO". Leave `projects` empty rather than pad it.
 - **Every project should have a screenshot** (`image`). Prefer a real screenshot of the project's page over a logo.
 - **Groups use their real names**, like "Hello Gravel" (not "Hello Gravel Krewe").
 
