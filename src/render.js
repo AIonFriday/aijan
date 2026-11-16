@@ -190,8 +190,6 @@ export function sessionPage(t, siteUrl, s, faculty = []) {
     // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
     locationHtml: location === DEFAULT_LOCATION ? `<a href="/where">${esc(location)}</a>` : esc(location),
     lengthMin: s.lengthMin,
-    // A partner event says who runs it and where to sign up, instead of asking for guides.
-    noteHtml: s.signupUrl ? `<p class="partner">${s.guides.length ? `Run by ${s.guides.map((g) => guideHtml(g, faculty)).join(' and ')}. ` : ''}Sign up at <a href="${esc(s.signupUrl)}" target="_blank" rel="noopener">${esc(host)}</a>.</p>` : '',
     sideHtml: s.signupUrl
       ? '<p>Bring a laptop if you have one.</p>'
       : `<p>Bring a laptop if you have one, and something real you want to get done.</p>
