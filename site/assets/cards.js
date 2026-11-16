@@ -39,6 +39,15 @@
   // A faculty member's photo, or their initials on a soft color. Groups get a rounded square. Same as avatarHtml in src/render.js.
   const avatar = (f, size = '') =>
     `<span class="av av-${f.tint}${f.isGroup ? ' grp' : ''}${size ? ` ${size}` : ''}" aria-hidden="true">${f.photo ? `<img src="${esc(f.photo)}" alt="" loading="lazy">` : esc(f.initials)}</span>`;
+  // A session somewhere other than The Nieux, and one long enough to fill the day (like a hackathon).
+  const away = (s) => !!s.location;
+  const placeName = (s) => String(s.location || '').split(',')[0];
+  const allDay = (s) => (s.lengthMin || 90) >= 360;
+  const timeOf = (s) => (allDay(s) ? 'All day' : fmt(s.startsAt).t);
+  // A partner event takes sign-ups on its own site: a link out instead of an RSVP button.
+  const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
+  const signupLink = (s, cls = 'go') =>
+    `<a class="${cls} ext" href="${esc(s.signupUrl)}" target="_blank" rel="noopener" data-signup>Sign up<span class="sr"> at ${esc(host(s.signupUrl))}</span> <span aria-hidden="true">↗</span></a>`;
   const byTime = (a, b) => (a.startsAt > b.startsAt ? 1 : -1);
   const byWant = (a, b) => countFor(b) - countFor(a);
 
@@ -50,8 +59,9 @@
     if (sched) {
       const d = fmt(s.startsAt);
       lead = `<div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div>`;
-      when = `${d.w} · ${d.t}${n ? ` · ${n} going` : ''}`;
-      btn = `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`;
+      when = `${d.w} · ${timeOf(s)}${n && !s.signupUrl ? ` · ${n} going` : ''}`;
+      btn = s.signupUrl ? signupLink(s)
+        : `<button class="go" type="button" data-act="rsvp" aria-pressed="${mine}">${mine ? 'Going ✓' : 'RSVP'}</button>`;
     } else {
       when = wantLine(n);
       btn = `<button class="go in" type="button" data-act="want" aria-pressed="${mine}">${mine ? 'Want it ✓' : 'I want this'}</button>`;
@@ -60,7 +70,7 @@
     return `<li class="s${sched ? '' : ' idea'}" data-slug="${s.slug}">${lead ? `<div class="lead">${lead}</div>` : ''}
       <div class="body"><div class="when2">${kindTag(s)}${when}</div>
         <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a>
-        <p class="meta">${guideLine(s)}${lvl}</p></div>
+        <p class="meta">${guideLine(s)}${lvl}${away(s) ? ` · At ${esc(placeName(s))}` : ''}</p></div>
       <div class="act">${btn}</div></li>`;
   }
 
@@ -75,5 +85,5 @@
     });
   }
 
-  Object.assign(window.AJ, { FACULTY, avatar, TOPICS, fmt, card, kindTag, wantLine, guideLine, byTime, byWant, wireButtons });
+  Object.assign(window.AJ, { away, placeName, allDay, timeOf, host, signupLink, FACULTY, avatar, TOPICS, fmt, card, kindTag, wantLine, guideLine, byTime, byWant, wireButtons });
 })();

@@ -46,7 +46,7 @@ Ties people to groups: `group_slug`, `person_slug`, `title` (their part in the g
 
 Everyone on the faculty OK'd their photo on Nov 11, 2026, so headshots and project screenshots are committed in `site/assets/faculty/` and served at `/assets/faculty/<file>`. The repo is public: **don't commit a new person's photo without their OK.**
 
-- **Headshots:** `<slug>.jpg`, square, about 400px. Most came from LinkedIn (with the person's OK); Eli's is from AI Friday and Laura's is from hosette.net.
+- **Headshots:** `<slug>.jpg`, square, about 400px. Most came from LinkedIn (with the person's OK); Eli's is from AI Friday, Laura's is from hosette.net and Diego Pinzon's is from hackdat.co.
 - **Group logos:** `hello-gravel.png` here; AI Friday and The Nieux use `/assets/ai-friday-crawd.png` and `/assets/nieux-crown.png`.
 - **Project screenshots:** `p-<project>.webp` (or `.png`), at most 1200px wide. A real screenshot of the project's page, not its share card (`measurethedriveway.com`'s share card is a blank color, for example).
 - Keep files small: resize before committing. The build copies `site/assets/` into `dist/`, so a committed file is live on the next deploy.

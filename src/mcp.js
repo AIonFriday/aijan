@@ -130,6 +130,7 @@ const SESSION_FIELDS = {
   startsAt: { type: 'string', description: 'Start time with the New Orleans offset, like 2027-01-12T08:00:00-06:00. Needed when scheduled.' },
   lengthMin: { type: 'integer', description: 'Length in minutes. Default 90.' },
   location: { type: ['string', 'null'], description: 'Where, if not The Nieux. null means The Nieux.' },
+  signupUrl: { type: ['string', 'null'], description: 'Only for a partner event run by someone else that takes sign-ups on its own site, like https://hackdat.co. Its buttons link there instead of an RSVP here. null means people RSVP on this site.' },
   level: { type: 'string', enum: LEVELS, description: 'all, new (New to AI), sometimes (Now and then), daily (Daily).' },
   topics: { type: 'array', items: { type: 'string', enum: TOPICS }, description: 'work (My job), life (Home and family), make (Making things), curious (Just curious).' },
   guides: {

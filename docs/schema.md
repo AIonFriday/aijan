@@ -17,6 +17,7 @@ The data model for D1 (`aijan-db`).
 | `starts_at` | text, nullable | ISO time with offset. Empty means not set yet |
 | `length_min` | integer | Default 90 |
 | `location` | text, nullable | Empty means The Nieux, 2040 St. Charles Ave |
+| `signup_url` | text, nullable | A partner event's own sign-up page (like https://hackdat.co). Its buttons link there; no RSVP on this site. Empty means RSVP here |
 | `level` | text | `all`, `new` (New to AI), `sometimes` (Now and then), `daily` (Daily) |
 | `topics` | text (JSON list) | `work`, `life`, `make`, `curious` |
 | `tags` | text (JSON list) | Free words like `restaurants`, `faith`. |

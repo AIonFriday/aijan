@@ -48,6 +48,8 @@ export function fromRow(r) {
     ...(r.starts_at ? { startsAt: r.starts_at } : {}),
     lengthMin: r.length_min || LENGTH_MIN,
     ...(r.location ? { location: r.location } : {}),
+    // A partner event that takes sign-ups on its own site (like hackdat.co). No RSVP here when this is set.
+    ...(r.signup_url ? { signupUrl: r.signup_url } : {}),
     level: r.level,
     topics: list(r.topics),
     tags: list(r.tags),
@@ -90,6 +92,7 @@ export function validate(s) {
   if (s.level && !(s.level in LEVELS)) errors.push(`unknown level "${s.level}"`);
   if (!Array.isArray(s.topics) || !s.topics.length) errors.push('needs at least one topic');
   else s.topics.forEach((t) => { if (!(t in TOPICS)) errors.push(`unknown topic "${t}"`); });
+  if (s.signupUrl && !goodUrl(s.signupUrl)) errors.push('signupUrl must be a web address, like https://hackdat.co');
   if (s.guides !== undefined && !Array.isArray(s.guides)) errors.push('guides must be a list (can be empty)');
   else (s.guides || []).forEach((g) => {
     const n = guide(g);
@@ -104,7 +107,7 @@ export function validate(s) {
 // or { ok: false, errors }. Pages, share images and lists pick the change up on the next request.
 const COLUMNS = {
   title: 'title', description: 'description', status: 'status', visible: 'visible', startsAt: 'starts_at', lengthMin: 'length_min',
-  location: 'location', level: 'level', topics: 'topics', tags: 'tags', guides: 'guides', officeHours: 'office_hours', kind: 'kind', count: 'seed_count', example: 'example',
+  location: 'location', signupUrl: 'signup_url', level: 'level', topics: 'topics', tags: 'tags', guides: 'guides', officeHours: 'office_hours', kind: 'kind', count: 'seed_count', example: 'example',
 };
 const toColumn = (k, v) => (k === 'guides' ? JSON.stringify(guides(v)) : ['topics', 'tags'].includes(k) ? JSON.stringify(v ?? []) : typeof v === 'boolean' ? Number(v) : v === '' ? null : v ?? null);
 export async function saveSession(env, input) {

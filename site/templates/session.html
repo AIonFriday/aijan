@@ -4,7 +4,7 @@
 {{header}}
 <main class="wrap"><div class="col">
   <p class="crumb"><a href="/#find">← All sessions</a></p>
-  <article class="sp" data-slug="{{slug}}" data-title="{{title}}" data-status="{{status}}" data-count="{{count}}" data-starts-at="{{startsAt}}" data-location="{{location}}">
+  <article class="sp" data-slug="{{slug}}" data-title="{{title}}" data-status="{{status}}" data-count="{{count}}" data-starts-at="{{startsAt}}" data-location="{{location}}" data-length-min="{{lengthMin}}">
     <div class="top">{{tileHtml}}<div class="st">{{statusLineHtml}}</div></div>
     <p class="sp-kind"><span class="kind k-{{kind}}">{{kindName}}</span> {{kindPromise}}</p>
     <h1>{{title}}</h1>
@@ -19,8 +19,7 @@
     <div class="cta">{{buttonsHtml}}<button class="small" type="button" id="share">Share</button></div>
   </article>
   <div class="side">
-    <p>Bring a laptop if you have one, and something real you want to get done.</p>
-    <p>Know this stuff? <a href="#" id="guide">{{guideAsk}}</a></p>
+    {{sideHtml}}
   </div>
 </div></main>
 {{footer}}

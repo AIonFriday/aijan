@@ -3,7 +3,7 @@
 (() => {
   const { $, me, say, act, track, countFor, wantText, NEEDED } = window.AJ;
   const el = $('article.sp');
-  const s = { ...el.dataset, count: Number(el.dataset.count) };
+  const s = { ...el.dataset, count: Number(el.dataset.count), lengthMin: Number(el.dataset.lengthMin) || 90 };
   const scheduled = s.status === 'scheduled';
   const kind = scheduled ? 'rsvp' : 'want';
   const url = `${location.origin}/sessions/${s.slug}`;
@@ -11,6 +11,7 @@
   const mine = () => (scheduled ? me.going : me.want).has(s.slug);
 
   function paint() {
+    if (!main) return; // A partner event: sign-ups happen on its own site.
     const on = mine();
     const n = countFor(s);
     main.setAttribute('aria-pressed', on);
@@ -26,8 +27,9 @@
     if (g && me.guide.has(s.slug)) g.outerHTML = '<b>Thanks. An organizer will reach out about guiding.</b>';
   }
 
-  main.addEventListener('click', () => act({ type: kind, slug: s.slug, on: !mine() }));
-  $('#guide').addEventListener('click', (e) => { e.preventDefault(); act({ type: 'guide', slug: s.slug, on: true }); });
+  if (main) main.addEventListener('click', () => act({ type: kind, slug: s.slug, on: !mine() }));
+  $('#signup')?.addEventListener('click', () => track('partner_signup', { slug: s.slug }));
+  $('#guide')?.addEventListener('click', (e) => { e.preventDefault(); act({ type: 'guide', slug: s.slug, on: true }); });
   document.addEventListener('aj:change', paint);
 
   $('#share').addEventListener('click', () => {
