@@ -655,3 +655,20 @@ h2.fgroup-h{margin:36px 0 14px}
 .end-cta h2{margin:0 0 6px}
 .end-link{font-weight:700;color:var(--purple)}
 .end-cta .btn-big[aria-pressed="true"]{background:var(--card);color:var(--ink);border:1.5px solid var(--ink);box-shadow:none}
+
+/* Partner events (signup_url), and sessions somewhere other than The Nieux */
+a.go.ext{display:inline-block;text-decoration:none;white-space:nowrap}
+.ev.away i{display:block;font:11px var(--f-mono);font-style:normal;color:var(--ink-soft);margin-top:2px}
+.ev.away:hover i{color:var(--btn-ink)}
+.partner{background:var(--gold-soft);border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:16px;max-width:36rem}
+.partner a{color:var(--ink);font-weight:700}
+
+/* Jan 29: the link to the parade schedule (a card in the day's square, and a note under the calendar) */
+.mday.mg-day{opacity:1}
+.ev.mg{background:var(--gold-soft);color:var(--ink)}.ev.mg b{color:var(--gold-ink)}
+.ev.mg:hover b{color:var(--btn-ink)}
+.parade-note{margin:18px 0 0;padding:12px 14px;border-radius:12px;background:var(--gold-soft);font-size:15px;color:var(--ink)}
+.parade-note a{color:var(--ink);font-weight:700}
+/* When a weekend day has something (Hack Dat), the calendar shows weekends; the empty ones stay faded and a bit narrower. */
+.month[style*="--cols: 7"]{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.85fr))}
+.mday.wk{background:transparent;border-style:dashed;opacity:.6}

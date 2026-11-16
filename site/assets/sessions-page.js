@@ -4,13 +4,19 @@
 //
 // Links in: /sessions?topic=work (or ?topic=work,curious for several) opens "By topic" with those topics picked. /sessions#vote jumps to the ideas.
 (() => {
-  const { $, esc, say, act, me, countFor, wantText, TOPICS, fmt, card, byTime, byWant, wireButtons } = window.AJ;
+  const { $, esc, say, act, me, countFor, wantText, TOPICS, fmt, card, byTime, byWant, wireButtons, away, placeName, timeOf } = window.AJ;
   const { levels: LEVELS, sessions: S } = window.AJ_DATA;
 
   // The days sessions can land on (Jan 8–28). Days before FIRST show faded. Parades start Jan 29, so nothing is scheduled then.
   const FIRST = '2027-01-08';
   const LAST = '2027-01-28';
   const NOTES = { '2027-01-06': 'Twelfth Night', '2027-01-18': 'MLK Day', '2027-01-29': 'Parades start' };
+  // Jan 29 links to the parade schedule: a card in that day's square, plus a note under the calendar.
+  const MG = 'https://mardigras.fyi/';
+  const PARADE_DAY = '2027-01-29';
+  const noteHtml = (k) => (NOTES[k] && k !== PARADE_DAY ? `<small>${NOTES[k]}</small>` : '');
+  const parCell = (k) => (k === PARADE_DAY
+    ? `<a class="ev mg" href="${MG}" target="_blank" rel="noopener"><b>Parades start</b>See the parade schedule <span aria-hidden="true">↗</span></a>` : '');
 
   const scheduled = () => S.filter((s) => s.status === 'scheduled').sort(byTime);
   const ideas = () => S.filter((s) => s.status === 'proposed').sort(byWant);
@@ -85,9 +91,11 @@
     const full = names.map((n) => `<div class="mdow">${n}</div>`).join('') + rows.map((w, i) =>
       `<div class="mwk">Week ${i + 1} · ${span(w)}</div>` + w.map((k) => {
         const evs = days.get(k) || [];
-        const note = NOTES[k] ? `<small>${NOTES[k]}</small>` : '';
-        return `<div class="mday${inMonth(k) ? '' : ' out'}"><span class="n">${label(k, { day: 'numeric' })}${note}</span>${
-          inMonth(k) ? evs.map((s) => `<a class="ev k-${s.kind}" href="/sessions/${s.slug}"><b>${fmt(s.startsAt).t}</b>${esc(s.title)}</a>`).join('') : ''}</div>`;
+        const note = noteHtml(k);
+        // A weekend day with nothing on it stays quiet: the month runs on weekdays.
+        const quiet = inMonth(k) && !evs.length && [0, 6].includes(dow(k)) ? ' wk' : '';
+        return `<div class="mday${inMonth(k) ? '' : ' out'}${quiet}${parCell(k) ? ' mg-day' : ''}"><span class="n">${label(k, { day: 'numeric' })}${note}</span>${
+          inMonth(k) ? evs.map((s) => `<a class="ev k-${s.kind}${away(s) ? ' away' : ''}" href="/sessions/${s.slug}"><b>${timeOf(s)}</b>${esc(s.title)}${away(s) ? `<i>${esc(placeName(s))}</i>` : ''}</a>`).join('') : parCell(k)}</div>`;
       }).join('')).join('');
     $('#month-full').style.setProperty('--cols', cols);
     $('#month-full').innerHTML = full;
@@ -98,7 +106,7 @@
       if (!inMonth(k)) return `<div class="mday out" aria-hidden="true"><span class="n">${d}</span><span class="pip"></span></div>`;
       const n = (days.get(k) || []).length;
       const name = label(k, { weekday: 'long', month: 'long', day: 'numeric' });
-      return `<button type="button" class="mday" data-day="${k}" aria-pressed="${k === picked}" aria-label="${name}, ${n ? `${n} session${n > 1 ? 's' : ''}` : 'nothing yet'}">
+      return `<button type="button" class="mday${!n && [0, 6].includes(dow(k)) ? ' wk' : ''}" data-day="${k}" aria-pressed="${k === picked}" aria-label="${name}, ${n ? `${n} session${n > 1 ? 's' : ''}` : 'nothing yet'}">
         <span class="n">${d}</span><span class="pip">${'<i></i>'.repeat(n)}</span></button>`;
     }).join('');
     $('#month-dots').style.setProperty('--cols', cols);

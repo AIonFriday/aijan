@@ -26,15 +26,18 @@
   });
 
   const day = (s) => { const d = fmt(s.startsAt); return { ...d, label: `${d.w}, ${d.m.charAt(0)}${d.m.slice(1).toLowerCase()} ${d.d}` }; };
-  const rsvp = (s) => { const on = me.going.has(s.slug); return `<button class="go" type="button" data-act="rsvp" aria-pressed="${on}">${on ? 'Going ✓' : 'RSVP'}</button>`; };
-  const going = (s) => (countFor(s) ? ` · ${countFor(s)} going` : '');
+  const { signupLink, timeOf, away, placeName } = window.AJ;
+  // A partner event (like Hack Dat) takes sign-ups on its own site, so it gets a link out instead of RSVP.
+  const rsvp = (s) => { if (s.signupUrl) return signupLink(s); const on = me.going.has(s.slug); return `<button class="go" type="button" data-act="rsvp" aria-pressed="${on}">${on ? 'Going ✓' : 'RSVP'}</button>`; };
+  const going = (s) => (countFor(s) && !s.signupUrl ? ` · ${countFor(s)} going` : '');
+  const at = (s) => (away(s) ? ` · At ${esc(placeName(s))}` : '');
 
   // The first session, big: right now that's the AI Friday kickoff.
-  const kick = (s) => `<div class="kick" data-slug="${s.slug}"><div class="when2">${kindTag(s)}${day(s).label} · ${day(s).t}</div>
-    <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}${going(s)}</p><div class="act">${rsvp(s)}</div></div>`;
+  const kick = (s) => `<div class="kick" data-slug="${s.slug}"><div class="when2">${kindTag(s)}${day(s).label} · ${timeOf(s)}</div>
+    <a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}${going(s)}${at(s)}</p><div class="act">${rsvp(s)}</div></div>`;
   // The next few, as list rows like /sessions.
   const row = (s) => { const d = day(s); return `<li class="s" data-slug="${s.slug}"><div class="lead"><div class="cal" aria-hidden="true"><div class="m">${d.m}</div><div class="d">${d.d}</div></div></div>
-    <div class="body"><div class="when2">${kindTag(s)}${d.w} · ${d.t}${going(s)}</div><a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}</p></div>
+    <div class="body"><div class="when2">${kindTag(s)}${d.w} · ${timeOf(s)}${going(s)}</div><a class="title" href="/sessions/${s.slug}">${esc(s.title)}</a><p class="meta">${guideLine(s)}${at(s)}</p></div>
     <div class="act">${rsvp(s)}</div></li>`; };
 
   // An idea: what it is, who'd guide it, how many want it, and "I want this".
@@ -63,12 +66,12 @@
     const f = next[0];
     if (f) {
       const fu = $('#firstup'); fu.hidden = false; fu.dataset.slug = f.slug;
-      fu.innerHTML = `<span class="fu-l">First up</span><a class="fu-t" href="/sessions/${f.slug}">${esc(f.title)}</a><span class="fu-w">${day(f).label} · ${day(f).t}</span>${rsvp(f)}`;
+      fu.innerHTML = `<span class="fu-l">First up</span><a class="fu-t" href="/sessions/${f.slug}">${esc(f.title)}</a><span class="fu-w">${day(f).label} · ${timeOf(f)}</span>${rsvp(f)}`;
     }
     // The closing "Ready to come?" box: RSVP to the same next session, then the calendar.
     const end = $('#end-row');
     end.dataset.slug = f ? f.slug : '';
-    end.innerHTML = (f ? `<button class="btn-big" type="button" data-act="rsvp" aria-pressed="${me.going.has(f.slug)}">${me.going.has(f.slug) ? 'Going ✓' : `RSVP to ${esc(f.title.replace(/^AI Friday: /, ''))}`}</button>` : '') + '<a class="end-link" href="/sessions">See the calendar →</a>';
+    end.innerHTML = (f && f.signupUrl ? signupLink(f, 'btn-big') : f ? `<button class="btn-big" type="button" data-act="rsvp" aria-pressed="${me.going.has(f.slug)}">${me.going.has(f.slug) ? 'Going ✓' : `RSVP to ${esc(f.title.replace(/^AI Friday: /, ''))}`}</button>` : '') + '<a class="end-link" href="/sessions">See the calendar →</a>';
     $('#more').textContent = all > 5 ? `See all ${all} on the calendar →` : 'See the full calendar →';
     const ideas = S.filter((s) => s.status === 'proposed' && s.kind !== 'group').sort(byWant);
     const groups = S.filter((s) => s.status === 'proposed' && s.kind === 'group').sort(byWant);

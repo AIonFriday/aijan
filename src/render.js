@@ -69,7 +69,9 @@ export function when(s) {
   const start = new Date(s.startsAt);
   const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
   const day = part(start, { weekday: 'short', month: 'short', day: 'numeric' });
-  return { scheduled: true, start, end, day, startClock: clock(start), text: `${day}, ${clock(start)} – ${clock(end)}`, date: part(start, { month: 'short', day: 'numeric' }), month: part(start, { month: 'short' }).toUpperCase(), dayNum: part(start, { day: 'numeric' }) };
+  // Six hours or more (a hackathon) reads as all day.
+  const allDay = (s.lengthMin || 90) >= 360;
+  return { scheduled: true, start, end, day, allDay, startClock: allDay ? 'all day' : clock(start), text: allDay ? `${day}, all day` : `${day}, ${clock(start)} – ${clock(end)}`, date: part(start, { month: 'short', day: 'numeric' }), month: part(start, { month: 'short' }).toUpperCase(), dayNum: part(start, { day: 'numeric' }) };
 }
 
 // What the share image shows. Its hash goes in the image URL, so a change to the session gets a fresh image
@@ -100,9 +102,10 @@ function sessionEvent(s, siteUrl, location) {
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     isAccessibleForFree: true,
     location: location === DEFAULT_LOCATION ? PLACE : { '@type': 'Place', name: location, address: location },
-    organizer: PRESENTERS,
+    // A partner event is run by its guides, and takes sign-ups on its own site.
+    organizer: s.signupUrl && s.guides.length ? s.guides.map((g) => ({ '@type': 'Organization', name: g.name, ...(g.url ? { url: g.url } : {}) })) : PRESENTERS,
     ...(s.guides.length ? { performer: s.guides.map((g) => ({ '@type': 'Person', name: g.name, ...(g.url ? { url: g.url } : {}) })) } : {}),
-    offers: { ...FREE, url: `${siteUrl}/sessions/${s.slug}` },
+    offers: { ...FREE, url: s.signupUrl || `${siteUrl}/sessions/${s.slug}` },
     // No superEvent link to the home page's EventSeries: Google reads a bare {"@id"} as a second Event with no
     // name, date or place and flags the whole page as invalid.
   };
@@ -149,7 +152,14 @@ export function sessionPage(t, siteUrl, s, faculty = []) {
   const w = when(s);
   const location = s.location || DEFAULT_LOCATION;
   let tileHtml, statusLineHtml, buttonsHtml, summary;
-  if (w.scheduled) {
+  const host = s.signupUrl ? new URL(s.signupUrl).hostname.replace(/^www\./, '') : '';
+  if (w.scheduled && s.signupUrl) {
+    // A partner event: run by someone else, sign-ups on their site. No RSVP or count here.
+    tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>`;
+    statusLineHtml = `${esc(w.text)}<span id="cnt"></span>`;
+    buttonsHtml = `<a class="go ext" href="${esc(s.signupUrl)}" target="_blank" rel="noopener" id="signup">Sign up at ${esc(host)} <span aria-hidden="true">↗</span></a><button class="small" type="button" id="ics">Add to calendar</button>`;
+    summary = `${w.text} at ${location}. Free. ${s.description}`;
+  } else if (w.scheduled) {
     tileHtml = `<div class="tile" aria-hidden="true"><div class="m">${w.month}</div><div class="d">${w.dayNum}</div></div>`;
     statusLineHtml = `${esc(w.text)}<span id="cnt">${s.count ? ` · ${s.count} going` : ''}</span>`;
     buttonsHtml = '<button class="go" type="button" id="main" aria-pressed="false">RSVP</button><button class="small" type="button" id="ics">Add to calendar</button>';
@@ -179,6 +189,13 @@ export function sessionPage(t, siteUrl, s, faculty = []) {
     location,
     // The usual place links to /where (address, parking, rooms); a guide's own place is plain text.
     locationHtml: location === DEFAULT_LOCATION ? `<a href="/where">${esc(location)}</a>` : esc(location),
+    lengthMin: s.lengthMin,
+    // A partner event says who runs it and where to sign up, instead of asking for guides.
+    noteHtml: s.signupUrl ? `<p class="partner">${s.guides.length ? `Run by ${s.guides.map((g) => guideHtml(g, faculty)).join(' and ')}. ` : ''}Sign up at <a href="${esc(s.signupUrl)}" target="_blank" rel="noopener">${esc(host)}</a>.</p>` : '',
+    sideHtml: s.signupUrl
+      ? '<p>Bring a laptop if you have one.</p>'
+      : `<p>Bring a laptop if you have one, and something real you want to get done.</p>
+    <p>Know this stuff? <a href="#" id="guide">${s.guides.length ? 'I could help guide' : 'I could guide this'}</a></p>`,
     descriptionHtml: linkify(s.description),
     when: w.text,
     level: LEVELS[s.level],
@@ -186,7 +203,6 @@ export function sessionPage(t, siteUrl, s, faculty = []) {
     kindName: KINDS[s.kind].name,
     kindPromise: KINDS[s.kind].promise,
     guidesHtml: s.guides.length ? s.guides.map((g) => guideHtml(g, faculty)).join(', ') : 'Looking for a guide',
-    guideAsk: s.guides.length ? 'I could help guide' : 'I could guide this',
     tileHtml,
     statusLineHtml,
     buttonsHtml,

@@ -305,3 +305,29 @@ test('faculty: only session leaders and featured faculty are in the strip and on
   for (const slug of ['whitley-rushing', 'hello-gravel', 'andrew-dunn', 'eli-ackerman', 'tim-williamson']) assert.ok(shown.includes(slug), slug);
   assert.ok(!shown.includes('max-cannon') && !shown.includes('daniel-crowley'));
 });
+
+test('a partner event links out to sign up instead of an RSVP, and shows its own place', async () => {
+  const env = setup();
+  const bad = await saveSession(env, { slug: 'x', title: 'X', description: 'X.', status: 'proposed', level: 'all', topics: ['make'], signupUrl: 'not a link' });
+  assert.equal(bad.ok, false);
+  const r = await saveSession(env, {
+    slug: 'hack-dat', title: 'Hack Dat!', description: 'A Mardi Gras build day.', status: 'scheduled', startsAt: '2027-01-17T09:00:00-06:00',
+    lengthMin: 540, location: 'Bayou Road Commons, 2509 Bayou Road', signupUrl: 'https://hackdat.co/', level: 'all', topics: ['make'],
+    guides: [{ name: 'Dorado Builds', url: 'https://doradobuilds.co/' }],
+  });
+  assert.ok(r.ok, r.errors);
+  assert.equal(r.session.signupUrl, 'https://hackdat.co/');
+  const html = await (await get(env, '/sessions/hack-dat')).text();
+  const [ld] = searchBasics(html);
+  assert.match(html, /<a class="go ext" href="https:\/\/hackdat\.co\/"[^>]*>Sign up at hackdat\.co/);
+  assert.doesNotMatch(html, /id="main"/, 'no RSVP button');
+  assert.doesNotMatch(html, /id="guide"/, 'no "I could guide this"');
+  assert.match(html, /Sun, Jan 17, all day/);
+  assert.match(html, /Bayou Road Commons, 2509 Bayou Road/);
+  const event = ld['@graph'][0];
+  assert.equal(event.location.name, 'Bayou Road Commons, 2509 Bayou Road');
+  assert.equal(event.organizer[0].name, 'Dorado Builds');
+  assert.equal(event.offers.url, 'https://hackdat.co/');
+  const data = await (await get(env, '/assets/sessions.js')).text();
+  assert.match(data, /"signupUrl":"https:\/\/hackdat\.co\/"/);
+});
