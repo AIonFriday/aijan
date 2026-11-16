@@ -155,3 +155,16 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
 
 INSERT OR IGNORE INTO faculty_members (group_slug, person_slug, title, sort) VALUES
  ('rentcheck','eli-ackerman','',1);
+
+-- Erica Salm Rench (added Nov 16): her MCP session takes the Jan 26 9am office hours slot.
+-- Description is hers, word for word. The office hours row is hidden in production, not deleted.
+INSERT OR IGNORE INTO sessions (id, slug, title, description, status, starts_at, length_min, level, topics, guides, kind) VALUES
+ ('give-ai-your-context','give-ai-your-context','Give AI your context: a practical intro to MCP','Most of us use AI by copying and pasting between a chat window and the tools where our work actually lives. This hands-on session shows you a better way. You''ll learn how context makes AI useful for your specific work, and how MCP (Model Context Protocol), the open standard that connects AI to your email, calendar, documents, and business tools, replaces the copy and paste. I''ll explain MCP in plain language, demo live what it looks like when AI can work with your real information, and show you how to decide what''s worth connecting and what to leave alone. No technical background needed. You''ll leave with a working mental model and one concrete first step you can take the next day.','scheduled','2027-01-26T09:00:00-06:00',90,'all','["work"]','[{"name":"Erica Salm Rench","url":"https://growthhubai.ai/about"}]','hands-on');
+UPDATE sessions SET visible = 0 WHERE slug = 'office-hours-jan-26';
+
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
+ ('erica-salm-rench','Erica Salm Rench',0,'Founder, GrowthHubAI',
+  'Founder of GrowthHubAI, which helps associations, nonprofits and growing businesses put AI to work in sales, marketing and member experience. She has given more than 300 talks on AI and marketing, and won the AWTC Tech Leadership Award in 2026. Before GrowthHubAI she was COO at rasa.io and CMO at Sidecar, and she ran digital marketing operations at Search Influence here in New Orleans.',
+  '/assets/faculty/erica-salm-rench.jpg',
+  '[{"label":"Website","url":"https://growthhubai.ai/"},{"label":"Speaking","url":"https://ericasalmrench.com/"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/esalm/"}]',
+  '[{"name":"GrowthHubAI","about":"Connects a team''s knowledge, CRM and AI agents, so AI works with the organization''s real information instead of scattered prompts.","url":"https://growthhubai.ai/","image":"/assets/faculty/p-growthhubai.webp"}]',42);
