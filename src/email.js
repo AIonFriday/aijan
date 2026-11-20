@@ -57,7 +57,7 @@ function tapNote(tap, s, count) {
     case 'rsvp':
       return {
         subject: `You’re going: ${title}`,
-        lines: [`You’re going to ${title}.`, `${when(s.startsAt)} at ${where(s)}. It’s free.`, 'It’s on the invite in this email, so you can add it to your calendar.'],
+        lines: [`You’re going to ${title}.`, `${when(s.startsAt)} at ${where(s)}. It’s free.`, 'The calendar invite is attached.'],
       };
     case 'want':
       return {
