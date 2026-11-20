@@ -168,3 +168,14 @@ INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, pr
   '/assets/faculty/erica-salm-rench.jpg',
   '[{"label":"Website","url":"https://growthhubai.ai/"},{"label":"Speaking","url":"https://ericasalmrench.com/"},{"label":"LinkedIn","url":"https://www.linkedin.com/in/esalm/"}]',
   '[{"name":"GrowthHubAI","about":"Connects a team''s knowledge, CRM and AI agents, so AI works with the organization''s real information instead of scattered prompts.","url":"https://growthhubai.ai/","image":"/assets/faculty/p-growthhubai.webp"}]',42);
+
+-- Matt Duhe (added Nov 20): hands-on session on handing busywork to an AI agent, Fri Jan 15 9am.
+INSERT OR IGNORE INTO sessions (id, slug, title, description, status, starts_at, length_min, level, topics, guides, kind) VALUES
+ ('put-ai-to-work-for-you','put-ai-to-work-for-you','Put AI to work for you: hand off the busywork','Everyone has tasks that have to get done but don''t really need your brain. In this hands-on session, we''ll pick one and break it down step by step, then hand it off to an AI agent using skills and routines: saved instructions the AI can follow on its own, even on a schedule. You''ll leave with a simple way to spot the work worth handing off, so you have more time for the work that matters. Bring a laptop and a task you''d love to stop doing. Curious beginners are welcome.','scheduled','2027-01-15T09:00:00-06:00',90,'all','["work"]','[{"name":"Matt Duhe","url":"https://www.linkedin.com/in/matthewduhe/"}]','hands-on');
+
+INSERT OR IGNORE INTO faculty (slug, name, is_group, role, bio, photo, links, projects, sort) VALUES
+ ('matt-duhe','Matt Duhe',0,'Director, Account Management, Rep Data',
+  'Leads account management at Rep Data, the New Orleans market research technology company. LSU grad. He likes handing the tasks that don''t need his brain to AI agents, so he can spend his time on the work that matters.',
+  '/assets/faculty/matt-duhe.jpg',
+  '[{"label":"LinkedIn","url":"https://www.linkedin.com/in/matthewduhe/"}]',
+  '[]',46);
