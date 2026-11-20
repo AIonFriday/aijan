@@ -31,7 +31,7 @@ import body from '../scripts/fonts/AtkinsonHyperlegible-Regular.ttf';
 import bold from '../scripts/fonts/AtkinsonHyperlegible-Bold.ttf';
 import mono from '../scripts/fonts/IBMPlexMono-SemiBold.ttf';
 import * as api from './api.js';
-import { sendTapNote } from './email.js';
+import { sendTapNote, sendCancelNote } from './email.js';
 import { postTap } from './slack.js';
 import { handleMcp } from './mcp.js';
 import { handleSlackEvents, SlackBotBase } from './slack-bot.js';
@@ -162,8 +162,13 @@ export default {
       if (m) {
         const res = await api.toggle(env, user, m[1], m[2], body);
         // People who are in on this device get the RSVP in writing too, with the calendar invite.
-        if (res.ok && m[2] === 'rsvp' && body.on !== false) {
-          later(ctx, api.session(env, m[1]).then((session) => sendTapNote(env, { to: user.email, tap: { type: 'rsvp', slug: m[1] }, session, origin: url.origin, url: `${url.origin}${EMAIL_ME}`, oneTime: false, local: /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin) })));
+        // Taking an RSVP back sends a cancel for that invite, so it comes off their calendar.
+        if (res.ok && m[2] === 'rsvp') {
+          const local = /^http:\/\/(localhost|127\.0\.0\.1)/.test(url.origin);
+          const note = { to: user.email, origin: url.origin, url: `${url.origin}${EMAIL_ME}`, local };
+          later(ctx, api.session(env, m[1]).then((session) => (body.on !== false
+            ? sendTapNote(env, { ...note, tap: { type: 'rsvp', slug: m[1] }, session, oneTime: false })
+            : session?.startsAt && sendCancelNote(env, { ...note, session }))));
         }
         return tellAfter({ ...body, type: m[2], slug: m[1] }, res);
       }

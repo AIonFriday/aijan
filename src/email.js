@@ -19,23 +19,35 @@ export function sendSignInLink(env, { to, url, local }) {
 
 // What someone just tapped, so they have it in writing. `url` is a one-time link to My sessions when this email
 // is also how they get back in, or the plain /me address when they're already in on this device.
-// RSVPs carry a calendar invite.
+// RSVPs carry a real calendar invite (METHOD:REQUEST), so Gmail, Apple Mail and Outlook show it as an event to add,
+// plus plain "add to Google Calendar / Outlook" links for anyone whose mail app doesn't.
 export function sendTapNote(env, { to, tap, session, count, origin, url, oneTime, local }) {
   const note = tapNote(tap, session, count);
-  const attachments = [];
-  if (tap.type === 'rsvp' && session?.startsAt) {
-    attachments.push({ filename: `${session.slug}.ics`, content: b64(ics(session, origin)), content_type: 'text/calendar' });
-  }
+  const rsvp = tap.type === 'rsvp' && session?.startsAt;
   return send(env, {
     to,
     local,
     subject: note.subject,
     lines: note.lines,
+    links: rsvp ? calendarLinks(session, origin) : [],
     button: { label: 'See your sessions', url },
     small: [oneTime ? `${LINK_NOTE} After that, type your email on My sessions for a new one.` : '', 'We only email you about what you pick.']
       .filter(Boolean)
       .join(' '),
-    attachments,
+    attachments: rsvp ? [invite(env, session, origin, to, 'REQUEST')] : [],
+  });
+}
+
+// Someone took back an RSVP: a short note, and a cancel for the same event so it leaves their calendar.
+export function sendCancelNote(env, { to, session, origin, url, local }) {
+  return send(env, {
+    to,
+    local,
+    subject: `You’re off the list: ${session.title}`,
+    lines: [`We took you off the list for ${session.title}.`, 'If your calendar has it, it should go away on its own. Changed your mind? You can say you’re going again any time.'],
+    button: { label: 'See your sessions', url },
+    small: 'We only email you about what you pick.',
+    attachments: [invite(env, session, origin, to, 'CANCEL')],
   });
 }
 
@@ -45,7 +57,7 @@ function tapNote(tap, s, count) {
     case 'rsvp':
       return {
         subject: `You’re going: ${title}`,
-        lines: [`You’re going to ${title}.`, `${when(s.startsAt)} at ${where(s)}. It’s free.`, 'The calendar invite is attached. We’ll send a reminder the day before.'],
+        lines: [`You’re going to ${title}.`, `${when(s.startsAt)} at ${where(s)}. It’s free.`, 'The calendar invite is attached.'],
       };
     case 'want':
       return {
@@ -76,37 +88,93 @@ const when = (iso) => {
 };
 const where = (s) => s.location || DEFAULT_LOCATION;
 
-// A one-event calendar file. Sessions run 90 minutes unless the session says otherwise.
-function ics(s, origin) {
+// The session's start and end. Sessions run 90 minutes unless the session says otherwise.
+const span = (s) => {
   const start = new Date(s.startsAt);
-  const end = new Date(start.getTime() + (s.lengthMin || 90) * 60000);
-  const stamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return [start, new Date(start.getTime() + (s.lengthMin || 90) * 60000)];
+};
+const stamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+
+// "Add to Google Calendar" and "Add to Outlook" links, for mail apps that don't show the invite.
+export function calendarLinks(s, origin) {
+  const [start, end] = span(s);
+  const details = `${s.description || ''}\n\nFree. ${origin}/sessions/${s.slug}`.trim();
+  const g = new URLSearchParams({ action: 'TEMPLATE', text: s.title, dates: `${stamp(start)}/${stamp(end)}`, details, location: where(s), ctz: TZ });
+  const o = new URLSearchParams({ path: '/calendar/action/compose', rru: 'addevent', subject: s.title, startdt: start.toISOString(), enddt: end.toISOString(), body: details, location: where(s) });
+  return [
+    { label: 'Google Calendar', url: `https://calendar.google.com/calendar/render?${g}` },
+    { label: 'Outlook', url: `https://outlook.live.com/calendar/0/deeplink/compose?${o}` },
+  ];
+}
+
+// The invite file. REQUEST makes mail apps show it as an event with an add button; CANCEL takes it back off.
+// The UID is the same for a session every time, and SEQUENCE only goes up (it's the time in seconds),
+// so a later invite or cancel replaces the earlier one in someone's calendar.
+// The person is already going, so PARTSTAT=ACCEPTED and RSVP=FALSE: no "Will you attend?" to answer.
+export function ics(s, origin, { to, organizer, method = 'REQUEST', now = new Date() }) {
+  const [start, end] = span(s);
   const txt = (v) => String(v).replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1');
   const url = `${origin}/sessions/${s.slug}`;
-  return [
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//AI January//EN',
-    'METHOD:PUBLISH',
+    'CALSCALE:GREGORIAN',
+    `METHOD:${method}`,
     'BEGIN:VEVENT',
     `UID:${s.slug}@joinaijanuary.com`,
-    `DTSTAMP:${stamp(new Date())}`,
+    `SEQUENCE:${Math.floor(now.getTime() / 1000)}`,
+    `DTSTAMP:${stamp(now)}`,
     `DTSTART:${stamp(start)}`,
     `DTEND:${stamp(end)}`,
     `SUMMARY:${txt(s.title)}`,
     `LOCATION:${txt(where(s))}`,
-    `DESCRIPTION:${txt(`${s.description}\n\nFree. ${url}`)}`,
+    `DESCRIPTION:${txt(`${s.description || ''}\n\nFree. ${url}`.trim())}`,
     `URL:${url}`,
+    `ORGANIZER;CN=AI January:mailto:${organizer}`,
+    `ATTENDEE;CN=${to};ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=FALSE:mailto:${to}`,
+    `STATUS:${method === 'CANCEL' ? 'CANCELLED' : 'CONFIRMED'}`,
+    'TRANSP:OPAQUE',
+    ...(method === 'CANCEL' ? [] : ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${txt(s.title)}`, 'TRIGGER:-PT1H', 'END:VALARM']),
     'END:VEVENT',
     'END:VCALENDAR',
-    '',
-  ].join('\r\n');
+  ];
+  return lines.map(fold).join('\r\n') + '\r\n';
 }
+
+// Calendar lines can be at most 75 bytes; longer ones go on to the next line after a space.
+function fold(line) {
+  const bytes = new TextEncoder().encode(line);
+  if (bytes.length <= 75) return line;
+  const out = [];
+  let cur = '';
+  let size = 0;
+  for (const ch of line) {
+    const n = new TextEncoder().encode(ch).length;
+    if (size + n > (out.length ? 74 : 75)) {
+      out.push(cur);
+      cur = '';
+      size = 0;
+    }
+    cur += ch;
+    size += n;
+  }
+  out.push(cur);
+  return out.join('\r\n ');
+}
+
+const fromAddress = (env) => (String(env.EMAIL_FROM || '').match(/<([^>]+)>/) || [, env.EMAIL_FROM || 'hello@joinaijanuary.com'])[1];
+
+const invite = (env, s, origin, to, method) => ({
+  filename: method === 'CANCEL' ? 'cancel.ics' : 'invite.ics',
+  content: b64(ics(s, origin, { to, organizer: fromAddress(env), method })),
+  content_type: `text/calendar; charset=utf-8; method=${method}`,
+});
 
 const b64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str)));
 
-async function send(env, { to, subject, lines, button, small, attachments = [], local }) {
-  const text = [...lines, '', `${button.label}: ${button.url}`, '', small].join('\n');
+async function send(env, { to, subject, lines, links = [], button, small, attachments = [], local }) {
+  const text = [...lines, ...(links.length ? ['', ...links.map((l) => `Add to ${l.label}: ${l.url}`)] : []), '', `${button.label}: ${button.url}`, '', small].join('\n');
   if (!env.RESEND_API_KEY) {
     if (local && env.DEV_LOG_LINKS === 'true') {
       console.log(`\n  Email to ${to}: ${subject}\n  ${text.replace(/\n/g, '\n  ')}\n`);
@@ -116,6 +184,7 @@ async function send(env, { to, subject, lines, button, small, attachments = [], 
   }
   const html = `<div style="font-family:system-ui,sans-serif;font-size:17px;line-height:1.5;color:#2A2035;max-width:30rem">
 ${lines.map((l) => `<p>${esc(l)}</p>`).join('\n')}
+${links.length ? `<p style="font-size:15px">Add it to: ${links.map((l) => `<a href="${esc(l.url)}" style="color:#6A4C8C;font-weight:700">${esc(l.label)}</a>`).join(' · ')}</p>` : ''}
 <p><a href="${esc(button.url)}" style="display:inline-block;background:#6A4C8C;color:#FFFDF6;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:10px">${esc(button.label)}</a></p>
 <p style="color:#5E5469;font-size:15px">${esc(small)}</p>
 </div>`;
