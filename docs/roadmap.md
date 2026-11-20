@@ -8,7 +8,7 @@ Rough order. Open an issue before starting anything large.
 - [x] Sessions in D1 (`sessions` table), seeded with the real January lineup.
 - [x] Sign-in with Better Auth: Google, Apple, email link. See [auth.md](auth.md). (Needs its keys set in Cloudflare.)
 - [x] Real RSVP, "I want this", offer to guide, suggestions, and krewe requests through `/api/*`.
-- [ ] Emails through Resend: ~~link to My sessions~~ (done), ~~confirmations with a calendar invite for RSVPs~~ (done), "it's happening, can you make it?", day-before reminder with a calendar invite, changes and cancellations.
+- [ ] Emails through Resend: ~~link to My sessions~~ (done), ~~confirmations with a calendar invite for RSVPs~~ (done), "it's happening, can you make it?", day-before reminder, ~~cancel when someone takes back an RSVP~~ (done), updated invites when a session's time or place changes, and cancellations of a whole session.
 - [ ] A simple organizer view: review suggestions, approve guides, schedule sessions, match krewes.
 
 ## Soon
