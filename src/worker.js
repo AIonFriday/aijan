@@ -141,6 +141,11 @@ export default {
         const tap = body.tap && typeof body.tap === 'object' ? body.tap : {};
         if (!api.TAP_TYPES.includes(tap.type)) return api.err(400, 'Unknown tap.');
         if (!providers(env).includes('email')) return api.err(503, 'Email isn’t set up yet.');
+        // Each of these makes an account, emails the address and posts in Slack, so one visitor only gets so many a minute
+        // (START_LIMIT in wrangler.jsonc). Off where the binding isn't set, like the tests.
+        if (env.START_LIMIT && !(await env.START_LIMIT.limit({ key: request.headers.get('cf-connecting-ip') || 'unknown' })).success) {
+          return api.err(429, 'That’s a lot at once. Wait a minute and try again.');
+        }
 
         const { headers: set, response: who } = await auth.api.emailFirst({ body: { email }, headers: request.headers, returnHeaders: true });
         const res = await api.run(env, { id: who.userId }, tap);
@@ -148,7 +153,8 @@ export default {
         const result = await res.json();
         tellOrganizers(tap, { email }, result);
         if (await api.canEmail(env, email)) {
-          mail.tapNote = { tap, session: await api.session(env, tap.slug), count: result.count };
+          // Only what kind of tap it was and which session: nothing the person typed goes into the email.
+          mail.tapNote = { tap: { type: tap.type, slug: tap.slug }, session: await api.session(env, tap.slug), count: result.count };
           later(ctx, auth.api.signInMagicLink({ body: { email, callbackURL: EMAIL_ME }, headers: request.headers }));
         }
         const out = api.json({ ...result, signedIn: who.isNew });

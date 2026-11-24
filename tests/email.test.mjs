@@ -74,3 +74,9 @@ test('taking an RSVP back sends a cancel', async () => {
   assert.match(body.subject, /off the list/);
   assert.equal(body.attachments[0].content_type, 'text/calendar; charset=utf-8; method=CANCEL');
 });
+
+test('a group request email never repeats what was typed', async () => {
+  const body = await capture(() => sendTapNote(env, { to: 'pat@example.com', tap: { type: 'krewe', groupName: 'Urgent: confirm your account at evil.example' }, session: null, origin, url: `${origin}/me`, oneTime: true }));
+  assert.equal(body.subject, 'We got your group’s request');
+  assert.doesNotMatch(body.text + body.html, /evil\.example|Urgent/);
+});

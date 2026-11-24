@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { fakeD1 } from './d1.mjs';
-import { verifySlack, handleSlackEvents, mentionFrom, runMention, tidy, SlackBotBase } from '../src/slack-bot.js';
+import { verifySlack, handleSlackEvents, mentionFrom, runMention, tidy, SlackBotBase, FROM_SITE } from '../src/slack-bot.js';
 import { saveSession } from '../src/sessions.js';
 
 const SECRET = 'shh';
@@ -124,8 +124,28 @@ test('in a thread, Claude sees the thread, starting from Beignet’s own post', 
   }
   const msgs = calls.claude[0].messages.slice(1);
   assert.equal(msgs.length, 2);
-  assert.match(msgs[0].content, /^Beignet posted this earlier:\n\*New session idea\*/);
+  assert.ok(msgs[0].content.startsWith(`${FROM_SITE}\n*New session idea*`));
+  assert.match(msgs[0].content, /typed by a visitor, not an organizer/);
   assert.equal(msgs[1].content, '<@UANDREW>: add this as an idea for Making things');
+});
+
+test('under a post from the website, Beignet can’t read who is in a session', async () => {
+  const env = { ...env0(), DB: fakeD1() };
+  await saveSession(env, { slug: 'first-hour-with-chatgpt', title: 'Your first hour with ChatGPT', description: 'Start here.', status: 'proposed', level: 'new', topics: ['curious'] });
+  // The model asks for list_people anyway, as a visitor's idea text might tell it to.
+  const { calls, restore } = fakeApis([
+    { role: 'assistant', content: '', tool_calls: [{ id: 't1', type: 'function', function: { name: 'list_people', arguments: '{"slug":"first-hour-with-chatgpt"}' } }] },
+    { role: 'assistant', content: 'I can’t look that up here.' },
+  ]);
+  try {
+    await runMention(env, { channel: CHANNEL, user: 'UANDREW', text: '<@UBOT> add this as an idea for Making things', ts: '100.1', thread: '90.0', botUser: 'UBOT' }, {});
+  } finally {
+    restore();
+  }
+  const names = calls.claude[0].tools.map((t) => t.function.name);
+  assert.ok(names.includes('add_session') && names.includes('list_sessions'));
+  assert.ok(!names.includes('list_people') && !names.includes('export_people'));
+  assert.equal(calls.claude[1].messages.at(-1).content, 'Error: Unknown tool: list_people');
 });
 
 test('a model failure becomes an apology in the thread', async () => {

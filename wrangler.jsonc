@@ -30,6 +30,9 @@
   // Beignet answers @mentions in Slack from a Durable Object, one per Slack event (src/slack-bot.js, docs/slack.md).
   "durable_objects": { "bindings": [{ "name": "SLACK_BOT", "class_name": "SlackBot" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SlackBot"] }],
+  // How many email-first taps (POST /api/start) one visitor can make in a minute. Each one makes an account, sends an email
+  // and posts in Slack. Counted per IP address, so it is high enough for a room on one Wi-Fi. See docs/auth.md.
+  "ratelimits": [{ "name": "START_LIMIT", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }],
   // Not secret. Secrets (BETTER_AUTH_SECRET, GOOGLE_*, APPLE_*, RESEND_API_KEY, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, OPENROUTER_API_KEY) are set in the Cloudflare dashboard. See docs/auth.md.
   "vars": {
     // Sign-in emails come from this address. Its domain must be verified in Resend.
