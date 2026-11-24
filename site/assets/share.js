@@ -1,5 +1,5 @@
 // /share: the faculty share kit. A Guide picks themselves, and a session or the whole month, and gets three share
-// images drawn here on a <canvas> (nothing is uploaded) plus posts to copy, each with its own tracked link.
+// images drawn here on a <canvas> (nothing is uploaded) plus posts to copy.
 // Data: window.AJ_DATA from /assets/sessions.js. Load after app.js, sessions.js and cards.js.
 (() => {
   const { $, esc, say, track, FACULTY, fmt, allDay, placeName } = window.AJ;
@@ -43,17 +43,13 @@
     return m ? m[0].trim() : t.length <= 220 ? t : '';
   };
 
-  // A link that says where it was shared and who shared it (docs/analytics.md).
-  const link = (pick, source, medium) => {
-    const path = pick.s ? `/sessions/${pick.s.slug}` : '/';
-    const q = new URLSearchParams({ utm_source: source, utm_medium: medium, utm_campaign: pick.s ? pick.s.slug : 'faculty', utm_content: pick.f.slug });
-    return `${ORIGIN}${path}?${q}`;
-  };
+  // The plain link to share: the session's page, or the home page for the whole month.
+  const link = (pick) => `https://${SITE}${pick.s ? `/sessions/${pick.s.slug}` : ''}`;
 
   function posts(pick) {
     const { f, s } = pick;
     const I = f.isGroup ? 'We' : 'I', Im = f.isGroup ? 'We’re' : 'I’m', my = f.isGroup ? 'our' : 'my';
-    const a = (src, med) => link(pick, src, med);
+    const a = () => link(pick);
     if (!s) {
       return [
         ['LinkedIn or Facebook', `This January ${f.isGroup ? 'we’re' : 'I’m'} part of the faculty for AI January: three weeks of free AI sessions in New Orleans, Jan 8–28.\n\nMost are at The Nieux on St. Charles. They’re small and hands-on: someone opens a laptop, shows what they do with AI, and helps you try it. No experience needed.\n\nIt starts with AI Friday on Jan 8 at 9am. If you know someone who keeps meaning to try AI, send them this.\n\n${a('linkedin', 'social')}`],
@@ -253,7 +249,7 @@
     pick = { f, s };
     history.replaceState(null, '', `/share?f=${encodeURIComponent(f.slug)}${s ? `&s=${encodeURIComponent(s.slug)}` : ''}`);
 
-    $('#sh-url').textContent = link(pick, 'share', 'link');
+    $('#sh-url').textContent = link(pick);
     $('#sh-texts').innerHTML = posts(pick).map(([label, text], i) => `
       <div class="blurb share-post">
         <h3><label for="sh-t${i}">${esc(label)}</label></h3>

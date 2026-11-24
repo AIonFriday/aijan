@@ -43,10 +43,9 @@ Mark `rsvp`, `want`, `email_added`, `guide_form` and `group_request` as key even
 
 Add UTM tags to every link we post outside the site, so visits show where they came from in both tools. Lowercase, with dashes.
 
-- `utm_source`: where it's posted: `slack`, `instagram`, `linkedin`, `facebook`, `newsletter`, `flyer`, `nieux`, `aifriday`, `text` (a text message), `share` (the plain link from /share).
+- `utm_source`: where it's posted: `slack`, `instagram`, `linkedin`, `facebook`, `newsletter`, `flyer`, `nieux`, `aifriday`.
 - `utm_medium`: the kind of link: `social`, `email`, `qr`, `chat`, `partner`.
-- `utm_campaign`: what it's for: `launch`, `kickoff`, `office-hours`, `faculty` (the whole month, shared by faculty), or a session slug.
-- `utm_content`: who shared it, as a faculty slug. Every link on /share carries one, so we can tell each Guide how many people they brought.
+- `utm_campaign`: what it's for: `launch`, `kickoff`, `office-hours`, or a session slug.
 
 Example: `https://joinaijanuary.com/sessions/ai-friday-kickoff?utm_source=instagram&utm_medium=social&utm_campaign=kickoff`
 
