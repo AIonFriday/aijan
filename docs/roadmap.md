@@ -14,7 +14,7 @@ Rough order. Open an issue before starting anything large.
 ## Soon
 
 - [x] Faculty pages: home strip, `/faculty`, `/faculty/<slug>`, from D1. See [faculty.md](faculty.md).
-- [ ] Admin MCP tools for faculty (add, edit, hide, members), so organizers and Beignet can manage them.
+- [x] Admin MCP tools for faculty (add, edit, hide, members), so organizers and Beignet can manage them. See [admin.md](admin.md#faculty).
 - [ ] Faculty photos hosted properly, with each person's OK.
 - [ ] Faculty pages in `sitemap.xml` and `llms.txt`.
 
