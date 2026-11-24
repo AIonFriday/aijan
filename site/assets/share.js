@@ -151,6 +151,67 @@
     ctx.restore();
   }
 
+  // ---------- the city look ----------
+  // The hero map's street intersections (nola-points.js, OpenStreetMap), every one lit, with The Nieux pinned.
+  // Loaded only when someone picks this look. A paper wash keeps the words easy to read.
+  let pointsReady = null;
+  const loadPoints = () => pointsReady || (pointsReady = window.NOLA_POINTS ? Promise.resolve(window.NOLA_POINTS) : new Promise((resolve) => {
+    const el = document.createElement('script');
+    el.src = '/assets/nola-points.js';
+    el.onload = () => resolve(window.NOLA_POINTS || null);
+    el.onerror = () => resolve(null);
+    document.head.appendChild(el);
+  }));
+  const hash = (i) => { let h = i * 374761393 + 668265263; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  // Where The Nieux sits and how big the city is, per size. The words sit where the wash is.
+  const CITY = {
+    square: { nx: 0.66, ny: 0.30, sc: 1.0, dot: 2.6, wash: (g, W, H) => [g.createLinearGradient(0, H * 0.33, 0, H * 0.48), 'v'] },
+    story: { nx: 0.60, ny: 0.30, sc: 1.4, dot: 3, wash: (g, W, H) => [g.createLinearGradient(0, H * 0.33, 0, H * 0.43), 'v'] },
+    wide: { nx: 0.80, ny: 0.48, sc: 0.86, dot: 2.2, wash: (g, W) => [g.createLinearGradient(W * 0.30, 0, W * 0.70, 0), 'h'] },
+  };
+  async function drawCity(ctx, W, H, key, bar) {
+    const D = await loadPoints();
+    if (!D) return dots(ctx, W, H);
+    const c = CITY[key], N = D.nieux, sc = c.sc, ox = c.nx * W - N[0] * sc, oy = c.ny * H - N[1] * sc, dot = c.dot;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    const cols = [C.purple, C.green, C.gold];
+    for (let i = 0; i < D.p.length; i += 2) {
+      const x = ox + D.p[i] * sc, y = oy + D.p[i + 1] * sc;
+      if (x < -4 || y < -4 || x > W + 4 || y > H - bar + 4) continue;
+      const r = hash(i);
+      ctx.fillStyle = cols[r < 0.5 ? 0 : r < 0.8 ? 1 : 2];
+      ctx.fillRect(Math.round(x - dot / 2), Math.round(y - dot / 2), dot, dot);
+    }
+    ctx.globalAlpha = 1;
+    // Paper wash: below the photo on the square and story, from the left on the wide one.
+    const [g, dir] = c.wash(ctx, W, H);
+    const paper = (a) => `rgba(241,237,243,${a})`;
+    g.addColorStop(0, paper(dir === 'v' ? 0 : 0.92));
+    g.addColorStop(1, paper(dir === 'v' ? 0.94 : 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H - bar);
+    // A soft patch behind the logo so it reads over the dots.
+    const lg = ctx.createRadialGradient(W * 0.2, H * 0.02, 0, W * 0.2, H * 0.02, W * 0.42);
+    lg.addColorStop(0, paper(0.9)); lg.addColorStop(0.6, paper(0.6)); lg.addColorStop(1, paper(0));
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, 0, W, H - bar);
+    // The Nieux, 2040 St. Charles.
+    const px = ox + N[0] * sc, py = oy + N[1] * sc, k = key === 'wide' ? 1 : 1.4;
+    ctx.strokeStyle = C.purple; ctx.globalAlpha = 0.45; ctx.lineWidth = 2.5 * k;
+    ctx.beginPath(); ctx.arc(px, py, 18 * k, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.fillStyle = C.gold; ctx.strokeStyle = C.ink; ctx.lineWidth = 2 * k;
+    ctx.beginPath(); ctx.arc(px, py, 8 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // The street data is OpenStreetMap's (ODbL), so the image credits it.
+    const credit = 'Streets © OpenStreetMap contributors', right = W - (key === 'wide' ? 64 : 84), cy = H - bar - 18;
+    ctx.font = `600 ${key === 'wide' ? 14 : 18}px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+    const cw = ctx.measureText(credit).width, fs = key === 'wide' ? 14 : 18;
+    ctx.fillStyle = paper(0.92); roundRect(ctx, right - cw - 10, cy - fs - 4, cw + 20, fs + 14, 6); ctx.fill();
+    ctx.fillStyle = C.soft; ctx.fillText(credit, right, cy);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
   // The words every image carries.
   const facts = ({ f, s }) => s
     ? { kicker: `${shortDay(s)} · ${allDay(s) ? 'All day' : fmt(s.startsAt).t} · ${where(s)}`.toUpperCase(), head: s.title, by: `With ${f.name}` }
@@ -171,10 +232,11 @@
     const t = facts(pick);
     ctx.fillStyle = C.paper;
     ctx.fillRect(0, 0, W, H);
-    dots(ctx, W, H);
-
     const pad = key === 'wide' ? 64 : 84;
     const bar = key === 'story' ? 220 : key === 'wide' ? 96 : 150;
+    if (pick.look === 'city') await drawCity(ctx, W, H, key, bar);
+    else dots(ctx, W, H);
+
     // The bottom band: free, and where to find it.
     ctx.fillStyle = C.purple;
     ctx.fillRect(0, H - bar, W, bar);
@@ -244,9 +306,9 @@
     const keep = what.dataset.for === f.slug ? what.value : new URLSearchParams(location.search).get('s');
     what.innerHTML = mine.map((s) => `<option value="${esc(s.slug)}">${esc(shortDay(s))}: ${esc(s.title)}</option>`).join('') + '<option value="">All of AI January</option>';
     what.dataset.for = f.slug;
-    what.value = mine.some((s) => s.slug === keep) || keep === '' ? keep : (upcoming[0] || mine[0])?.slug || '';
+    what.value = mine.some((s) => s.slug === keep) || keep === '' ? keep : (upcoming.find(leads(f.name)) || upcoming[0] || mine[0])?.slug || '';
     const s = mine.find((x) => x.slug === what.value) || null;
-    pick = { f, s };
+    pick = { f, s, look: new URLSearchParams(location.search).get('look') === 'city' ? 'city' : 'plain' };
     history.replaceState(null, '', `/share?f=${encodeURIComponent(f.slug)}${s ? `&s=${encodeURIComponent(s.slug)}` : ''}`);
 
     $('#sh-url').textContent = link(pick);
