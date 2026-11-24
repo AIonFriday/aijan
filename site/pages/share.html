@@ -1,0 +1,53 @@
+<!-- /share: the faculty share kit. A Guide picks themselves (and a session, if they like) and gets share images drawn
+     in the browser plus posts to copy. Data: window.AJ_DATA (/assets/sessions.js, from D1). Drawn by share.js.
+     Deep link: /share?f=<faculty slug>&s=<session slug>. -->
+{{head}}
+{{header}}
+<main class="wrap"><div class="col">
+<section class="share" aria-labelledby="sh">
+  <span class="kicker">For faculty</span>
+  <h1 class="as-h2" id="sh">Share your session</h1>
+  <p class="lede">Pick your name and we’ll make images and posts you can use. Change any words you like. It takes about two minutes.</p>
+
+  <div class="share-pick">
+    <div class="field">
+      <label for="sh-who">Who are you?</label>
+      <select id="sh-who"><option value="">Pick your name</option></select>
+    </div>
+    <div class="field" id="sh-what-f" hidden>
+      <label for="sh-what">What do you want to share?</label>
+      <select id="sh-what"></select>
+    </div>
+  </div>
+  <p class="share-none" id="sh-none" hidden>Not on the list? Faculty show up here once they lead a session. Email <a href="mailto:january@aifri.day">january@aifri.day</a> and we’ll sort it out.</p>
+
+  <div id="sh-kit" hidden>
+    <section class="share-sec" aria-labelledby="sh-img">
+      <h2 class="as-h3" id="sh-img">Images</h2>
+      <p class="hint">Tap one to save it. On a phone you can share it straight to an app.</p>
+      <div class="share-imgs" id="sh-imgs"></div>
+    </section>
+
+    <section class="share-sec" aria-labelledby="sh-posts">
+      <h2 class="as-h3" id="sh-posts">Words to copy</h2>
+      <div id="sh-texts"></div>
+    </section>
+
+    <section class="share-sec" aria-labelledby="sh-link">
+      <h2 class="as-h3" id="sh-link">Just the link</h2>
+      <div class="blurb"><p class="share-url" id="sh-url"></p><button class="small copy" type="button" data-copy="sh-url">Copy link</button></div>
+    </section>
+  </div>
+
+  <div class="side">
+    <p>Something wrong on your page? Email <a href="mailto:january@aifri.day">january@aifri.day</a>. Need the logo? It’s on the <a href="/brand">brand page</a>.</p>
+  </div>
+</section>
+</div></main>
+{{footer}}
+{{sheet}}
+<script src="/assets/sessions.js"></script>
+<script src="/assets/cards.js"></script>
+<script src="/assets/share.js"></script>
+</body>
+</html>

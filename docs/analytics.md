@@ -29,6 +29,7 @@ Taps count once the server saved them, not when the button was pressed.
 | `my_sessions_link` | Someone asks for a link to My sessions on /me | |
 | `share` | Share on a session page | `slug`, `method` (`native` or `copy`) |
 | `add_to_calendar` | Add to calendar on a session page | `slug` |
+| `share_kit` | Faculty use the share kit (/share): pick a session, copy a post, save or share an image | `type` (`pick`, `copy`, `save_square`, `share_story`, …), `slug` on `pick` |
 
 `via` says how we knew who it was: `known` (already in on this device), `email` (just typed it in the sheet), or `sso` (back from Google or Apple).
 
