@@ -213,9 +213,13 @@
   }
 
   // The words every image carries.
-  const facts = ({ f, s }) => s
-    ? { kicker: `${shortDay(s)} · ${allDay(s) ? 'All day' : fmt(s.startsAt).t} · ${where(s)}`.toUpperCase(), head: s.title, by: `With ${f.name}` }
-    : { kicker: 'Jan 8–28, 2027 · New Orleans'.toUpperCase(), head: f.isGroup ? 'Come learn AI with us.' : 'Come learn AI with me.', by: f.isGroup ? f.name : `${f.name}, AI January faculty` };
+  // "With Whitley Rushing · Hello Gravel" when they choose to show their group.
+  const facts = ({ f, s, group }) => {
+    const who = group && f.groups?.length ? `${f.name} · ${f.groups.join(' and ')}` : f.name;
+    return s
+      ? { kicker: `${shortDay(s)} · ${allDay(s) ? 'All day' : fmt(s.startsAt).t} · ${where(s)}`.toUpperCase(), head: s.title, by: `With ${who}` }
+      : { kicker: 'Jan 8–28, 2027 · New Orleans'.toUpperCase(), head: f.isGroup ? 'Come learn AI with us.' : 'Come learn AI with me.', by: f.isGroup || who !== f.name ? who : `${f.name}, AI January faculty` };
+  };
 
   // Three sizes: a square post, a phone story, and a wide link image.
   const SIZES = [
@@ -293,6 +297,22 @@
   // ---------- the page ----------
   let pick = null;
   let drawing = 0;
+  // How the images look: the city map behind them (the default) or plain, and whether to name their group.
+  const params = new URLSearchParams(location.search);
+  const opts = { look: params.get('look') === 'plain' ? 'plain' : 'city', group: params.get('g') === '1' };
+  const remember = () => {
+    if (!pick) return;
+    const q = new URLSearchParams({ f: pick.f.slug });
+    if (pick.s) q.set('s', pick.s.slug);
+    if (opts.look === 'plain') q.set('look', 'plain');
+    if (opts.group && pick.f.groups?.length) q.set('g', '1');
+    history.replaceState(null, '', `/share?${q}`);
+  };
+  const paintToggles = () => {
+    document.querySelectorAll('[data-look]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.look === opts.look)));
+    const g = $('#sh-group');
+    g.setAttribute('aria-pressed', String(opts.group));
+  };
 
   async function render() {
     const f = FACULTY.find((x) => x.slug === $('#sh-who').value);
@@ -308,8 +328,10 @@
     what.dataset.for = f.slug;
     what.value = mine.some((s) => s.slug === keep) || keep === '' ? keep : (upcoming.find(leads(f.name)) || upcoming[0] || mine[0])?.slug || '';
     const s = mine.find((x) => x.slug === what.value) || null;
-    pick = { f, s, look: new URLSearchParams(location.search).get('look') === 'city' ? 'city' : 'plain' };
-    history.replaceState(null, '', `/share?f=${encodeURIComponent(f.slug)}${s ? `&s=${encodeURIComponent(s.slug)}` : ''}`);
+    pick = { f, s };
+    const groups = f.groups || [];
+    $('#sh-group-f').hidden = !groups.length;
+    $('#sh-group').textContent = `Show ${groups.join(' and ')}`;
 
     $('#sh-url').textContent = link(pick);
     $('#sh-texts').innerHTML = posts(pick).map(([label, text], i) => `
@@ -319,7 +341,16 @@
         <button class="small copy" type="button" data-copy-field="sh-t${i}" data-label="${esc(label)}">Copy</button>
       </div>`).join('');
 
+    track('share_kit', { type: 'pick', slug: s ? s.slug : 'month' });
+    drawAll();
+  }
+
+  // Draws the three images for the current pick and options. Called again when an option changes.
+  async function drawAll() {
+    remember();
+    paintToggles();
     const run = ++drawing;
+    const cur = { ...pick, ...opts };
     $('#sh-imgs').innerHTML = SIZES.map((z) => `
       <figure class="share-img share-${z.key}">
         <canvas width="${z.W}" height="${z.H}" role="img" aria-label="${esc(`${z.label} share image`)}"></canvas>
@@ -329,21 +360,20 @@
     await Promise.all(SIZES.map(async (z, i) => {
       const fig = $('#sh-imgs').children[i];
       const canvas = fig.querySelector('canvas');
-      await draw(canvas, z, pick);
+      await draw(canvas, z, cur);
       if (run !== drawing) return;
       const blob = await blobOf(canvas).catch(() => null);
       if (!blob || run !== drawing) return;
       const a = fig.querySelector('[data-save]');
       a.href = URL.createObjectURL(blob);
-      a.download = fileName(pick, z);
-      const file = new File([blob], fileName(pick, z), { type: 'image/png' });
+      a.download = fileName(cur, z);
+      const file = new File([blob], fileName(cur, z), { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         const b = fig.querySelector('[data-share]');
         b.hidden = false;
         b.onclick = () => navigator.share({ files: [file] }).then(() => track('share_kit', { type: `share_${z.key}` })).catch(() => {});
       }
     }));
-    track('share_kit', { type: 'pick', slug: s ? s.slug : 'month' });
   }
 
   async function copy(text, done) {
@@ -359,6 +389,11 @@
       if (save.getAttribute('href') === '#') { e.preventDefault(); say('Still drawing. Try again in a second.'); return; }
       track('share_kit', { type: `save_${save.dataset.save}` });
     }
+  });
+  document.addEventListener('click', (e) => {
+    const look = e.target.closest('[data-look]');
+    if (look && look.dataset.look !== opts.look) { opts.look = look.dataset.look; track('share_kit', { type: `look_${opts.look}` }); drawAll(); }
+    if (e.target.closest('#sh-group')) { opts.group = !opts.group; drawAll(); }
   });
   $('#sh-who').addEventListener('change', render);
   $('#sh-what').addEventListener('change', render);
