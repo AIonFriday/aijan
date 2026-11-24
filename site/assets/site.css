@@ -670,3 +670,27 @@ a.go.ext{display:inline-block;text-decoration:none;white-space:nowrap}
 /* When a weekend day has something (Hack Dat), the calendar shows weekends; the empty ones stay faded and a bit narrower. */
 .month[style*="--cols: 7"]{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.85fr))}
 .mday.wk{background:transparent;border-style:dashed;opacity:.6}
+
+/* /share: the faculty share kit (site/pages/share.html + site/assets/share.js). Two pickers, then the images
+   (drawn on canvases at full size and shown scaled down) and the posts to copy. */
+.share{padding-top:28px}
+.share-pick{display:grid;gap:16px;margin:0 0 12px}
+.share-pick select{font:inherit;font-size:17px;color:var(--ink);background:var(--card);border:1.5px solid var(--purple);border-radius:12px;padding:12px 14px;width:100%;max-width:32rem}
+.share-pick select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.share-none{color:var(--ink-soft)}
+.share-sec{margin:32px 0 0}
+.share-sec>p{margin:6px 0 12px}
+.share-sec .hint{color:var(--ink-soft);font-size:15px}
+.share-imgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:end}
+.share-img{margin:0;display:grid;gap:8px}
+.share-img canvas{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 2px 0 var(--line)}
+.share-img.share-wide{grid-column:1/-1}
+.share-img figcaption{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;font-size:14px;color:var(--ink-soft)}
+.share-img figcaption b{color:var(--ink);display:block;font-size:16px}
+.share-acts{display:flex;align-items:center;gap:14px}
+.share-acts .go{text-decoration:none;padding:8px 14px;font-size:15px}
+.share-post textarea{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.45;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:4px 0 6px;resize:vertical}
+.share-url{word-break:break-all;font:14px var(--f-mono)}
+@media (min-width:760px){
+  .share-pick{grid-template-columns:1fr 1fr}
+}

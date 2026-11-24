@@ -29,6 +29,7 @@ Taps count once the server saved them, not when the button was pressed.
 | `my_sessions_link` | Someone asks for a link to My sessions on /me | |
 | `share` | Share on a session page | `slug`, `method` (`native` or `copy`) |
 | `add_to_calendar` | Add to calendar on a session page | `slug` |
+| `share_kit` | Faculty use the share kit (/share): pick a session, copy a post, save or share an image | `type` (`pick`, `copy`, `save_square`, `share_story`, …), `slug` on `pick` |
 
 `via` says how we knew who it was: `known` (already in on this device), `email` (just typed it in the sheet), or `sso` (back from Google or Apple).
 
@@ -42,9 +43,10 @@ Mark `rsvp`, `want`, `email_added`, `guide_form` and `group_request` as key even
 
 Add UTM tags to every link we post outside the site, so visits show where they came from in both tools. Lowercase, with dashes.
 
-- `utm_source`: where it's posted: `slack`, `instagram`, `linkedin`, `facebook`, `newsletter`, `flyer`, `nieux`, `aifriday`.
+- `utm_source`: where it's posted: `slack`, `instagram`, `linkedin`, `facebook`, `newsletter`, `flyer`, `nieux`, `aifriday`, `text` (a text message), `share` (the plain link from /share).
 - `utm_medium`: the kind of link: `social`, `email`, `qr`, `chat`, `partner`.
-- `utm_campaign`: what it's for: `launch`, `kickoff`, `office-hours`, or a session slug.
+- `utm_campaign`: what it's for: `launch`, `kickoff`, `office-hours`, `faculty` (the whole month, shared by faculty), or a session slug.
+- `utm_content`: who shared it, as a faculty slug. Every link on /share carries one, so we can tell each Guide how many people they brought.
 
 Example: `https://joinaijanuary.com/sessions/ai-friday-kickoff?utm_source=instagram&utm_medium=social&utm_campaign=kickoff`
 

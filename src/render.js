@@ -5,7 +5,7 @@
 // Templates use {{name}}. Values are HTML-escaped unless the name ends in "Html" or is a partial.
 
 import { LEVELS, KINDS, TIME_ZONE, DEFAULT_LOCATION } from './sessions.js';
-import { facultyFor, allSessionsFor, initials, tint } from './faculty.js';
+import { facultyFor, allSessionsFor, sessionsFor, initials, tint } from './faculty.js';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const RAW = { head: 1, header: 1, footer: 1, sheet: 1, navSessions: 1, navGuide: 1, navKrewe: 1, navMe: 1, barWide: 1 };
@@ -249,6 +249,8 @@ export function facultyPage(t, siteUrl, f, sessions) {
     bioHtml: f.bio ? `<p class="fbio">${linkify(f.bio)}</p>` : '',
     // No session yet: leave the section out entirely (no "coming soon").
     sessionsHtml: mine.length ? `<section class="fsec" aria-labelledby="leads"><h2 class="as-h3" id="leads">${f.isGroup ? 'Sessions they lead' : `Sessions ${esc(first)} leads`}</h2><ul class="fsessions">${mine.map(sessionHtml).join('')}</ul></section>` : '',
+    // The share kit lists only faculty shown on /faculty (session leads and featured), so only they get the link.
+    shareHtml: f.featured || sessionsFor(f, sessions).length ? `<p>Is this you? <a href="/share?f=${esc(f.slug)}">Get images and posts to share</a>.</p>` : '',
     projectsHtml: f.projects.length ? `<section class="fsec" aria-labelledby="wo"><h2 class="as-h3" id="wo">What ${esc(f.isGroup ? 'they’re' : `${first}’s`)} working on</h2><ul class="fprojects">${f.projects.map(projectHtml).join('')}</ul></section>` : '',
   });
 }

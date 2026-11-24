@@ -261,6 +261,9 @@ test('faculty pages: strip data, a person page with their sessions, and guide li
   assert.match(page, /<h1>Brent McCrossen<\/h1>/);
   assert.match(page, /Map it before you automate it/);
   assert.match(page, /Build the idea you keep putting off/);
+  // Session leads get a link to the share kit; someone only on a group's page isn't on /share, so no link.
+  assert.match(page, /href="\/share\?f=brent-mccrossen"/);
+  assert.doesNotMatch(await (await get('/faculty/daniel-crowley')).text(), /href="\/share/);
   const s = await (await get('/sessions/map-it-before-you-automate-it')).text();
   assert.match(s, /href="\/faculty\/brent-mccrossen"/);
 });
