@@ -38,7 +38,7 @@
     if (!topics.length && !what) { $('#g-err').hidden = false; return; }
     $('#g-err').hidden = true;
     const groupName = pickedValues('g-as')[0] === 'group' ? $('#g-group').value.trim() : '';
-    act({ type: 'guideOffer', topics: pickedValues('g-topic'), what, level: pickedValues('g-level')[0] || '', times: pickedValues('g-time'), guideAs: groupName });
+    act({ type: 'guideOffer', topics: pickedValues('g-topic'), what, guideAs: groupName });
   });
 
   document.addEventListener('aj:change', (e) => {
