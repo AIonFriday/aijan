@@ -151,10 +151,75 @@
     ctx.restore();
   }
 
+  // ---------- the city look ----------
+  // The hero map's street intersections (nola-points.js, OpenStreetMap), every one lit, with The Nieux pinned.
+  // Loaded only when someone picks this look. A paper wash keeps the words easy to read.
+  let pointsReady = null;
+  const loadPoints = () => pointsReady || (pointsReady = window.NOLA_POINTS ? Promise.resolve(window.NOLA_POINTS) : new Promise((resolve) => {
+    const el = document.createElement('script');
+    el.src = '/assets/nola-points.js';
+    el.onload = () => resolve(window.NOLA_POINTS || null);
+    el.onerror = () => resolve(null);
+    document.head.appendChild(el);
+  }));
+  const hash = (i) => { let h = i * 374761393 + 668265263; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  // Where The Nieux sits and how big the city is, per size. The words sit where the wash is.
+  const CITY = {
+    square: { nx: 0.66, ny: 0.30, sc: 1.0, dot: 2.6, wash: (g, W, H) => [g.createLinearGradient(0, H * 0.33, 0, H * 0.48), 'v'] },
+    story: { nx: 0.60, ny: 0.30, sc: 1.4, dot: 3, wash: (g, W, H) => [g.createLinearGradient(0, H * 0.33, 0, H * 0.43), 'v'] },
+    wide: { nx: 0.80, ny: 0.48, sc: 0.86, dot: 2.2, wash: (g, W) => [g.createLinearGradient(W * 0.30, 0, W * 0.70, 0), 'h'] },
+  };
+  async function drawCity(ctx, W, H, key, bar) {
+    const D = await loadPoints();
+    if (!D) return dots(ctx, W, H);
+    const c = CITY[key], N = D.nieux, sc = c.sc, ox = c.nx * W - N[0] * sc, oy = c.ny * H - N[1] * sc, dot = c.dot;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    const cols = [C.purple, C.green, C.gold];
+    for (let i = 0; i < D.p.length; i += 2) {
+      const x = ox + D.p[i] * sc, y = oy + D.p[i + 1] * sc;
+      if (x < -4 || y < -4 || x > W + 4 || y > H - bar + 4) continue;
+      const r = hash(i);
+      ctx.fillStyle = cols[r < 0.5 ? 0 : r < 0.8 ? 1 : 2];
+      ctx.fillRect(Math.round(x - dot / 2), Math.round(y - dot / 2), dot, dot);
+    }
+    ctx.globalAlpha = 1;
+    // Paper wash: below the photo on the square and story, from the left on the wide one.
+    const [g, dir] = c.wash(ctx, W, H);
+    const paper = (a) => `rgba(241,237,243,${a})`;
+    g.addColorStop(0, paper(dir === 'v' ? 0 : 0.92));
+    g.addColorStop(1, paper(dir === 'v' ? 0.94 : 0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H - bar);
+    // A soft patch behind the logo so it reads over the dots.
+    const lg = ctx.createRadialGradient(W * 0.2, H * 0.02, 0, W * 0.2, H * 0.02, W * 0.42);
+    lg.addColorStop(0, paper(0.9)); lg.addColorStop(0.6, paper(0.6)); lg.addColorStop(1, paper(0));
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, 0, W, H - bar);
+    // The Nieux, 2040 St. Charles.
+    const px = ox + N[0] * sc, py = oy + N[1] * sc, k = key === 'wide' ? 1 : 1.4;
+    ctx.strokeStyle = C.purple; ctx.globalAlpha = 0.45; ctx.lineWidth = 2.5 * k;
+    ctx.beginPath(); ctx.arc(px, py, 18 * k, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.fillStyle = C.gold; ctx.strokeStyle = C.ink; ctx.lineWidth = 2 * k;
+    ctx.beginPath(); ctx.arc(px, py, 8 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // The street data is OpenStreetMap's (ODbL), so the image credits it.
+    const credit = 'Streets © OpenStreetMap contributors', right = W - (key === 'wide' ? 64 : 84), cy = H - bar - 18;
+    ctx.font = `600 ${key === 'wide' ? 14 : 18}px ${MONO}`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+    const cw = ctx.measureText(credit).width, fs = key === 'wide' ? 14 : 18;
+    ctx.fillStyle = paper(0.92); roundRect(ctx, right - cw - 10, cy - fs - 4, cw + 20, fs + 14, 6); ctx.fill();
+    ctx.fillStyle = C.soft; ctx.fillText(credit, right, cy);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
   // The words every image carries.
-  const facts = ({ f, s }) => s
-    ? { kicker: `${shortDay(s)} · ${allDay(s) ? 'All day' : fmt(s.startsAt).t} · ${where(s)}`.toUpperCase(), head: s.title, by: `With ${f.name}` }
-    : { kicker: 'Jan 8–28, 2027 · New Orleans'.toUpperCase(), head: f.isGroup ? 'Come learn AI with us.' : 'Come learn AI with me.', by: f.isGroup ? f.name : `${f.name}, AI January faculty` };
+  // "With Whitley Rushing · Hello Gravel" when they choose to show their group.
+  const facts = ({ f, s, group }) => {
+    const who = group && f.groups?.length ? `${f.name} · ${f.groups.join(' and ')}` : f.name;
+    return s
+      ? { kicker: `${shortDay(s)} · ${allDay(s) ? 'All day' : fmt(s.startsAt).t} · ${where(s)}`.toUpperCase(), head: s.title, by: `With ${who}` }
+      : { kicker: 'Jan 8–28, 2027 · New Orleans'.toUpperCase(), head: f.isGroup ? 'Come learn AI with us.' : 'Come learn AI with me.', by: f.isGroup || who !== f.name ? who : `${f.name}, AI January faculty` };
+  };
 
   // Three sizes: a square post, a phone story, and a wide link image.
   const SIZES = [
@@ -171,10 +236,11 @@
     const t = facts(pick);
     ctx.fillStyle = C.paper;
     ctx.fillRect(0, 0, W, H);
-    dots(ctx, W, H);
-
     const pad = key === 'wide' ? 64 : 84;
     const bar = key === 'story' ? 220 : key === 'wide' ? 96 : 150;
+    if (pick.look === 'city') await drawCity(ctx, W, H, key, bar);
+    else dots(ctx, W, H);
+
     // The bottom band: free, and where to find it.
     ctx.fillStyle = C.purple;
     ctx.fillRect(0, H - bar, W, bar);
@@ -231,6 +297,22 @@
   // ---------- the page ----------
   let pick = null;
   let drawing = 0;
+  // How the images look: the city map behind them (the default) or plain, and whether to name their group.
+  const params = new URLSearchParams(location.search);
+  const opts = { look: params.get('look') === 'plain' ? 'plain' : 'city', group: params.get('g') === '1' };
+  const remember = () => {
+    if (!pick) return;
+    const q = new URLSearchParams({ f: pick.f.slug });
+    if (pick.s) q.set('s', pick.s.slug);
+    if (opts.look === 'plain') q.set('look', 'plain');
+    if (opts.group && pick.f.groups?.length) q.set('g', '1');
+    history.replaceState(null, '', `/share?${q}`);
+  };
+  const paintToggles = () => {
+    document.querySelectorAll('[data-look]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.look === opts.look)));
+    const g = $('#sh-group');
+    g.setAttribute('aria-pressed', String(opts.group));
+  };
 
   async function render() {
     const f = FACULTY.find((x) => x.slug === $('#sh-who').value);
@@ -244,10 +326,12 @@
     const keep = what.dataset.for === f.slug ? what.value : new URLSearchParams(location.search).get('s');
     what.innerHTML = mine.map((s) => `<option value="${esc(s.slug)}">${esc(shortDay(s))}: ${esc(s.title)}</option>`).join('') + '<option value="">All of AI January</option>';
     what.dataset.for = f.slug;
-    what.value = mine.some((s) => s.slug === keep) || keep === '' ? keep : (upcoming[0] || mine[0])?.slug || '';
+    what.value = mine.some((s) => s.slug === keep) || keep === '' ? keep : (upcoming.find(leads(f.name)) || upcoming[0] || mine[0])?.slug || '';
     const s = mine.find((x) => x.slug === what.value) || null;
     pick = { f, s };
-    history.replaceState(null, '', `/share?f=${encodeURIComponent(f.slug)}${s ? `&s=${encodeURIComponent(s.slug)}` : ''}`);
+    const groups = f.groups || [];
+    $('#sh-group-f').hidden = !groups.length;
+    $('#sh-group').textContent = `Show ${groups.join(' and ')}`;
 
     $('#sh-url').textContent = link(pick);
     $('#sh-texts').innerHTML = posts(pick).map(([label, text], i) => `
@@ -257,7 +341,16 @@
         <button class="small copy" type="button" data-copy-field="sh-t${i}" data-label="${esc(label)}">Copy</button>
       </div>`).join('');
 
+    track('share_kit', { type: 'pick', slug: s ? s.slug : 'month' });
+    drawAll();
+  }
+
+  // Draws the three images for the current pick and options. Called again when an option changes.
+  async function drawAll() {
+    remember();
+    paintToggles();
     const run = ++drawing;
+    const cur = { ...pick, ...opts };
     $('#sh-imgs').innerHTML = SIZES.map((z) => `
       <figure class="share-img share-${z.key}">
         <canvas width="${z.W}" height="${z.H}" role="img" aria-label="${esc(`${z.label} share image`)}"></canvas>
@@ -267,21 +360,20 @@
     await Promise.all(SIZES.map(async (z, i) => {
       const fig = $('#sh-imgs').children[i];
       const canvas = fig.querySelector('canvas');
-      await draw(canvas, z, pick);
+      await draw(canvas, z, cur);
       if (run !== drawing) return;
       const blob = await blobOf(canvas).catch(() => null);
       if (!blob || run !== drawing) return;
       const a = fig.querySelector('[data-save]');
       a.href = URL.createObjectURL(blob);
-      a.download = fileName(pick, z);
-      const file = new File([blob], fileName(pick, z), { type: 'image/png' });
+      a.download = fileName(cur, z);
+      const file = new File([blob], fileName(cur, z), { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         const b = fig.querySelector('[data-share]');
         b.hidden = false;
         b.onclick = () => navigator.share({ files: [file] }).then(() => track('share_kit', { type: `share_${z.key}` })).catch(() => {});
       }
     }));
-    track('share_kit', { type: 'pick', slug: s ? s.slug : 'month' });
   }
 
   async function copy(text, done) {
@@ -297,6 +389,11 @@
       if (save.getAttribute('href') === '#') { e.preventDefault(); say('Still drawing. Try again in a second.'); return; }
       track('share_kit', { type: `save_${save.dataset.save}` });
     }
+  });
+  document.addEventListener('click', (e) => {
+    const look = e.target.closest('[data-look]');
+    if (look && look.dataset.look !== opts.look) { opts.look = look.dataset.look; track('share_kit', { type: `look_${opts.look}` }); drawAll(); }
+    if (e.target.closest('#sh-group')) { opts.group = !opts.group; drawAll(); }
   });
   $('#sh-who').addEventListener('change', render);
   $('#sh-what').addEventListener('change', render);

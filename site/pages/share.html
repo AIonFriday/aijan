@@ -25,6 +25,17 @@
     <section class="share-sec" aria-labelledby="sh-img">
       <h2 class="as-h3" id="sh-img">Images</h2>
       <p class="hint">Tap one to save it. On a phone you can share it straight to an app.</p>
+      <div class="share-opts">
+        <div class="share-opt" role="group" aria-label="Background">
+          <span>Background</span>
+          <button class="chip" type="button" data-look="city" aria-pressed="true">City map</button>
+          <button class="chip" type="button" data-look="plain" aria-pressed="false">Plain</button>
+        </div>
+        <div class="share-opt" id="sh-group-f" hidden>
+          <span>Your group</span>
+          <button class="chip" type="button" id="sh-group" aria-pressed="false">Show your group</button>
+        </div>
+      </div>
       <div class="share-imgs" id="sh-imgs"></div>
     </section>
 
