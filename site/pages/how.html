@@ -1,0 +1,152 @@
+<!-- How this site and the event plan were built with Claude. Built into dist/how.html. Screenshots live in site/assets/how/. -->
+{{head}}
+{{header}}
+<main class="wrap"><article class="col why how">
+  <header class="why-top">
+    <span class="kicker">How we built this</span>
+    <h1>We built AI January with AI.</h1>
+    <p class="lede">One organizer, a few minutes at a time, asked Claude for help. Four weeks later there was an event plan, this website, sign-ups, a faculty page, an admin tool and a Slack bot. Here’s how it went, with the real prompts, typos and all.</p>
+    <ul class="how-stats" aria-label="By the numbers">
+      <li><b>4 weeks</b> from the first prompt to today</li>
+      <li><b>64</b> separate jobs, each its own conversation</li>
+      <li><b>94</b> prompts from Andrew</li>
+      <li><b>54</b> changes to this site, all <a href="https://github.com/AIonFriday/aijan">in public on GitHub</a></li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="how-setup">
+    <h2 id="how-setup">How the work was set up</h2>
+    <p>Everything ran in one Claude project. Andrew typed an ask into a chat, often from his phone. Claude split each ask into its own conversation, called a thread, and each thread did one job: research, a mockup, a page, a fix. Threads could open the website code, use Andrew’s web browser to set up accounts, and run things on his laptop when he said yes.</p>
+    <p>Every change to the site was a pull request with phone and desktop screenshots. Nothing goes live until it’s merged on GitHub, and merging is the only way to put it live.</p>
+    <p class="how-note"><b>About “the thinking.”</b> Claude’s private reasoning isn’t saved, so it can’t be shown. What is saved is the thinking done out loud: the questions Claude asked, the options it laid out, and the choices Andrew made. That’s what’s on this page.</p>
+  </section>
+
+  <section aria-labelledby="how-p1">
+    <p class="why-date">October 27 · Brainstorm</p>
+    <h2 id="how-p1">A building for a month, and a big question</h2>
+    <blockquote class="how-prompt"><p>Tim Williamson offered us the Nieux Society building for all of January, after attending AI Friday last week.</p><p>I want to think this through with you and brainstorm, then potentially mock up a side.</p><p>I want everything we talk about and brainstorm to be put through Felix’s framework for thinking more ambitiously…</p><cite>Andrew, the first prompt</cite></blockquote>
+    <p>Claude pushed the idea higher: don’t just fill a building, ask “how do you forward-deploy an entire city?” Then it suggested recruiting partner organizations to run tracks, and Andrew said no.</p>
+    <blockquote class="how-prompt"><p>We do NOT want to recruit partner orgs. If it happens organically, great!</p><p>Research “unconference” structures like BarCamp.</p><cite>Andrew</cite></blockquote>
+    <p>That turned into the model you see now: anyone suggests a session, and when enough people want it, it gets scheduled. Claude also caught a date slip. The kickoff was written as Jan 9, a Saturday, so it moved to Friday, Jan 8. The first website mockup came back that morning.</p>
+    <blockquote class="how-prompt"><p>I’m not loving it. Looks like AI slop. Needs to be more mobile capable.</p><cite>Andrew</cite></blockquote>
+  </section>
+
+  <section aria-labelledby="how-p2">
+    <p class="why-date">October 28 · Finding the feel</p>
+    <h2 id="how-p2">Ask the beginner question first</h2>
+    <p>The second try started with questions, not a design. Andrew’s answer to “what should people feel?” set the goal for everything after it:</p>
+    <blockquote class="how-prompt"><p>I want them to feel like this is for them, this is a place to learn, and if they’re intimidated by AI or haven’t used it much, I want them to feel comfortable making the jump…</p><cite>Andrew</cite></blockquote>
+    <p>When Claude asked which New Orleans place already makes newcomers feel welcome, Andrew said “huh I have no idea.” So Claude offered four picks instead: bulletin board flyers, a second line, a corner bar chalkboard, or the library. Flyers won, then a “design shotgun” tried four Carnival looks side by side. The plum “night parade” won that round.</p>
+    <div class="how-strip" role="list" aria-label="Designs from October 28 and 29">
+      <figure role="listitem"><img src="/assets/how/v3.webp" width="420" height="908" loading="lazy" decoding="async" alt="Flyer board design: a yellow flyer asking Where are you with AI? on kraft paper"><figcaption>Flyer board</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/v4shot.webp" width="420" height="908" loading="lazy" decoding="async" alt="Four Carnival looks compared on one page"><figcaption>Four Carnival looks</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/v4night.webp" width="420" height="908" loading="lazy" decoding="async" alt="Night parade design: plum sky, gold headline, doubloons"><figcaption>Night parade</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/v5.webp" width="420" height="908" loading="lazy" decoding="async" alt="Night parade design after the plan changed"><figcaption>After the reset</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="how-p3">
+    <p class="why-date">October 29 · Reset</p>
+    <h2 id="how-p3">“How little can we do?”</h2>
+    <p>The organizers met in person, and Andrew pasted the meeting transcript in. Claude boiled it down to a small floor and a high ceiling: commit to about ten sessions, let people ask for the rest, and let demand decide how big it gets. The people who know AI became <b>guides</b> who sit next to you, not presenters. Andrew added the risk himself:</p>
+    <blockquote class="how-prompt"><p>if all that happens is we hang out a few times and learn together, not a huge loss</p><cite>Andrew</cite></blockquote>
+  </section>
+
+  <section aria-labelledby="how-p4">
+    <p class="why-date">November 3 · Start over and ship</p>
+    <h2 id="how-p4">One piece at a time</h2>
+    <blockquote class="how-prompt"><p>I’m still not loving the design. So let’s spin up a new thread and build it piece by piece.</p><cite>Andrew, 12:28 PM</cite></blockquote>
+    <p>This was the turn. Andrew wrote a short brief (call it AI January, beginners welcome, “Mardi Gras but muted… Not black background hacker type”) and reacted to one section at a time. The map at the top came from street data in his AI Friday slides, about 29,000 street corners across greater New Orleans. “Host” sounded like it would be at your house, so it became “Guide.”</p>
+    <blockquote class="how-prompt"><p>Merge when ready. Also please set it up so everythign deploys through github to cloudflare. No deploying directly.</p><cite>Andrew</cite></blockquote>
+    <p>The site went live at 3:31 PM, about three hours after “piece by piece.”</p>
+    <div class="how-strip" role="list" aria-label="The first piece and the site today">
+      <figure role="listitem"><img src="/assets/how/v6top.webp" width="420" height="908" loading="lazy" decoding="async" alt="Dot map of greater New Orleans with You’re invited to learn AI."><figcaption>Piece 1, the map</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/live.webp" width="420" height="715" loading="lazy" decoding="async" alt="The home page with the crown logo and an RSVP card for the kickoff"><figcaption>The home page now</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="how-p5">
+    <p class="why-date">November 4 · Many at once</p>
+    <h2 id="how-p5">Nineteen changes in one day</h2>
+    <blockquote class="how-prompt"><p>ok a few threads I want to spin up… 2. I want to debate if we even need a login. Do we need a way to login or should we just collect emails when they RSVP?</p><cite>Andrew</cite></blockquote>
+    <p>Claude’s answer: nobody needs to sign in, but every reminder and calendar invite needs an email. So tapping RSVP or “I want this” asks only for your email and counts right away. The same day brought the calendar, the FAQ, the Why and Where pages, the footer, analytics and a privacy page. For account setups, Claude did the clicking in Andrew’s browser and left the passwords and keys to him.</p>
+    <div class="how-strip" role="list" aria-label="Pages from November 4">
+      <figure role="listitem"><img src="/assets/how/email.webp" width="420" height="908" loading="lazy" decoding="async" alt="A sheet that asks only for your email"><figcaption>Email first</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/sessions.webp" width="420" height="908" loading="lazy" decoding="async" alt="The sessions page with a calendar"><figcaption>The calendar</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="how-p6">
+    <p class="why-date">November 4 and 5 · Tools to run it</p>
+    <h2 id="how-p6">Cut it down, then build it</h2>
+    <p>The organizers have almost no time in December and January, so the event has to mostly run itself. Claude’s first plan for an admin tool had 27 actions. Andrew cut it:</p>
+    <blockquote class="how-prompt"><p>I think MCP is way too complex. We don’t need the “slots” architecture. I really don’t think we need a review queue right now. Email - later</p><cite>Andrew</cite></blockquote>
+    <p>It shipped with 12. By the next morning, a Slack bot named Beignet could answer organizers’ questions and use those same tools, on a $10-a-day budget. When the vote cards said “0 want this,” Andrew called it “sad/depressing,” and zero counts disappeared.</p>
+  </section>
+
+  <section aria-labelledby="how-p7">
+    <p class="why-date">November 9 to 16 · Faculty</p>
+    <h2 id="how-p7">Guides become faculty</h2>
+    <blockquote class="how-prompt"><p>Tim has been calling this “faculty” — I think this is a good characterization… Let’s mock this up locally first.</p><cite>Andrew</cite></blockquote>
+    <p>Faculty pages only list people who said yes, with photos they approved. Then the front page needed rethinking, since “Coming up” makes little sense two months out. Claude mocked up three versions and recommended B. Andrew took the top of C, asked for more “What do you want to learn?”, and kept the faculty modest:</p>
+    <blockquote class="how-prompt"><p>I do like “You?” But I don’t think this is a super crazy good lineup like we don’t have AC/DC showing up.</p><cite>Andrew</cite></blockquote>
+    <div class="how-strip" role="list" aria-label="Front page options and faculty">
+      <figure role="listitem"><img src="/assets/how/opta.webp" width="420" height="909" loading="lazy" decoding="async" alt="Option A: three numbered steps"><figcaption>A: How it works</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/optb.webp" width="420" height="909" loading="lazy" decoding="async" alt="Option B: faculty row and a filling calendar"><figcaption>B: Claude’s pick</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/optc.webp" width="420" height="909" loading="lazy" decoding="async" alt="Option C: three number tiles"><figcaption>C: Three ways in</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/optd.webp" width="420" height="909" loading="lazy" decoding="async" alt="Option D: learn first, faculty below"><figcaption>D: Built, minus tiles</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/faculty.webp" width="420" height="908" loading="lazy" decoding="async" alt="The faculty page with cards for groups and people"><figcaption>Faculty</figcaption></figure>
+      <figure role="listitem"><img src="/assets/how/hackdat.webp" width="420" height="578" loading="lazy" decoding="async" alt="Calendar with a weekend hackathon and a parade link"><figcaption>Partner events</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="how-p8">
+    <p class="why-date">November 20 to 24 · Running it from a chat</p>
+    <h2 id="how-p8">Paste an email, get a session</h2>
+    <p>By now most of the work was filling the calendar. Andrew forwarded a guide’s note with a line like “Let’s get this one on the calendar,” and Claude wrote a plain description, picked the slot, built their faculty page and put it live. Quick questions got quick answers straight from the database:</p>
+    <blockquote class="how-prompt"><p>How many sessions and staff are we up to?</p><cite>Andrew</cite></blockquote>
+    <p>(20 sessions, 20 ideas waiting for votes, and 26 faculty that afternoon.) RSVP emails got real calendar invites. Faculty got a <a href="/share">share page</a> that makes images and posts for their session, after Andrew said the first plan was “a TAD over the top.” Claude also found free local event calendars to list on, and checked every offer to lead a session against who had heard back.</p>
+  </section>
+
+  <section aria-labelledby="how-words">
+    <h2 id="how-words">What changed along the way</h2>
+    <p>Most of the real decisions were about words. Each of these started as a draft and changed when Andrew read it the way a nervous beginner would.</p>
+    <div class="how-tbl"><table>
+      <thead><tr><th scope="col">Started as</th><th scope="col">Became</th></tr></thead>
+      <tbody>
+        <tr><td>Find Your Krewe</td><td>AI January</td></tr>
+        <tr><td>Captain, then host</td><td>Guide, then faculty</td></tr>
+        <tr><td>Partner organizations run tracks</td><td>Anyone suggests, the city votes</td></tr>
+        <tr><td>Dark night parade</td><td>Lavender paper, muted Mardi Gras</td></tr>
+        <tr><td>Sign in</td><td>Just your email</td></tr>
+        <tr><td>Five little dots</td><td>“3 want it,” and no zeros</td></tr>
+        <tr><td>27 admin actions</td><td>12</td></tr>
+        <tr><td>Jan 8–29</td><td>Jan 8–28, because parades start the 29th</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="how-tips">
+    <h2 id="how-tips">If you want to try this</h2>
+    <ul class="why-list">
+      <li><b>Say plainly what you don’t like.</b> “Looks like AI slop” got a better next round than “can you tweak it.”</li>
+      <li><b>Ask for options, then mix.</b> Picking the top of C and the middle of D is allowed.</li>
+      <li><b>When it’s not working, go piece by piece.</b> Three whole-page redesigns missed. One section at a time got to a live site in an afternoon.</li>
+      <li><b>One job per conversation.</b> Small jobs can run side by side and stay easy to find.</li>
+      <li><b>Write the rules down once.</b> The site’s <a href="https://github.com/AIonFriday/aijan/blob/main/AGENTS.md">AGENTS.md</a> holds every decision, like “Guide, never host,” so each new conversation follows them.</li>
+      <li><b>Let it click, keep the keys.</b> Claude set up accounts in the browser. Passwords and keys were always pasted by a person.</li>
+      <li><b>Cut scope out loud.</b> “Email - later” is a complete sentence.</li>
+    </ul>
+  </section>
+
+  <section class="why-end" aria-labelledby="how-close">
+    <p>Want to learn how to work like this?</p>
+    <h2 id="how-close">Come to a session.</h2>
+    <p class="why-go"><a class="go" href="/sessions">See the sessions</a></p>
+    <p class="why-more"><a href="/why">Why we’re doing this</a> · <a href="https://github.com/AIonFriday/aijan">The code on GitHub</a></p>
+  </section>
+</article></main>
+{{footer}}
+{{sheet}}
+</body>
+</html>
