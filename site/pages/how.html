@@ -21,6 +21,31 @@
     <p class="how-note"><b>About “the thinking.”</b> Claude’s private reasoning isn’t saved, so it can’t be shown. What is saved is the thinking done out loud: the questions Claude asked, the options it laid out, and the choices Andrew made. That’s what’s on this page.</p>
   </section>
 
+  <section aria-labelledby="how-tools">
+    <h2 id="how-tools">What we used</h2>
+    <p>You don’t need all of this to start. Most days it was one chat and a phone. But people ask, so here’s the full list.</p>
+    <h3>Claude and its add-ons</h3>
+    <ul class="why-list">
+      <li><b>A Claude project.</b> One main chat that hands each job to its own thread, and keeps notes that every thread can read later.</li>
+      <li><b>Skills.</b> A skill is a set of instructions Claude loads for one kind of job. <a href="https://github.com/nutlope/hallmark">Hallmark</a> gave it design rules and looks, to get away from “AI slop.” <a href="https://github.com/garrytan/gstack">gstack</a> gave it an “office hours” routine: ask hard questions before designing anything.</li>
+      <li><b>A way of thinking.</b> Felix Rieseberg’s essay on <a href="https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/">being more ambitious with AI</a>. Andrew asked for every idea to be run through it.</li>
+      <li><b>Connectors.</b> These let Claude use other apps directly: GitHub for the code, Cloudflare for the database, Slack, the email inbox, OpenSEO and Google Search Console for search checks, and GoodUI, a library of real A/B test results.</li>
+      <li><b>Andrew’s own browser.</b> Claude clicked through setting up Cloudflare, Slack, analytics and the email inbox. It stopped and asked whenever a password or key was needed.</li>
+      <li><b>Andrew’s laptop.</b> For the faculty pages, Claude ran the site on his Mac so he could click around before anything went live.</li>
+      <li><b>Deep research.</b> Longer digs, like which AI companies support community events, and which local calendars list events for free.</li>
+    </ul>
+    <h3>What the site runs on</h3>
+    <ul class="why-list">
+      <li><b>Cloudflare.</b> Hosts the site and keeps sessions, faculty and sign-ups in a small database. Plain HTML, CSS and JavaScript, no frameworks.</li>
+      <li><b>Better Auth.</b> Just your email, with Google and Apple as one-tap shortcuts.</li>
+      <li><b>Resend.</b> Sends the emails, including calendar invites when you RSVP.</li>
+      <li><b>Umami and Google Analytics.</b> To see which pages and buttons get used.</li>
+      <li><b>An admin tool and a Slack bot.</b> Organizers can add or edit sessions by asking Claude. Beignet, the bot in the team’s Slack, can do the same.</li>
+    </ul>
+    <h3>What Andrew fed in</h3>
+    <p>Not tidy specs. A voice memo to himself, a design guide as a PDF, a meeting transcript, the AI Friday slides, screenshots, and guides’ emails pasted in whole. Claude did the sorting.</p>
+  </section>
+
   <section aria-labelledby="how-p1">
     <p class="why-date">October 27 · Brainstorm</p>
     <h2 id="how-p1">A building for a month, and a big question</h2>
@@ -108,6 +133,24 @@
     <p>(20 sessions, 20 ideas waiting for votes, and 26 faculty that afternoon.) RSVP emails got real calendar invites. Faculty got a <a href="/share">share page</a> that makes images and posts for their session, after Andrew said the first plan was “a TAD over the top.” Claude also found free local event calendars to list on, and checked every offer to lead a session against who had heard back.</p>
   </section>
 
+  <section aria-labelledby="how-more">
+    <h2 id="how-more">More real prompts</h2>
+    <p>A few more, typos and all, because the short ones did the most work.</p>
+    <h3>Asking for options before deciding</h3>
+    <blockquote class="how-prompt"><p>Hey I have a thread asking me for a resend key. Before deciding on resend, spin up a thread to research and talk through alternativs.</p><cite>Andrew</cite></blockquote>
+    <blockquote class="how-prompt"><p>Use the GoodUI MCP and evalate the patterns and tests that are most relevant to us. We don’t have the benefit of traffic to run tests, but we can potentially use the research to help guide design decisions.</p><cite>Andrew</cite></blockquote>
+    <h3>Checking the work</h3>
+    <blockquote class="how-prompt"><p>ok out of curiousity is this efficient? like how big is this going to be to load on peoples browsers or phones?</p><cite>Andrew, about the animated map</cite></blockquote>
+    <blockquote class="how-prompt"><p>Please edit the following FAQs. If I don’t meniton an FAQ, don’t change anything about it. You can update my grammer and stuff, just helping with the vibe here.</p><cite>Andrew</cite></blockquote>
+    <h3>Setting limits</h3>
+    <blockquote class="how-prompt"><p>It has a $10 per day limit. we should try to be careful with spend here. use the right model.</p><cite>Andrew, handing over a key for the Slack bot</cite></blockquote>
+    <blockquote class="how-prompt"><p>It’s a public repo because I want other people to be able to submit PRs. So make sure it’s well documented.</p><cite>Andrew</cite></blockquote>
+    <h3>Handing off and catching up</h3>
+    <blockquote class="how-prompt"><p>Take what we built and our plan, and give me a little PRD so I can rebuild in another session. Don’t talk design or anything. Just talk like what it is and what we want people to be able to do.</p><cite>Andrew</cite></blockquote>
+    <blockquote class="how-prompt"><p>ok so what’s open for me to do? what’s next?</p><cite>Andrew, more than once</cite></blockquote>
+    <blockquote class="how-prompt"><p>whoops mu nad tru agaom/</p><p>sorry keep going try again!</p><cite>Andrew, from his phone</cite></blockquote>
+  </section>
+
   <section aria-labelledby="how-words">
     <h2 id="how-words">What changed along the way</h2>
     <p>Most of the real decisions were about words. Each of these started as a draft and changed when Andrew read it the way a nervous beginner would.</p>
@@ -135,7 +178,23 @@
       <li><b>One job per conversation.</b> Small jobs can run side by side and stay easy to find.</li>
       <li><b>Write the rules down once.</b> The site’s <a href="https://github.com/AIonFriday/aijan/blob/main/AGENTS.md">AGENTS.md</a> holds every decision, like “Guide, never host,” so each new conversation follows them.</li>
       <li><b>Let it click, keep the keys.</b> Claude set up accounts in the browser. Passwords and keys were always pasted by a person.</li>
+      <li><b>Paste the messy stuff.</b> A voice memo or a forwarded email works better than a summary you spent an hour on.</li>
+      <li><b>Ask what’s waiting on you.</b> With many threads going, “what’s open for me?” is the most useful question.</li>
+      <li><b>Set limits up front.</b> A spending cap, “don’t merge yet,” or “only people who said yes” keeps things safe.</li>
       <li><b>Cut scope out loud.</b> “Email - later” is a complete sentence.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="how-glossary">
+    <h2 id="how-glossary">New to this? A few words</h2>
+    <ul class="why-list">
+      <li><b>Prompt.</b> What you type to Claude. Plain words are fine.</li>
+      <li><b>Thread.</b> One conversation for one job, so it stays short and easy to find.</li>
+      <li><b>Skill.</b> Saved instructions Claude loads for a kind of job, like “design a page” or “run office hours.”</li>
+      <li><b>Connector (MCP).</b> A plug that lets Claude use another app, like GitHub or Slack, with your permission.</li>
+      <li><b>Pull request.</b> A proposed change to the site that a person looks at before it goes live.</li>
+      <li><b>Preview.</b> A private copy of the site with the change in it, to click around before saying yes.</li>
+      <li><b>Merge.</b> Saying yes. On this site, merging is what puts a change live.</li>
     </ul>
   </section>
 
