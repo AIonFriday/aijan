@@ -21,6 +21,8 @@ Decided Nov 4, 2026: people never "sign in." We ask for an email when they tap, 
 - **On another device**, `/me` asks for the email and sends the link. It never says "sign in."
 - **If someone types another person's email**, they can add taps for that person, but they never see or change that person's list. When the real owner opens a link, Better Auth drops every session the account had before its email was proven.
 - At most 6 notes go to one address in a day (`canEmail` in `src/api.js`). Taps past that still count, but they don't send email.
+- A note never repeats words someone typed (a group's name, an idea), because it can go to an address nobody has proven is theirs.
+- One visitor can make 20 email-first taps a minute (`START_LIMIT` in `wrangler.jsonc`, counted per IP address in each Cloudflare location). After that `POST /api/start` answers 429 until the minute passes. It's set high enough for a room of people on one Wi-Fi; lower it if someone floods the form.
 - The menu shows **My sessions** only once this device has something to show.
 - People stay in for 60 days. "Sign out on this device" is at the bottom of `/me`.
 - We only email people about what they picked. The newsletter is a separate opt-in.

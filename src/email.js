@@ -74,7 +74,8 @@ function tapNote(tap, s, count) {
     case 'guideOffer':
       return { subject: 'Thanks for offering to guide', lines: ['Thanks for offering to guide a session.', 'An organizer will email you soon to find a time.'] };
     case 'krewe':
-      return { subject: 'We got your group’s request', lines: [`We got your request for ${tap.groupName || 'your group'}.`, 'An organizer will email you soon about a time.'] };
+      // No group name here: this note can go to an address nobody has proven is theirs, so it never repeats typed words.
+      return { subject: 'We got your group’s request', lines: ['We got your group’s request.', 'An organizer will email you soon about a time.'] };
     default:
       return { subject: 'Thanks for your idea', lines: ['We got your idea. An organizer reads every one.', 'If it fits, it goes up on the site so people can say they want it.'] };
   }
