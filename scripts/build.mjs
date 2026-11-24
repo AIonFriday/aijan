@@ -75,6 +75,7 @@ const PAGES = {
   'where.html': { path: '/where', title: 'Where it is · AI January', description: 'Most AI January sessions are at The Nieux, 2040 St. Charles Ave, in the Eiffel Tower building. Address, parking, streetcar, and the rooms.', current: 'where' },
   'brand.html': { path: '/brand', title: 'Logos and brand · AI January', ogTitle: 'AI January logos and brand', description: 'Logos, colors, fonts, share images, and a short description of AI January, free to use when you write about us or put us on a flyer.' },
   'why.html': { path: '/why', title: 'Why AI January', ogTitle: 'Why AI January', description: 'We want more people in New Orleans using AI tools and building with them. Here’s how that turned into three weeks of free sessions.' },
+  'how.html': { path: '/how', title: 'How we built AI January · AI January', ogTitle: 'How we built AI January with AI', description: 'How one organizer used Claude to plan AI January and build this site in four weeks: the real prompts, the options, and the choices.' },
   'share.html': { path: '/share', title: 'Share your session · AI January', description: 'For AI January faculty: pick your name and get share images and posts for your session, ready to copy.', noindex: true },
   'privacy.html': { path: '/privacy', title: 'Privacy · AI January', description: 'What AI January keeps when you use the site, who sees it, and how to have it deleted.' },
   'me.html': { path: '/me', title: 'My sessions · AI January', description: 'The free AI sessions you picked: the ones you’re going to, the ones you want, and the ones you offered to guide.', current: 'me', noindex: true },
@@ -124,6 +125,7 @@ ${pageLine('sessions.html', 'Sessions')}
 ${pageLine('where.html', 'Where it is')}
 ${pageLine('guide.html', 'Guide a session')}
 ${pageLine('krewe.html', 'Bring a group')}
+${pageLine('how.html', 'How we built AI January with AI')}
 ${pageLine('why.html', 'Why AI January')}
 ${SESSIONS_MARK}
 ## Optional
